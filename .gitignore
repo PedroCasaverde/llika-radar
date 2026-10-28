@@ -1,0 +1,8 @@
+# Los datos no se versionan: son pesados y las salidas traen datos de personas
+datos/*
+!datos/_scripts/
+__pycache__/
+.venv/
+*.parquet
+*.xlsx
+*.csv

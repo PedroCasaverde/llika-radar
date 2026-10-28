@@ -1,0 +1,234 @@
+{
+ "prueba": {
+  "proveedores": 942164,
+  "con_sancion": 1996,
+  "base": 0.002118527135403178,
+  "entrenamiento": 1068446,
+  "entrenamiento_con_sancion": 2726,
+  "lasso_C": 0.1,
+  "filas": {
+   "azar": {
+    "precision": 0.002118527135403178,
+    "rango": [
+     0.0,
+     0.005
+    ],
+    "auc": 0.5,
+    "carga": {
+     "entidades": 866.75,
+     "mediana": 1.0,
+     "p90": 3.05
+    }
+   },
+   "hoy": {
+    "precision": 0.037,
+    "con_sancion": 37,
+    "rango": [
+     0.025,
+     0.049
+    ],
+    "wilson": [
+     0.02696102468045289,
+     0.05058268341054474
+    ],
+    "auc": 0.7540020389205501,
+    "carga": {
+     "entidades": 2564,
+     "mediana": 7.0,
+     "p90": 34.0
+    }
+   },
+   "simple": {
+    "precision": 0.055,
+    "con_sancion": 55,
+    "rango": [
+     0.041,
+     0.06993006993006994
+    ],
+    "wilson": [
+     0.04249722594783333,
+     0.07090871379405425
+    ],
+    "auc": 0.7995202186202888,
+    "carga": {
+     "entidades": 2579,
+     "mediana": 8.0,
+     "p90": 47.0
+    }
+   },
+   "v0": {
+    "precision": 0.071,
+    "con_sancion": 71,
+    "rango": [
+     0.054945054945054944,
+     0.08591408591408592
+    ],
+    "wilson": [
+     0.05666945999361375,
+     0.08861401899350932
+    ],
+    "auc": 0.5341151463758348,
+    "carga": {
+     "entidades": 2272,
+     "mediana": 4.0,
+     "p90": 17.0
+    }
+   },
+   "lasso": {
+    "precision": 0.078,
+    "con_sancion": 78,
+    "rango": [
+     0.061854341317365266,
+     0.096
+    ],
+    "wilson": [
+     0.0629469187422331,
+     0.09628298366468052
+    ],
+    "auc": 0.8026153922663104,
+    "carga": {
+     "entidades": 2566,
+     "mediana": 7.0,
+     "p90": 40.0
+    }
+   }
+  },
+  "diferencias": {
+   "v0-hoy": {
+    "dif": 0.033999999999999996,
+    "rango": [
+     0.015982792207792206,
+     0.05104981095674015
+    ]
+   },
+   "v0-simple": {
+    "dif": 0.015999999999999993,
+    "rango": [
+     -0.004001373626373623,
+     0.033072727272727254
+    ]
+   },
+   "lasso-hoy": {
+    "dif": 0.041,
+    "rango": [
+     0.025927858955600732,
+     0.05703393926432848
+    ]
+   },
+   "lasso-v0": {
+    "dif": 0.007000000000000006,
+    "rango": [
+     -0.0040000000000000036,
+     0.021999999999999992
+    ]
+   },
+   "simple-hoy": {
+    "dif": 0.018000000000000002,
+    "rango": [
+     0.006809972480161907,
+     0.03
+    ]
+   }
+  },
+  "solape_v0_hoy": {
+   "proveedores_en_ambas": 153,
+   "sancionados_solo_v0": 62,
+   "sancionados_solo_hoy": 28,
+   "sancionados_en_ambas": 9
+  }
+ },
+ "segmentos_v0": {
+  "persona natural": {
+   "n": 108,
+   "con_sancion": 1,
+   "precision": 0.009259259259259259,
+   "wilson": [
+    0.0016363187318928635,
+    0.05059469369997506
+   ]
+  },
+  "empresa": {
+   "n": 892,
+   "con_sancion": 70,
+   "precision": 0.07847533632286996,
+   "wilson": [
+    0.06258036616695009,
+    0.09798551958785301
+   ]
+  },
+  "vende a una sola entidad": {
+   "n": 312,
+   "con_sancion": 8,
+   "precision": 0.02564102564102564,
+   "wilson": [
+    0.013048615278815439,
+    0.04977274834142964
+   ]
+  },
+  "vende a varias entidades": {
+   "n": 688,
+   "con_sancion": 63,
+   "precision": 0.09156976744186046,
+   "wilson": [
+    0.07222644915211164,
+    0.11544887999837601
+   ]
+  },
+  "alerta principal: vínculo societario": {
+   "n": 908,
+   "con_sancion": 71,
+   "precision": 0.07819383259911894,
+   "wilson": [
+    0.06245434178750566,
+    0.09748747266798749
+   ]
+  },
+  "alerta principal: funcionario": {
+   "n": 58,
+   "con_sancion": 0,
+   "precision": 0.0,
+   "wilson": [
+    0.0,
+    0.062119996895293766
+   ]
+  },
+  "alerta principal: posible familiar": {
+   "n": 34,
+   "con_sancion": 0,
+   "precision": 0.0,
+   "wilson": [
+    0.0,
+    0.10151790621961015
+   ]
+  }
+ },
+ "confirmacion_2026": {
+  "proveedores": 994849,
+  "con_sancion": 647,
+  "base": 0.0006503499526058728,
+  "hoy": {
+   "precision": 0.01,
+   "con_sancion": 10,
+   "rango": [
+    0.004,
+    0.016983016983016984
+   ]
+  },
+  "v0": {
+   "precision": 0.013,
+   "con_sancion": 13,
+   "rango": [
+    0.006,
+    0.021
+   ]
+  },
+  "v0-hoy": {
+   "dif": 0.002999999999999999,
+   "rango": [
+    -0.006000249500998006,
+    0.0129751998001998
+   ]
+  },
+  "proveedores_en_ambas": 30
+ }
+}
