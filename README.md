@@ -81,6 +81,9 @@ Todo se corre desde la raíz del repositorio. Los scripts solo imprimen cifras a
    | `radar/11_muestra_parentesco.py` | Muestra de alertas de familiar para verificar a mano en las declaraciones juradas |
    | `radar/12_evaluacion_e5.py` | Evaluación del E5: baselines contra el modelo v0, con rangos y error por segmento |
    | `radar/13_mejoras_v0.py` | Variantes del modelo v0 probadas en validación, con una regla de selección fijada antes |
+   | `radar/14_antecedentes.py` | Antecedentes de cada proveedor: multas del Tribunal y penalidades de contratos |
+   | `radar/15_mejoras_ronda2.py` | Variantes con antecedentes, evasión y recencia, con la misma regla de selección |
+   | `radar/16_mejoras_ronda3.py` | Las variantes aprendidas aplicadas solo a los casos del radar |
 
 Una corrida completa sobre ocho años toma menos de una hora en una computadora personal, sin contar la limpieza inicial
 de los cortes de socios. La ficha de una entidad sale en unos cuatro segundos.

@@ -1,0 +1,231 @@
+{
+ "validacion": {
+  "filas": {
+   "A": {
+    "precision": 0.039,
+    "con_sancion": 39,
+    "rango": [
+     0.0279993006993007,
+     0.051
+    ],
+    "carga_mediana": 5.0
+   },
+   "F": {
+    "precision": 0.039,
+    "con_sancion": 39,
+    "rango": [
+     0.027972027972027972,
+     0.051
+    ],
+    "carga_mediana": 5.0,
+    "dif_vs_A": {
+     "dif": 0.0,
+     "rango": [
+      -0.003956143856143859,
+      0.0029999999999999957
+     ]
+    }
+   },
+   "G": {
+    "precision": 0.039,
+    "con_sancion": 39,
+    "rango": [
+     0.027972027972027972,
+     0.051
+    ],
+    "carga_mediana": 5.0,
+    "dif_vs_A": {
+     "dif": 0.0,
+     "rango": [
+      -0.003961088911088907,
+      0.0029999999999999957
+     ]
+    }
+   },
+   "H": {
+    "precision": 0.039,
+    "con_sancion": 39,
+    "rango": [
+     0.027972027972027972,
+     0.051
+    ],
+    "carga_mediana": 5.0,
+    "dif_vs_A": {
+     "dif": 0.0,
+     "rango": [
+      -0.003961088911088907,
+      0.0029999999999999957
+     ]
+    }
+   },
+   "I": {
+    "precision": 0.064,
+    "con_sancion": 64,
+    "rango": [
+     0.04987769461077844,
+     0.08
+    ],
+    "carga_mediana": 3.0,
+    "dif_vs_A": {
+     "dif": 0.025,
+     "rango": [
+      0.008988139953858517,
+      0.04093181818181819
+     ]
+    }
+   },
+   "J": {
+    "precision": 0.072,
+    "con_sancion": 72,
+    "rango": [
+     0.0559412671077676,
+     0.089
+    ],
+    "carga_mediana": 6.0,
+    "dif_vs_A": {
+     "dif": 0.032999999999999995,
+     "rango": [
+      0.013984740259740258,
+      0.05091326173826174
+     ]
+    }
+   }
+  },
+  "modelos": {
+   "I": {
+    "C": 0.1,
+    "coeficientes": {
+     "empresa_espejo": 0.044,
+     "mismo_dueno": 0.173,
+     "funcionario_propio": 0.0,
+     "doble_percepcion": 0.0,
+     "familiar": -0.028,
+     "log_multas": 0.087,
+     "log_penalidades": 0.171,
+     "evasion": -0.016,
+     "reciente": 0.008
+    }
+   },
+   "J": {
+    "iteraciones": 124
+   }
+  },
+  "elegida": "I"
+ },
+ "prueba_modelo": {
+  "C": 0.01,
+  "coeficientes": {
+   "empresa_espejo": 0.077,
+   "mismo_dueno": 0.18,
+   "funcionario_propio": 0.0,
+   "doble_percepcion": 0.0,
+   "familiar": 0.0,
+   "log_multas": 0.079,
+   "log_penalidades": 0.197,
+   "evasion": 0.0,
+   "reciente": 0.0
+  }
+ },
+ "prueba": {
+  "A": {
+   "precision": 0.071,
+   "con_sancion": 71,
+   "rango": [
+    0.054890219560878244,
+    0.08674194482421001
+   ],
+   "carga_mediana": 4.0
+  },
+  "I": {
+   "precision": 0.143,
+   "con_sancion": 143,
+   "rango": [
+    0.121,
+    0.16483928571428572
+   ],
+   "carga_mediana": 3.0,
+   "dif_vs_A": {
+    "dif": 0.072,
+    "rango": [
+     0.04885422077922078,
+     0.096
+    ]
+   }
+  }
+ },
+ "segmentos_elegida": {
+  "persona natural": {
+   "n": 129,
+   "con_sancion": 17,
+   "precision": 0.13178294573643412,
+   "wilson": [
+    0.08393214590804618,
+    0.20093042726180424
+   ]
+  },
+  "empresa": {
+   "n": 871,
+   "con_sancion": 126,
+   "precision": 0.1446613088404133,
+   "wilson": [
+    0.12285980688970947,
+    0.16958353371046314
+   ]
+  },
+  "vende a una sola entidad": {
+   "n": 169,
+   "con_sancion": 25,
+   "precision": 0.14792899408284024,
+   "wilson": [
+    0.10224951246025135,
+    0.20925882812442267
+   ]
+  },
+  "con antecedentes": {
+   "n": 913,
+   "con_sancion": 133,
+   "precision": 0.1456736035049288,
+   "wilson": [
+    0.12427449479430237,
+    0.17004199346277493
+   ]
+  },
+  "sin antecedentes": {
+   "n": 87,
+   "con_sancion": 10,
+   "precision": 0.11494252873563218,
+   "wilson": [
+    0.06364479272244053,
+    0.19880765197250103
+   ]
+  }
+ },
+ "solape_con_A": 192,
+ "confirmacion_2026": {
+  "A": {
+   "precision": 0.013,
+   "con_sancion": 13,
+   "rango": [
+    0.006,
+    0.02
+   ],
+   "carga_mediana": 2.0
+  },
+  "I": {
+   "precision": 0.043,
+   "con_sancion": 43,
+   "rango": [
+    0.031,
+    0.057
+   ],
+   "carga_mediana": 4.0,
+   "dif_vs_A": {
+    "dif": 0.03,
+    "rango": [
+     0.017999275724275725,
+     0.04495032467532468
+    ]
+   }
+  }
+ }
+}

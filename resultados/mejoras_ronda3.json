@@ -1,0 +1,169 @@
+{
+ "validacion": {
+  "filas": {
+   "A": {
+    "precision": 0.039,
+    "con_sancion": 39,
+    "rango": [
+     0.0279993006993007,
+     0.051
+    ],
+    "carga_mediana": 5.0
+   },
+   "F": {
+    "precision": 0.039,
+    "con_sancion": 39,
+    "rango": [
+     0.027972027972027972,
+     0.051
+    ],
+    "carga_mediana": 5.0,
+    "dif_vs_A": {
+     "dif": 0.0,
+     "rango": [
+      -0.003956143856143859,
+      0.0029999999999999957
+     ]
+    }
+   },
+   "G": {
+    "precision": 0.039,
+    "con_sancion": 39,
+    "rango": [
+     0.027972027972027972,
+     0.051
+    ],
+    "carga_mediana": 5.0,
+    "dif_vs_A": {
+     "dif": 0.0,
+     "rango": [
+      -0.003961088911088907,
+      0.0029999999999999957
+     ]
+    }
+   },
+   "H": {
+    "precision": 0.039,
+    "con_sancion": 39,
+    "rango": [
+     0.027972027972027972,
+     0.051
+    ],
+    "carga_mediana": 5.0,
+    "dif_vs_A": {
+     "dif": 0.0,
+     "rango": [
+      -0.003961088911088907,
+      0.0029999999999999957
+     ]
+    }
+   },
+   "I": {
+    "precision": 0.064,
+    "con_sancion": 64,
+    "rango": [
+     0.04987769461077844,
+     0.08
+    ],
+    "carga_mediana": 3.0,
+    "dif_vs_A": {
+     "dif": 0.025,
+     "rango": [
+      0.008988139953858517,
+      0.04093181818181819
+     ]
+    }
+   },
+   "K": {
+    "precision": 0.037,
+    "con_sancion": 37,
+    "rango": [
+     0.026,
+     0.049
+    ],
+    "carga_mediana": 5.0,
+    "dif_vs_A": {
+     "dif": -0.0020000000000000018,
+     "rango": [
+      -0.00894832667332668,
+      0.004933008159505164
+     ]
+    }
+   },
+   "J": {
+    "precision": 0.072,
+    "con_sancion": 72,
+    "rango": [
+     0.0559412671077676,
+     0.089
+    ],
+    "carga_mediana": 6.0,
+    "dif_vs_A": {
+     "dif": 0.032999999999999995,
+     "rango": [
+      0.013984740259740258,
+      0.05091326173826174
+     ]
+    }
+   },
+   "L": {
+    "precision": 0.039,
+    "con_sancion": 39,
+    "rango": [
+     0.027,
+     0.051949350649350655
+    ],
+    "carga_mediana": 6.0,
+    "dif_vs_A": {
+     "dif": 0.0,
+     "rango": [
+      -0.007949384298336394,
+      0.008960814185814184
+     ]
+    }
+   }
+  },
+  "modelos": {
+   "I": {
+    "C": 0.1,
+    "coeficientes": {
+     "empresa_espejo": 0.044,
+     "mismo_dueno": 0.173,
+     "funcionario_propio": 0.0,
+     "doble_percepcion": 0.0,
+     "familiar": -0.028,
+     "log_multas": 0.087,
+     "log_penalidades": 0.171,
+     "evasion": -0.016,
+     "reciente": 0.008
+    }
+   },
+   "J": {
+    "iteraciones": 124
+   }
+  },
+  "elegida": "A"
+ },
+ "prueba": {
+  "A": {
+   "precision": 0.071,
+   "con_sancion": 71,
+   "rango": [
+    0.054890219560878244,
+    0.08674194482421001
+   ],
+   "carga_mediana": 4.0
+  }
+ },
+ "confirmacion_2026": {
+  "A": {
+   "precision": 0.013,
+   "con_sancion": 13,
+   "rango": [
+    0.006,
+    0.02
+   ],
+   "carga_mediana": 2.0
+  }
+ }
+}
