@@ -5,20 +5,30 @@
   "base": 0.002118527135403178,
   "entrenamiento": 1068446,
   "entrenamiento_con_sancion": 857,
-  "lasso_C": 0.1,
+  "coef_v0": {
+   "empresa_espejo": 0.077,
+   "mismo_dueno": 0.18,
+   "funcionario_propio": 0.0,
+   "doble_percepcion": 0.0,
+   "familiar": 0.0,
+   "log_multas": 0.079,
+   "log_penalidades": 0.197,
+   "evasion": 0.0,
+   "reciente": 0.0
+  },
+  "coef_simple": {
+   "log_monto": 1.454,
+   "log_ordenes": -0.506,
+   "entidades": 0.109,
+   "persona": -0.668
+  },
   "filas": {
    "azar": {
     "precision": 0.002118527135403178,
     "rango": [
      0.0,
      0.005
-    ],
-    "auc": 0.5,
-    "carga": {
-     "entidades": 866.75,
-     "mediana": 1.0,
-     "p90": 3.05
-    }
+    ]
    },
    "hoy": {
     "precision": 0.037,
@@ -31,11 +41,15 @@
      0.02696102468045289,
      0.05058268341054474
     ],
-    "auc": 0.7540020389205501,
     "carga": {
      "entidades": 2564,
      "mediana": 7.0,
      "p90": 34.0
+    },
+    "por_motivo": {
+     "falsedad": 18,
+     "incumplimiento": 16,
+     "impedimento": 3
     }
    },
    "simple": {
@@ -49,14 +63,18 @@
      0.03726084730617148,
      0.06419101521875278
     ],
-    "auc": 0.7965226389782314,
     "carga": {
      "entidades": 2566,
      "mediana": 7.0,
      "p90": 41.0
+    },
+    "por_motivo": {
+     "incumplimiento": 25,
+     "falsedad": 19,
+     "impedimento": 5
     }
    },
-   "v0": {
+   "regla": {
     "precision": 0.071,
     "con_sancion": 71,
     "rango": [
@@ -67,181 +85,239 @@
      0.05666945999361375,
      0.08861401899350932
     ],
-    "auc": 0.5341151463758348,
     "carga": {
      "entidades": 2272,
      "mediana": 4.0,
      "p90": 17.0
+    },
+    "por_motivo": {
+     "incumplimiento": 36,
+     "falsedad": 27,
+     "impedimento": 7,
+     "otros": 1
     }
    },
-   "lasso": {
-    "precision": 0.073,
-    "con_sancion": 73,
+   "v0": {
+    "precision": 0.143,
+    "con_sancion": 143,
     "rango": [
-     0.05680877367896311,
-     0.089
+     0.12187508100681753,
+     0.16502085414585413
     ],
     "wilson": [
-     0.058458786926264744,
-     0.09080938446651277
+     0.12266696873653779,
+     0.16606543685414507
     ],
-    "auc": 0.7979898478661018,
     "carga": {
-     "entidades": 2560,
-     "mediana": 7.0,
-     "p90": 34.0
+     "entidades": 2164,
+     "mediana": 3.0,
+     "p90": 17.0
+    },
+    "por_motivo": {
+     "falsedad": 73,
+     "incumplimiento": 66,
+     "impedimento": 3,
+     "otros": 1
     }
    }
   },
   "diferencias": {
    "v0-hoy": {
-    "dif": 0.033999999999999996,
+    "dif": 0.10599999999999998,
     "rango": [
-     0.015982792207792206,
-     0.05104981095674015
+     0.08385709290709291,
+     0.12900087412587413
     ]
    },
    "v0-simple": {
-    "dif": 0.021999999999999992,
+    "dif": 0.09399999999999999,
     "rango": [
-     5.51448551448565e-05,
-     0.03800127372627373
+     0.07005551948051948,
+     0.1156692115768463
     ]
    },
-   "lasso-hoy": {
-    "dif": 0.036,
+   "v0-regla": {
+    "dif": 0.072,
     "rango": [
-     0.02197518334108563,
-     0.05192175324675326
-    ]
-   },
-   "lasso-v0": {
-    "dif": 0.0020000000000000018,
-    "rango": [
-     -0.007999999999999993,
-     0.01484630549091627
-    ]
-   },
-   "simple-hoy": {
-    "dif": 0.012000000000000004,
-    "rango": [
-     0.0030000000000000027,
-     0.024940134865134866
+     0.05007569930069931,
+     0.09814491182470224
     ]
    }
   },
-  "solape_v0_hoy": {
-   "proveedores_en_ambas": 153,
-   "sancionados_solo_v0": 62,
-   "sancionados_solo_hoy": 28,
-   "sancionados_en_ambas": 9
-  }
- },
- "segmentos_v0": {
-  "persona natural": {
-   "n": 108,
-   "con_sancion": 1,
-   "precision": 0.009259259259259259,
-   "wilson": [
-    0.0016363187318928635,
-    0.05059469369997506
-   ],
-   "base_del_grupo": 0.0010988736247709687
+  "segmentos_v0": {
+   "con alerta de vínculo": {
+    "n": 384,
+    "con_sancion": 40,
+    "precision": 0.10416666666666667,
+    "wilson": [
+     0.07743332256171084,
+     0.13874152820210617
+    ]
+   },
+   "solo por antecedentes": {
+    "n": 616,
+    "con_sancion": 103,
+    "precision": 0.1672077922077922,
+    "wilson": [
+     0.13982069878295042,
+     0.1987199864501801
+    ]
+   },
+   "persona natural": {
+    "n": 129,
+    "con_sancion": 17,
+    "precision": 0.13178294573643412,
+    "wilson": [
+     0.08393214590804618,
+     0.20093042726180424
+    ],
+    "base_del_grupo": 0.0010988736247709687
+   },
+   "empresa": {
+    "n": 871,
+    "con_sancion": 126,
+    "precision": 0.1446613088404133,
+    "wilson": [
+     0.12285980688970947,
+     0.16958353371046314
+    ]
+   },
+   "vende a una sola entidad": {
+    "n": 169,
+    "con_sancion": 25,
+    "precision": 0.14792899408284024,
+    "wilson": [
+     0.10224951246025135,
+     0.20925882812442267
+    ],
+    "base_del_grupo": 0.0011479336513413665
+   }
   },
-  "empresa": {
-   "n": 892,
-   "con_sancion": 70,
-   "precision": 0.07847533632286996,
-   "wilson": [
-    0.06258036616695009,
-    0.09798551958785301
-   ],
-   "base_del_grupo": 0.010497686204298867
-  },
-  "vende a una sola entidad": {
-   "n": 312,
-   "con_sancion": 8,
-   "precision": 0.02564102564102564,
-   "wilson": [
-    0.013048615278815439,
-    0.04977274834142964
-   ],
-   "base_del_grupo": 0.0011479336513413665
-  },
-  "vende a varias entidades": {
-   "n": 688,
-   "con_sancion": 63,
-   "precision": 0.09156976744186046,
-   "wilson": [
-    0.07222644915211164,
-    0.11544887999837601
-   ],
-   "base_del_grupo": 0.005548577725804977
-  },
-  "alerta principal: vínculo societario": {
-   "n": 908,
-   "con_sancion": 71,
-   "precision": 0.07819383259911894,
-   "wilson": [
-    0.06245434178750566,
-    0.09748747266798749
-   ]
-  },
-  "alerta principal: funcionario": {
-   "n": 58,
-   "con_sancion": 0,
-   "precision": 0.0,
-   "wilson": [
-    0.0,
-    0.062119996895293766
-   ]
-  },
-  "alerta principal: posible familiar": {
-   "n": 34,
-   "con_sancion": 0,
-   "precision": 0.0,
-   "wilson": [
-    0.0,
-    0.10151790621961015
-   ]
-  },
-  "alerta principal: funcionario o posible familiar": {
-   "n": 92,
-   "con_sancion": 0,
-   "precision": 0.0,
-   "wilson": [
-    -3.469446951953614e-18,
-    0.04008280329209862
-   ]
-  }
+  "solape_v0_regla": 192
  },
  "confirmacion_2026": {
   "proveedores": 994849,
   "con_sancion": 647,
   "base": 0.0006503499526058728,
-  "hoy": {
-   "precision": 0.01,
-   "con_sancion": 10,
-   "rango": [
-    0.004,
-    0.016983016983016984
-   ]
+  "filas": {
+   "azar": {
+    "precision": 0.0006503499526058728,
+    "rango": [
+     0.0,
+     0.003
+    ]
+   },
+   "hoy": {
+    "precision": 0.01,
+    "con_sancion": 10,
+    "rango": [
+     0.004,
+     0.016983016983016984
+    ],
+    "wilson": [
+     0.005440695309270557,
+     0.01830966530539216
+    ],
+    "carga": {
+     "entidades": 2490,
+     "mediana": 6.0,
+     "p90": 35.0
+    },
+    "por_motivo": {
+     "falsedad": 7,
+     "impedimento": 2,
+     "incumplimiento": 1
+    }
+   },
+   "simple": {
+    "precision": 0.013,
+    "con_sancion": 13,
+    "rango": [
+     0.006,
+     0.02
+    ],
+    "wilson": [
+     0.0076127471221297755,
+     0.022114652101014598
+    ],
+    "carga": {
+     "entidades": 2503,
+     "mediana": 7.0,
+     "p90": 43.0
+    },
+    "por_motivo": {
+     "falsedad": 7,
+     "impedimento": 3,
+     "incumplimiento": 3
+    }
+   },
+   "regla": {
+    "precision": 0.013,
+    "con_sancion": 13,
+    "rango": [
+     0.006,
+     0.021
+    ],
+    "wilson": [
+     0.0076127471221297755,
+     0.022114652101014598
+    ],
+    "carga": {
+     "entidades": 1548,
+     "mediana": 2.0,
+     "p90": 11.0
+    },
+    "por_motivo": {
+     "falsedad": 7,
+     "impedimento": 3,
+     "incumplimiento": 3
+    }
+   },
+   "v0": {
+    "precision": 0.043,
+    "con_sancion": 43,
+    "rango": [
+     0.031,
+     0.05702499999999998
+    ],
+    "wilson": [
+     0.03207848108830104,
+     0.057419304219659906
+    ],
+    "carga": {
+     "entidades": 2121,
+     "mediana": 4.0,
+     "p90": 19.0
+    },
+    "por_motivo": {
+     "falsedad": 28,
+     "incumplimiento": 13,
+     "impedimento": 2
+    }
+   }
   },
-  "v0": {
-   "precision": 0.013,
-   "con_sancion": 13,
-   "rango": [
-    0.006,
-    0.021
-   ]
-  },
-  "v0-hoy": {
-   "dif": 0.002999999999999999,
-   "rango": [
-    -0.006000249500998006,
-    0.0129751998001998
-   ]
-  },
-  "proveedores_en_ambas": 30
+  "diferencias": {
+   "v0-hoy": {
+    "dif": 0.032999999999999995,
+    "rango": [
+     0.020979020979020983,
+     0.046953445358231
+    ]
+   },
+   "v0-simple": {
+    "dif": 0.03,
+    "rango": [
+     0.017999290679380504,
+     0.04489555758612645
+    ]
+   },
+   "v0-regla": {
+    "dif": 0.03,
+    "rango": [
+     0.01796898101898102,
+     0.045000249500998006
+    ]
+   }
+  }
  }
 }

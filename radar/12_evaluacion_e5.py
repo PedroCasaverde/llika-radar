@@ -1,20 +1,24 @@
 """Paso 12: evaluación del E5. Baselines contra el modelo v0, con rango por bootstrap y error por segmento.
 
-Mismo corte que el paso 8. Las alertas de 2022-2023 se prueban contra las sanciones del Tribunal que empiezan desde
-2024, y quien ya tenía una sanción que empezó antes de 2024 sale de la prueba. El modelo v0 (puntaje por puntos) no se
-ajusta con sanciones: sus pesos son la gravedad legal por la probabilidad. La regresión de tamaño y el Lasso se entrenan
-con las alertas de 2018-2021 contra sanciones que empiezan en 2022-2023, para que esas etiquetas no se crucen con las
-de la prueba (el paso 8 usaba sanciones desde 2022 sin tope). La confirmación usa las alertas de
-2024-2025 contra sanciones desde 2026, como el paso 9.
+El modelo v0 es el que ganó en las rondas de mejora (HALLAZGOS 50 a 53): una regresión logística L1 con los puntos de
+cada alerta del radar y los antecedentes del proveedor (multas del Tribunal y penalidades de contratos, paso 14), más
+evasión y recencia. Se compara con:
+- no hacer nada (1 000 proveedores al azar);
+- lo que se hace hoy (lo más caro primero);
+- un modelo simple (regresión logística con 4 variables de tamaño);
+- la regla del radar (puntaje legal por puntos, solo con las alertas de vínculo; empate por monto).
+
+Ventanas sin fuga. Los modelos se entrenan con alertas de 2018-2021 y sanciones que empiezan en 2022-2023; la prueba
+usa alertas de 2022-2023 y sanciones desde 2024, sin quien ya tenía una sanción antes. La confirmación se reentrena con
+alertas de 2020-2023 y sanciones de 2024-2025, y se prueba con alertas de 2024-2025 y sanciones de 2026.
 
 - Métrica principal: de los 1 000 primeros proveedores de cada lista, el porcentaje con una sanción posterior.
-- Contrapeso: la carga para el OCI, es decir, cuántos proveedores de la lista le tocan a cada entidad (mediana y
-  percentil 90 entre las entidades que reciben alguno).
+- Contrapeso: la carga para el OCI, cuántos proveedores de la lista le tocan a cada entidad (mediana y percentil 90).
 - Rango: intervalo del 95 % por bootstrap de proveedores (pesos de Poisson, 1 000 repeticiones), pareado entre listas.
 
 Solo imprime agregados y los guarda en datos/procesados/radar/evaluacion_e5.json.
 
-    E:/UTEC_llika/.venv/Scripts/python.exe -I -X utf8 12_evaluacion_e5.py
+    E:/UTEC_llika/.venv/Scripts/python.exe -I -X utf8 -W ignore 12_evaluacion_e5.py
 """
 import json
 import sys
@@ -24,7 +28,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 
@@ -34,160 +37,171 @@ from comun import SALIDA, wilson  # noqa: E402
 t0 = time.time()
 K, B = 1000, 1000
 CARTAS = ["empresa_espejo", "mismo_dueno", "funcionario_propio", "doble_percepcion", "familiar"]
+ANTEC = ["log_multas", "log_penalidades", "evasion", "reciente"]
 TAM = ["log_monto", "log_ordenes", "entidades", "persona"]
-o = pd.read_parquet(SALIDA / "ordenes.parquet", columns=["id", "ruc_entidad", "ruc", "anio", "monto"])
-al = pd.read_parquet(SALIDA / "radar_alertas.parquet", columns=["ruc", "anio", "tarjeta", "puntos"])
-s = pd.read_parquet(SALIDA / "sanciones.parquet", columns=["ruc", "inicio"])
+o = pd.read_parquet(SALIDA / "ordenes.parquet", columns=["id", "ruc_entidad", "ruc", "anio", "monto", "fecha"])
+al = pd.read_parquet(SALIDA / "radar_alertas.parquet", columns=["id", "ruc", "anio", "tarjeta", "puntos", "fecha"])
+s = pd.read_parquet(SALIDA / "sanciones.parquet", columns=["ruc", "inicio", "motivo"])
+esp = pd.read_parquet(SALIDA / "alerta_empresa_espejo.parquet", columns=["id", "ruc_sanc"])
+ant = pd.read_parquet(SALIDA / "antecedentes.parquet")
 print(f"datos leídos en {time.time() - t0:.0f} s", flush=True)
 
 
-def ventana(desde, hasta, etiqueta_desde, etiqueta_hasta=None):
-    """Como en el paso 8: una fila por proveedor, con su tamaño, los puntos de cada alerta y la etiqueta. Con
-    `etiqueta_hasta`, la etiqueta solo cuenta sanciones que empiezan antes de ese año (así las de entrenamiento no se
-    cruzan con las de la prueba)."""
+def ventana(desde, hasta, etq_desde, etq_hasta=None):
+    """Una fila por proveedor (como en el paso 15); las variables solo usan información hasta el 31/12 de `hasta`."""
+    fin = pd.Timestamp(f"{hasta}-12-31")
     v = o[(o["anio"] >= desde) & (o["anio"] <= hasta)]
     X = v.groupby("ruc").agg(monto=("monto", "sum"), ordenes=("id", "size"), entidades=("ruc_entidad", "nunique"))
     X["log_monto"], X["log_ordenes"] = np.log1p(X["monto"]), np.log1p(X["ordenes"])
     X["persona"] = X.index.str.startswith("10").astype(int)
-    aa = al[(al["anio"] >= desde) & (al["anio"] <= hasta)]
+    aa = al[(al["anio"] >= desde) & (al["anio"] <= hasta) & al["tarjeta"].isin(CARTAS)]
     piv = aa.pivot_table(index="ruc", columns="tarjeta", values="puntos", aggfunc="max")
     for t in CARTAS:
         X[t] = piv[t].reindex(X.index).fillna(0) if t in piv else 0.0
-    corte = pd.Timestamp(f"{etiqueta_desde}-01-01")
+    a = ant[ant["fecha"] <= fin]
+    for tipo, col in [("multa", "multas"), ("penalidad", "penalidades")]:
+        X[col] = a[a["tipo"].eq(tipo)].groupby("ruc").size().reindex(X.index).fillna(0)
+        X["log_" + col] = np.log1p(X[col])
+    X["antecedentes"] = X["multas"] + X["penalidades"]
+    primera = o[o["fecha"] <= fin].groupby("ruc")["fecha"].min()
+    e = aa[aa["tarjeta"].eq("empresa_espejo")][["id", "ruc", "fecha"]].merge(esp, on="id")
+    ini = e.merge(s[["ruc", "inicio"]].rename(columns={"ruc": "ruc_sanc"}), on="ruc_sanc")
+    ini = ini[ini["inicio"] <= ini["fecha"]].groupby(["id", "ruc"])["inicio"].max().reset_index()
+    ini["primera"] = ini["ruc"].map(primera)
+    ev = ini[(ini["primera"] >= ini["inicio"]) & (ini["primera"] >= pd.Timestamp("2018-07-01"))]
+    X["evasion"] = X.index.isin(set(ev["ruc"])).astype(int)
+    X["reciente"] = X.index.isin(set(aa.loc[aa["anio"].eq(hasta), "ruc"])).astype(int)
+    corte = pd.Timestamp(f"{etq_desde}-01-01")
     X = X[~X.index.isin(set(s.loc[s["inicio"] < corte, "ruc"]))]
     lab = s["inicio"] >= corte
-    if etiqueta_hasta is not None:
-        lab &= s["inicio"] < pd.Timestamp(f"{etiqueta_hasta}-01-01")
+    if etq_hasta is not None:
+        lab &= s["inicio"] < pd.Timestamp(f"{etq_hasta}-01-01")
     y = X.index.isin(set(s.loc[lab, "ruc"])).astype(int)
     return X, y
 
 
-def orden(primero, desempate):
-    """Índices de mayor a menor por la primera clave y, si empatan, por la segunda (la regla del radar: mayor monto)."""
-    return np.lexsort((-np.asarray(desempate), -np.asarray(primero)))
+def entrenar(X, y, cols, l1=True):
+    """Todos los positivos y 100 000 negativos al azar; con L1, el C se elige por validación cruzada."""
+    rng = np.random.default_rng(7)
+    neg = np.flatnonzero(y == 0)
+    fil = np.sort(np.concatenate([np.flatnonzero(y == 1), rng.choice(neg, size=min(100_000, len(neg)), replace=False)]))
+    sc = StandardScaler().fit(X.iloc[fil][cols])
+    if l1:
+        g = GridSearchCV(LogisticRegression(penalty="l1", solver="liblinear", max_iter=1000), {"C": [0.001, 0.01, 0.1, 1.0]},
+                         cv=StratifiedKFold(3, shuffle=True, random_state=1), scoring="roc_auc")
+        m = g.fit(sc.transform(X.iloc[fil][cols]), y[fil]).best_estimator_
+    else:
+        m = LogisticRegression(max_iter=500).fit(sc.transform(X.iloc[fil][cols]), y[fil])
+    coef = {c: round(float(v), 3) for c, v in zip(cols, m.coef_[0])}
+    return (lambda Z: m.predict_proba(sc.transform(Z[cols]))[:, 1]), coef
+
+
+def orden(*claves):
+    return np.lexsort(tuple(-np.asarray(c, dtype=float) for c in reversed(claves)))
 
 
 def carga(X, idx, desde, hasta):
-    """Proveedores de la lista por entidad que les compró en la ventana: mediana y percentil 90."""
     v = o[(o["anio"] >= desde) & (o["anio"] <= hasta) & o["ruc"].isin(set(X.index[idx]))]
     por_ent = v.drop_duplicates(["ruc_entidad", "ruc"]).groupby("ruc_entidad").size()
     return {"entidades": int(len(por_ent)), "mediana": float(por_ent.median()), "p90": float(por_ent.quantile(0.9))}
 
 
 def bootstrap(y, ordenes, rng, k=K, b=B, largo=4 * K):
-    """Precisión en los k primeros con pesos de Poisson por proveedor; los mismos pesos para todas las listas."""
     res = {n: np.empty(b) for n in ordenes}
     for r in range(b):
         w = rng.poisson(1.0, size=len(y))
         for n, idx in ordenes.items():
             ww = w[idx[:largo]]
             cw = np.cumsum(ww)
-            j = int(np.searchsorted(cw, k))  # primera posición donde el peso acumulado llega a k
+            j = int(np.searchsorted(cw, k))
             res[n][r] = (ww[: j + 1] * y[idx[: j + 1]]).sum() / cw[j]
     return res
 
 
-def resumen(x):
+def ic(x):
     return [float(np.percentile(x, 2.5)), float(np.percentile(x, 97.5))]
 
 
-salida = {}
-# ---------------------------------------------------------------- prueba principal: alertas 2022-2023, sanciones desde 2024
-Xtr, ytr = ventana(2018, 2021, 2022, 2024)  # sanciones de 2022-2023: no se cruzan con la prueba
-Xte, yte = ventana(2022, 2023, 2024)
-print(f"entrenamiento {len(Xtr):,} proveedores ({ytr.sum():,} con sanción posterior); prueba {len(Xte):,} "
-      f"({yte.sum():,}, base {yte.mean():.3%}) ({time.time() - t0:.0f} s)", flush=True)
-rng = np.random.default_rng(7)
-neg = np.flatnonzero(ytr == 0)
-fil = np.sort(np.concatenate([np.flatnonzero(ytr == 1), rng.choice(neg, size=min(100_000, len(neg)), replace=False)]))
-Xs, ys = Xtr.iloc[fil], ytr[fil]
-sc_t = StandardScaler().fit(Xs[TAM])
-p_tam = LogisticRegression(max_iter=500).fit(sc_t.transform(Xs[TAM]), ys).predict_proba(sc_t.transform(Xte[TAM]))[:, 1]
-cols = CARTAS + TAM
-sc_l = StandardScaler().fit(Xs[cols])
-g = GridSearchCV(LogisticRegression(penalty="l1", solver="liblinear", max_iter=500), {"C": [0.001, 0.01, 0.1, 1.0]},
-                 cv=StratifiedKFold(3, shuffle=True, random_state=1), scoring="roc_auc").fit(sc_l.transform(Xs[cols]), ys)
-p_las = g.predict_proba(sc_l.transform(Xte[cols]))[:, 1]
-puntos = Xte[CARTAS].sum(axis=1).to_numpy()
-monto = Xte["monto"].to_numpy()
-listas = {
-    "hoy": orden(monto, np.zeros(len(monto))),               # lo que se hace hoy: lo más caro primero
-    "simple": orden(p_tam, monto),                           # regresión logística con 4 variables de tamaño
-    "v0": orden(puntos, monto),                              # puntaje por puntos; empate: mayor monto
-    "lasso": orden(p_las, monto),                            # Lasso con alertas y tamaño (paso 8)
-}
-print(f"modelos listos ({time.time() - t0:.0f} s); Lasso C={g.best_params_['C']}", flush=True)
-bs = bootstrap(yte, listas, np.random.default_rng(11))
-base = float(yte.mean())
-azar = np.random.default_rng(13).binomial(K, base, size=10_000) / K  # 1 000 proveedores al azar
-filas = {"azar": {"precision": base, "rango": resumen(azar), "auc": 0.5}}
-puntajes = {"hoy": monto, "simple": p_tam, "v0": puntos, "lasso": p_las}
-for n, idx in listas.items():
-    top = idx[:K]
-    k = int(yte[top].sum())
-    filas[n] = {"precision": k / K, "con_sancion": k, "rango": resumen(bs[n]), "wilson": list(wilson(k, K)),
-                "auc": float(roc_auc_score(yte, puntajes[n])), "carga": carga(Xte, top, 2022, 2023)}
-# carga de la lista al azar: promedio de 20 sorteos
-cargas = [carga(Xte, np.random.default_rng(100 + i).choice(len(Xte), K, replace=False), 2022, 2023) for i in range(20)]
-filas["azar"]["carga"] = {c: float(np.mean([x[c] for x in cargas])) for c in ("entidades", "mediana", "p90")}
-dif = {f"{a}-{b_}": {"dif": filas[a]["precision"] - filas[b_]["precision"], "rango": resumen(bs[a] - bs[b_])}
-       for a, b_ in [("v0", "hoy"), ("v0", "simple"), ("lasso", "hoy"), ("lasso", "v0"), ("simple", "hoy")]}
-top_v0, top_hoy = set(listas["v0"][:K]), set(listas["hoy"][:K])
-solape = {"proveedores_en_ambas": len(top_v0 & top_hoy),
-          "sancionados_solo_v0": int(yte[list(top_v0 - top_hoy)].sum()),
-          "sancionados_solo_hoy": int(yte[list(top_hoy - top_v0)].sum()),
-          "sancionados_en_ambas": int(yte[list(top_v0 & top_hoy)].sum())}
-salida["prueba"] = {"proveedores": int(len(Xte)), "con_sancion": int(yte.sum()), "base": base,
-                    "entrenamiento": int(len(Xtr)), "entrenamiento_con_sancion": int(ytr.sum()),
-                    "lasso_C": g.best_params_["C"], "filas": filas, "diferencias": dif, "solape_v0_hoy": solape}
-print("\nPRUEBA 2022-2023 -> sanciones desde 2024")
-for n, f in filas.items():
-    print(f"  {n:<7} {f['precision']:.2%} [{f['rango'][0]:.2%} a {f['rango'][1]:.2%}]  AUC {f['auc']:.3f}  carga {f['carga']}")
-for n, d in dif.items():
-    print(f"  diferencia {n}: {d['dif']:+.2%} [{d['rango'][0]:+.2%} a {d['rango'][1]:+.2%}]")
-print(f"  solape v0 y hoy: {solape}", flush=True)
+def categoria(m):
+    m = str(m).lower()
+    if "impedido" in m:
+        return "impedimento"
+    if "fals" in m or "inexact" in m:
+        return "falsedad"
+    if "resuelva el contrato" in m or "perfeccionar" in m or "mantener" in m or "incumpl" in m:
+        return "incumplimiento"
+    return "otros"
 
-# ---------------------------------------------------------------- error por segmento del modelo v0
+
+def listas_de(X, f_tam, f_v0):
+    p = X[CARTAS].sum(axis=1).to_numpy()
+    m = X["monto"].to_numpy()
+    return {"hoy": orden(m), "simple": orden(f_tam(X), m), "regla": orden(p, m), "v0": orden(f_v0(X), m)}
+
+
+def evaluar(X, y, listas, desde, hasta, semilla, cat):
+    bs = bootstrap(y, listas, np.random.default_rng(semilla))
+    base = float(y.mean())
+    azar = np.random.default_rng(semilla + 1).binomial(K, base, size=10_000) / K
+    filas = {"azar": {"precision": base, "rango": ic(azar)}}
+    for n, idx in listas.items():
+        top = idx[:K]
+        k = int(y[top].sum())
+        filas[n] = {"precision": k / K, "con_sancion": k, "rango": ic(bs[n]), "wilson": list(wilson(k, K)),
+                    "carga": carga(X, top, desde, hasta),
+                    "por_motivo": X.index[top][y[top] == 1].map(cat).value_counts().to_dict()}
+    dif = {f"v0-{b_}": {"dif": filas["v0"]["precision"] - filas[b_]["precision"], "rango": ic(bs["v0"] - bs[b_])}
+           for b_ in ("hoy", "simple", "regla")}
+    return filas, dif
+
+
+salida = {}
+mot = s[s["inicio"] >= "2024-01-01"].sort_values("inicio").drop_duplicates("ruc").set_index("ruc")["motivo"].map(categoria)
+# ---------------------------------------------------------------- prueba principal
+Xtr, ytr = ventana(2018, 2021, 2022, 2024)
+Xte, yte = ventana(2022, 2023, 2024)
+f_tam, c_tam = entrenar(Xtr, ytr, TAM, l1=False)
+f_v0, c_v0 = entrenar(Xtr, ytr, CARTAS + ANTEC)
+listas = listas_de(Xte, f_tam, f_v0)
+filas, dif = evaluar(Xte, yte, listas, 2022, 2023, 11, lambda r: mot.get(r, "otros"))
 top = listas["v0"][:K]
 T = Xte.iloc[top].assign(y=yte[top])
-principal = T[CARTAS].idxmax(axis=1).map({"empresa_espejo": "vínculo societario", "mismo_dueno": "vínculo societario",
-                                           "funcionario_propio": "funcionario", "doble_percepcion": "funcionario",
-                                           "familiar": "posible familiar"})
-segmentos = {"persona natural": T["persona"].eq(1), "empresa": T["persona"].eq(0),
-             "vende a una sola entidad": T["entidades"].eq(1), "vende a varias entidades": T["entidades"].gt(1)}
-for nombre in ["vínculo societario", "funcionario", "posible familiar"]:
-    segmentos[f"alerta principal: {nombre}"] = principal.eq(nombre)
-segmentos["alerta principal: funcionario o posible familiar"] = principal.isin(["funcionario", "posible familiar"])
-# base de cada segmento en toda la prueba, para leer la precisión frente a lo esperable en ese grupo
-bases = {"persona natural": Xte["persona"].eq(1), "empresa": Xte["persona"].eq(0),
-         "vende a una sola entidad": Xte["entidades"].eq(1), "vende a varias entidades": Xte["entidades"].gt(1)}
+con_alerta = T[CARTAS].sum(axis=1).gt(0)
 seg = {}
-print("\nSEGMENTOS DEL MODELO V0 (sus 1 000 primeros)")
-for nombre, m in segmentos.items():
+for nombre, m in {"con alerta de vínculo": con_alerta, "solo por antecedentes": ~con_alerta,
+                  "persona natural": T["persona"].eq(1), "empresa": T["persona"].eq(0),
+                  "vende a una sola entidad": T["entidades"].eq(1)}.items():
     n, k = int(m.sum()), int(T.loc[m, "y"].sum())
-    lo, hi = wilson(k, n)
-    seg[nombre] = {"n": n, "con_sancion": k, "precision": k / n if n else None, "wilson": [lo, hi]}
-    extra = ""
-    if nombre in bases:
-        b = float(yte[bases[nombre].to_numpy()].mean())
-        seg[nombre]["base_del_grupo"] = b
-        extra = f"; base del grupo {b:.3%}, {k / max(n, 1) / b:.1f} veces"
-    print(f"  {nombre:<48}{n:>5} proveedores, {k:>3} con sanción ({k / max(n, 1):.1%}; IC {lo:.1%} a {hi:.1%}{extra})")
-salida["segmentos_v0"] = seg
+    seg[nombre] = {"n": n, "con_sancion": k, "precision": k / n if n else None, "wilson": list(wilson(k, n))}
+bases = {"persona natural": Xte["persona"].eq(1), "vende a una sola entidad": Xte["entidades"].eq(1)}
+for nombre, m in bases.items():
+    seg[nombre]["base_del_grupo"] = float(yte[m.to_numpy()].mean())
+salida["prueba"] = {"proveedores": int(len(Xte)), "con_sancion": int(yte.sum()), "base": float(yte.mean()),
+                    "entrenamiento": int(len(Xtr)), "entrenamiento_con_sancion": int(ytr.sum()),
+                    "coef_v0": c_v0, "coef_simple": c_tam, "filas": filas, "diferencias": dif, "segmentos_v0": seg,
+                    "solape_v0_regla": len(set(top) & set(listas["regla"][:K]))}
+print("\nPRUEBA 2022-2023 -> sanciones desde 2024")
+for n, f in filas.items():
+    print(f"  {n:<7} {f['precision']:.2%} [{f['rango'][0]:.2%} a {f['rango'][1]:.2%}] carga {f.get('carga')} "
+          f"motivos {f.get('por_motivo')}")
+for n, d in dif.items():
+    print(f"  diferencia {n}: {d['dif']:+.2%} [{d['rango'][0]:+.2%} a {d['rango'][1]:+.2%}]")
+print("  coeficientes del v0:", c_v0)
+print("  segmentos del v0:", {k: (v["n"], v["con_sancion"]) for k, v in seg.items()}, flush=True)
 
-# ---------------------------------------------------------------- confirmación: alertas 2024-2025, sanciones desde 2026
+# ---------------------------------------------------------------- confirmación con 2026
+Xtr3, ytr3 = ventana(2020, 2023, 2024, 2026)
 X26, y26 = ventana(2024, 2025, 2026)
-m26, p26 = X26["monto"].to_numpy(), X26[CARTAS].sum(axis=1).to_numpy()
-l26 = {"hoy": orden(m26, np.zeros(len(m26))), "v0": orden(p26, m26)}
-bs26 = bootstrap(y26, l26, np.random.default_rng(17))
-conf = {"proveedores": int(len(X26)), "con_sancion": int(y26.sum()), "base": float(y26.mean())}
-for n, idx in l26.items():
-    k = int(y26[idx[:K]].sum())
-    conf[n] = {"precision": k / K, "con_sancion": k, "rango": resumen(bs26[n])}
-conf["v0-hoy"] = {"dif": conf["v0"]["precision"] - conf["hoy"]["precision"], "rango": resumen(bs26["v0"] - bs26["hoy"])}
-conf["proveedores_en_ambas"] = len(set(l26["v0"][:K]) & set(l26["hoy"][:K]))
-salida["confirmacion_2026"] = conf
-print(f"\nCONFIRMACIÓN 2024-2025 -> sanciones desde 2026: {conf}")
-
+f_tam3, _ = entrenar(Xtr3, ytr3, TAM, l1=False)
+f_v03, _ = entrenar(Xtr3, ytr3, CARTAS + ANTEC)
+mot26 = s[s["inicio"] >= "2026-01-01"].sort_values("inicio").drop_duplicates("ruc").set_index("ruc")["motivo"].map(categoria)
+f26, d26 = evaluar(X26, y26, listas_de(X26, f_tam3, f_v03), 2024, 2025, 17, lambda r: mot26.get(r, "otros"))
+salida["confirmacion_2026"] = {"proveedores": int(len(X26)), "con_sancion": int(y26.sum()), "base": float(y26.mean()),
+                               "filas": f26, "diferencias": d26}
+print("\nCONFIRMACIÓN 2024-2025 -> sanciones de 2026")
+for n, f in f26.items():
+    print(f"  {n:<7} {f['precision']:.2%} [{f['rango'][0]:.2%} a {f['rango'][1]:.2%}]")
+for n, d in d26.items():
+    print(f"  diferencia {n}: {d['dif']:+.2%} [{d['rango'][0]:+.2%} a {d['rango'][1]:+.2%}]")
 (SALIDA / "evaluacion_e5.json").write_text(json.dumps(salida, ensure_ascii=False, indent=1), encoding="utf-8")
-print(f"\nlisto en {time.time() - t0:.0f} s: {SALIDA / 'evaluacion_e5.json'}")
+print(f"\nlisto en {time.time() - t0:.0f} s")

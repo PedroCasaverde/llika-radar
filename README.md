@@ -84,6 +84,7 @@ Todo se corre desde la raíz del repositorio. Los scripts solo imprimen cifras a
    | `radar/14_antecedentes.py` | Antecedentes de cada proveedor: multas del Tribunal y penalidades de contratos |
    | `radar/15_mejoras_ronda2.py` | Variantes con antecedentes, evasión y recencia, con la misma regla de selección |
    | `radar/16_mejoras_ronda3.py` | Las variantes aprendidas aplicadas solo a los casos del radar |
+   | `radar/17_mejoras_ronda4.py` | Bayesiana con la ley como previa, riesgo de entidad, fusión de rangos y boosting |
 
 Una corrida completa sobre ocho años toma menos de una hora en una computadora personal, sin contar la limpieza inicial
 de los cortes de socios. La ficha de una entidad sale en unos cuatro segundos.
@@ -97,19 +98,23 @@ de los cortes de socios. La ficha de una entidad sale en unos cuatro segundos.
 
 Prueba con las alertas de 2022-2023 frente a las sanciones del Tribunal que empiezan desde 2024 (942 164 proveedores,
 1 996 con sanción posterior). Métrica: de los 1 000 primeros proveedores de cada lista, el porcentaje con sanción
-posterior, con intervalo del 95 % por bootstrap.
+posterior, con intervalo del 95 % por bootstrap. Confirmación con las alertas de 2024-2025 frente a sanciones de 2026.
 
-| Opción | 1 000 primeros con sanción posterior | Proveedores de la lista por entidad (mediana) |
-|---|---|---|
-| Al azar | 0,21 % (0,00 a 0,50) | 1 |
-| Lo que se hace hoy: lo más caro primero | 3,7 % (2,5 a 4,9) | 7 |
-| Modelo simple: regresión logística de tamaño | 4,9 % (3,7 a 6,5) | 7 |
-| Modelo v0: puntaje por puntos | 7,1 % (5,5 a 8,6) | 4 |
-| Modelo v0 con pesos aprendidos (Lasso) | 7,3 % (5,7 a 8,9) | 7 |
+| Opción | Prueba | 2026 | Proveedores por entidad (mediana) |
+|---|---|---|---|
+| Al azar | 0,21 % (0,00 a 0,50) | 0,07 % | 1 |
+| Lo que se hace hoy: lo más caro primero | 3,7 % (2,5 a 4,9) | 1,0 % | 7 |
+| Modelo simple: regresión logística de tamaño | 4,9 % (3,7 a 6,5) | 1,3 % | 7 |
+| Regla del radar: puntaje legal por puntos | 7,1 % (5,5 a 8,6) | 1,3 % | 4 |
+| **Modelo v0: alertas y antecedentes (regresión L1)** | **14,3 % (12,2 a 16,5)** | **4,3 %** | **3** |
 
-La regresión y el Lasso se entrenan con alertas de 2018-2021 y sanciones que empiezan en 2022-2023, para que esas
-etiquetas no se crucen con las de la prueba. Antes de la prueba, `radar/13_mejoras_v0.py` comparó cuatro variantes del
-modelo v0 en validación (alertas de 2020-2021 frente a sanciones de 2022-2023): ninguna lo superó por más que el rango.
+El modelo v0 salió de cuatro rondas de variantes (pasos 13, 15, 16 y 17). Cada una se eligió en validación, con alertas
+de 2020-2021 frente a sanciones de 2022-2023, con una regla fijada antes de correr. Los modelos se entrenan con alertas
+de 2018-2021 y sanciones que empiezan en 2022-2023, para que esas etiquetas no se crucen con las de la prueba.
+
+La ganancia viene de los antecedentes: 616 de sus 1 000 primeros entran solo por multas o penalidades previas, y
+predice sobre todo sanciones por falsedad e incumplimiento. Para impedimentos, la regla del radar encuentra más: 7
+frente a 3.
 
 ## Privacidad
 
