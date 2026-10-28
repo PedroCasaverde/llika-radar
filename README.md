@@ -116,9 +116,9 @@ La ganancia viene de los antecedentes: 616 de sus 1 000 primeros entran solo por
 predice sobre todo sanciones por falsedad e incumplimiento. Para impedimentos, la regla del radar encuentra más: 7
 frente a 3.
 
-## Privacidad
+## Datos públicos y uso
 
-Las fuentes son públicas, pero las salidas tratan datos personales (Ley 29733). Por eso los scripts solo imprimen
-agregados, las salidas se quedan en la computadora del equipo y la probabilidad de parentesco es solo para el usuario
-institucional. Compartir apellidos no prueba parentesco: la alerta se vuelve un hecho solo cuando el especialista la
-confirma con la declaración jurada del funcionario.
+LLIKA será una plataforma web pública y académica. Todo lo que muestra son registros que el Estado ya publica,
+replicados y cruzados con su fuente y su fecha. La única inferencia propia es el posible parentesco: se presenta como
+coincidencia de apellidos con su probabilidad, nunca como un hecho, y cualquier persona puede pedir que se corrija un
+dato. Los scripts imprimen solo cifras agregadas, y los archivos intermedios no se versionan porque pesan varios GB.
