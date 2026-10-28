@@ -80,6 +80,7 @@ Todo se corre desde la raíz del repositorio. Los scripts solo imprimen cifras a
    | `radar/10_ficha_entidad.py --ejemplo` | Prototipo v0: el Excel de casos y fichas de una entidad y un año |
    | `radar/11_muestra_parentesco.py` | Muestra de alertas de familiar para verificar a mano en las declaraciones juradas |
    | `radar/12_evaluacion_e5.py` | Evaluación del E5: baselines contra el modelo v0, con rangos y error por segmento |
+   | `radar/13_mejoras_v0.py` | Variantes del modelo v0 probadas en validación, con una regla de selección fijada antes |
 
 Una corrida completa sobre ocho años toma menos de una hora en una computadora personal, sin contar la limpieza inicial
 de los cortes de socios. La ficha de una entidad sale en unos cuatro segundos.
@@ -99,9 +100,13 @@ posterior, con intervalo del 95 % por bootstrap.
 |---|---|---|
 | Al azar | 0,21 % (0,00 a 0,50) | 1 |
 | Lo que se hace hoy: lo más caro primero | 3,7 % (2,5 a 4,9) | 7 |
-| Modelo simple: regresión logística de tamaño | 5,5 % (4,1 a 7,0) | 8 |
+| Modelo simple: regresión logística de tamaño | 4,9 % (3,7 a 6,5) | 7 |
 | Modelo v0: puntaje por puntos | 7,1 % (5,5 a 8,6) | 4 |
-| Modelo v0 con pesos aprendidos (Lasso) | 7,8 % (6,2 a 9,6) | 7 |
+| Modelo v0 con pesos aprendidos (Lasso) | 7,3 % (5,7 a 8,9) | 7 |
+
+La regresión y el Lasso se entrenan con alertas de 2018-2021 y sanciones que empiezan en 2022-2023, para que esas
+etiquetas no se crucen con las de la prueba. Antes de la prueba, `radar/13_mejoras_v0.py` comparó cuatro variantes del
+modelo v0 en validación (alertas de 2020-2021 frente a sanciones de 2022-2023): ninguna lo superó por más que el rango.
 
 ## Privacidad
 

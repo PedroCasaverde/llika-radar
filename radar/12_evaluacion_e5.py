@@ -3,7 +3,8 @@
 Mismo corte que el paso 8. Las alertas de 2022-2023 se prueban contra las sanciones del Tribunal que empiezan desde
 2024, y quien ya tenía una sanción que empezó antes de 2024 sale de la prueba. El modelo v0 (puntaje por puntos) no se
 ajusta con sanciones: sus pesos son la gravedad legal por la probabilidad. La regresión de tamaño y el Lasso se entrenan
-con las alertas de 2018-2021 contra sanciones desde 2022, igual que en el paso 8. La confirmación usa las alertas de
+con las alertas de 2018-2021 contra sanciones que empiezan en 2022-2023, para que esas etiquetas no se crucen con las
+de la prueba (el paso 8 usaba sanciones desde 2022 sin tope). La confirmación usa las alertas de
 2024-2025 contra sanciones desde 2026, como el paso 9.
 
 - Métrica principal: de los 1 000 primeros proveedores de cada lista, el porcentaje con una sanción posterior.
@@ -40,8 +41,10 @@ s = pd.read_parquet(SALIDA / "sanciones.parquet", columns=["ruc", "inicio"])
 print(f"datos leídos en {time.time() - t0:.0f} s", flush=True)
 
 
-def ventana(desde, hasta, etiqueta_desde):
-    """Igual que en el paso 8: una fila por proveedor, con su tamaño, los puntos de cada alerta y la etiqueta."""
+def ventana(desde, hasta, etiqueta_desde, etiqueta_hasta=None):
+    """Como en el paso 8: una fila por proveedor, con su tamaño, los puntos de cada alerta y la etiqueta. Con
+    `etiqueta_hasta`, la etiqueta solo cuenta sanciones que empiezan antes de ese año (así las de entrenamiento no se
+    cruzan con las de la prueba)."""
     v = o[(o["anio"] >= desde) & (o["anio"] <= hasta)]
     X = v.groupby("ruc").agg(monto=("monto", "sum"), ordenes=("id", "size"), entidades=("ruc_entidad", "nunique"))
     X["log_monto"], X["log_ordenes"] = np.log1p(X["monto"]), np.log1p(X["ordenes"])
@@ -52,7 +55,10 @@ def ventana(desde, hasta, etiqueta_desde):
         X[t] = piv[t].reindex(X.index).fillna(0) if t in piv else 0.0
     corte = pd.Timestamp(f"{etiqueta_desde}-01-01")
     X = X[~X.index.isin(set(s.loc[s["inicio"] < corte, "ruc"]))]
-    y = X.index.isin(set(s.loc[s["inicio"] >= corte, "ruc"])).astype(int)
+    lab = s["inicio"] >= corte
+    if etiqueta_hasta is not None:
+        lab &= s["inicio"] < pd.Timestamp(f"{etiqueta_hasta}-01-01")
+    y = X.index.isin(set(s.loc[lab, "ruc"])).astype(int)
     return X, y
 
 
@@ -87,7 +93,7 @@ def resumen(x):
 
 salida = {}
 # ---------------------------------------------------------------- prueba principal: alertas 2022-2023, sanciones desde 2024
-Xtr, ytr = ventana(2018, 2021, 2022)
+Xtr, ytr = ventana(2018, 2021, 2022, 2024)  # sanciones de 2022-2023: no se cruzan con la prueba
 Xte, yte = ventana(2022, 2023, 2024)
 print(f"entrenamiento {len(Xtr):,} proveedores ({ytr.sum():,} con sanción posterior); prueba {len(Xte):,} "
       f"({yte.sum():,}, base {yte.mean():.3%}) ({time.time() - t0:.0f} s)", flush=True)
