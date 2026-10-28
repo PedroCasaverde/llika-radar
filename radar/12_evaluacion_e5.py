@@ -151,13 +151,22 @@ segmentos = {"persona natural": T["persona"].eq(1), "empresa": T["persona"].eq(0
              "vende a una sola entidad": T["entidades"].eq(1), "vende a varias entidades": T["entidades"].gt(1)}
 for nombre in ["vínculo societario", "funcionario", "posible familiar"]:
     segmentos[f"alerta principal: {nombre}"] = principal.eq(nombre)
+segmentos["alerta principal: funcionario o posible familiar"] = principal.isin(["funcionario", "posible familiar"])
+# base de cada segmento en toda la prueba, para leer la precisión frente a lo esperable en ese grupo
+bases = {"persona natural": Xte["persona"].eq(1), "empresa": Xte["persona"].eq(0),
+         "vende a una sola entidad": Xte["entidades"].eq(1), "vende a varias entidades": Xte["entidades"].gt(1)}
 seg = {}
 print("\nSEGMENTOS DEL MODELO V0 (sus 1 000 primeros)")
 for nombre, m in segmentos.items():
     n, k = int(m.sum()), int(T.loc[m, "y"].sum())
     lo, hi = wilson(k, n)
     seg[nombre] = {"n": n, "con_sancion": k, "precision": k / n if n else None, "wilson": [lo, hi]}
-    print(f"  {nombre:<40}{n:>5} proveedores, {k:>3} con sanción ({k / max(n, 1):.1%}; IC {lo:.1%} a {hi:.1%})")
+    extra = ""
+    if nombre in bases:
+        b = float(yte[bases[nombre].to_numpy()].mean())
+        seg[nombre]["base_del_grupo"] = b
+        extra = f"; base del grupo {b:.3%}, {k / max(n, 1) / b:.1f} veces"
+    print(f"  {nombre:<48}{n:>5} proveedores, {k:>3} con sanción ({k / max(n, 1):.1%}; IC {lo:.1%} a {hi:.1%}{extra})")
 salida["segmentos_v0"] = seg
 
 # ---------------------------------------------------------------- confirmación: alertas 2024-2025, sanciones desde 2026
