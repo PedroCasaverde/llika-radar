@@ -1,0 +1,184 @@
+{
+ "fecha": "2026-10-29T12:53:32",
+ "modo_demo": false,
+ "python": "3.13.12",
+ "numpy": "2.5.4",
+ "pandas": "3.1.0",
+ "sklearn": "1.9.1",
+ "semillas": {
+  "bootstrap": 11,
+  "negativos": 7,
+  "cv": 1
+ },
+ "k": 1000,
+ "repeticiones": 1000,
+ "huellas": {
+  "aprendizaje.parquet": "14bdd57f72b596d3156d9b43eae32e6e334d8eb88e21bc418e8beaf2121919f1",
+  "examen.parquet": "25e19432c8f0fd2914b58e388143e88a0e93c18479fb0a18315b327d5bfbd99f",
+  "examen_entidades.parquet": "e78c72f6870618237ee884a7869087a851f4dd117b83becbe5c727df05f10352"
+ },
+ "resultados": {
+  "hoy": {
+   "precision": 0.037,
+   "con_sancion": 37,
+   "wilson": [
+    0.02696102468045289,
+    0.05058268341054474
+   ],
+   "carga": {
+    "entidades": 2564,
+    "mediana": 7.0,
+    "p90": 34.0
+   },
+   "rango": [
+    0.025,
+    0.049
+   ]
+  },
+  "regla": {
+   "precision": 0.071,
+   "con_sancion": 71,
+   "wilson": [
+    0.05666945999361375,
+    0.08861401899350932
+   ],
+   "carga": {
+    "entidades": 2272,
+    "mediana": 4.0,
+    "p90": 17.0
+   },
+   "rango": [
+    0.054945054945054944,
+    0.08591408591408592
+   ]
+  },
+  "v0": {
+   "precision": 0.143,
+   "con_sancion": 143,
+   "wilson": [
+    0.12266696873653779,
+    0.16606543685414507
+   ],
+   "carga": {
+    "entidades": 2164,
+    "mediana": 3.0,
+    "p90": 17.0
+   },
+   "rango": [
+    0.12187508100681753,
+    0.16502085414585413
+   ]
+  }
+ },
+ "diferencias": {
+  "regla-hoy": {
+   "dif": 0.033999999999999996,
+   "rango": [
+    0.015982792207792206,
+    0.05104981095674015
+   ]
+  },
+  "v0-hoy": {
+   "dif": 0.10599999999999998,
+   "rango": [
+    0.08385709290709291,
+    0.12900087412587413
+   ]
+  }
+ },
+ "segmentos": {
+  "hoy": {
+   "con alerta de vínculo": {
+    "n": 158,
+    "con_sancion": 9,
+    "precision": 0.056962025316455694
+   },
+   "sin alerta de vínculo": {
+    "n": 842,
+    "con_sancion": 28,
+    "precision": 0.0332541567695962
+   },
+   "persona natural": {
+    "n": 58,
+    "con_sancion": 0,
+    "precision": 0.0
+   },
+   "empresa": {
+    "n": 942,
+    "con_sancion": 37,
+    "precision": 0.03927813163481953
+   },
+   "vende a una sola entidad": {
+    "n": 99,
+    "con_sancion": 0,
+    "precision": 0.0
+   }
+  },
+  "regla": {
+   "con alerta de vínculo": {
+    "n": 1000,
+    "con_sancion": 71,
+    "precision": 0.071
+   },
+   "sin alerta de vínculo": {
+    "n": 0,
+    "con_sancion": 0,
+    "precision": null
+   },
+   "persona natural": {
+    "n": 108,
+    "con_sancion": 1,
+    "precision": 0.009259259259259259
+   },
+   "empresa": {
+    "n": 892,
+    "con_sancion": 70,
+    "precision": 0.07847533632286996
+   },
+   "vende a una sola entidad": {
+    "n": 312,
+    "con_sancion": 8,
+    "precision": 0.02564102564102564
+   }
+  },
+  "v0": {
+   "con alerta de vínculo": {
+    "n": 384,
+    "con_sancion": 40,
+    "precision": 0.10416666666666667
+   },
+   "sin alerta de vínculo": {
+    "n": 616,
+    "con_sancion": 103,
+    "precision": 0.1672077922077922
+   },
+   "persona natural": {
+    "n": 129,
+    "con_sancion": 17,
+    "precision": 0.13178294573643412
+   },
+   "empresa": {
+    "n": 871,
+    "con_sancion": 126,
+    "precision": 0.1446613088404133
+   },
+   "vende a una sola entidad": {
+    "n": 169,
+    "con_sancion": 25,
+    "precision": 0.14792899408284024
+   }
+  }
+ },
+ "pesos_v0": {
+  "empresa_espejo": 0.077,
+  "mismo_dueno": 0.18,
+  "funcionario_propio": 0.0,
+  "doble_percepcion": 0.0,
+  "familiar": 0.0,
+  "log_multas": 0.079,
+  "log_penalidades": 0.197,
+  "evasion": 0.0,
+  "reciente": 0.0
+ },
+ "linea_plenaria": "Referencia (lo más caro primero) 3.7% · candidato (v0) 14.3% · diferencia +10.6 p.p. · dispersión: rango 95 % de la diferencia [+8.4 a +12.9] p.p. (1000 repeticiones, semilla 11)"
+}

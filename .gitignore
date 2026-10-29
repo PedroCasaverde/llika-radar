@@ -6,3 +6,7 @@ __pycache__/
 *.parquet
 *.xlsx
 *.csv
+
+# Tablas livianas del taller (sin RUC): sí se versionan
+!taller/datos/
+!taller/datos/*.parquet

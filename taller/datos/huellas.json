@@ -1,0 +1,25 @@
+{
+ "aprendizaje": {
+  "n": 1068446,
+  "con_sancion": 857
+ },
+ "examen": {
+  "n": 942164,
+  "con_sancion": 1996
+ },
+ "pares_examen": 1415713,
+ "archivos": {
+  "aprendizaje.parquet": {
+   "sha256": "14bdd57f72b596d3156d9b43eae32e6e334d8eb88e21bc418e8beaf2121919f1",
+   "MB": 15.6
+  },
+  "examen.parquet": {
+   "sha256": "25e19432c8f0fd2914b58e388143e88a0e93c18479fb0a18315b327d5bfbd99f",
+   "MB": 12.9
+  },
+  "examen_entidades.parquet": {
+   "sha256": "e78c72f6870618237ee884a7869087a851f4dd117b83becbe5c727df05f10352",
+   "MB": 6.7
+  }
+ }
+}
