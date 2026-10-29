@@ -8,6 +8,14 @@ Contraloría y SUNAT. Marca las contrataciones con personas o empresas impedidas
 para cada entidad y año, entrega los casos ordenados por puntaje y monto, con la evidencia y la norma de cada alerta. Es
 una herramienta para que el órgano de control institucional (OCI) decida qué revisar primero: no acusa a nadie.
 
+## Taller del 31/10/2026: el experimento mínimo
+
+Para repetir la evaluación del E5 sin bajar los datos completos, la entrada es la carpeta [`taller/`](taller/). Su
+notebook corre en Colab o en una laptop
+([abrir en Colab](https://colab.research.google.com/github/PedroCasaverde/llika-radar/blob/main/taller/taller_experimento_minimo.ipynb))
+y registra cada corrida en `taller/bitacora/`. Las tablas que usa salen de este mismo código: `radar/` produce la
+evaluación completa, `taller/exportar_datos_taller.py` la resume sin RUC y guarda su huella, y el notebook la repite.
+
 ## Las seis alertas
 
 | Alerta | Qué detecta | Gravedad |
