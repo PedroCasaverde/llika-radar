@@ -1,16 +1,42 @@
 {
  "equipo": "G5 · LLIKA (carril A: medir la referencia)",
  "referencia": "lo que se hace hoy: los proveedores ordenados por monto total, de mayor a menor",
- "candidato": "modelo v0 del E5: regresión logística L1 con alertas de vínculo y antecedentes (opcional el sábado)",
+ "candidato": "modelo v0 del E5: regresión logística L1 con alertas de vínculo y antecedentes, receta congelada",
  "conjunto": {
   "descripcion": "proveedores con órdenes en 2022-2023, sin sanción previa a 2024; etiqueta = sanción desde 2024",
   "n": 942164,
   "con_sancion": 1996,
   "sha256": "25e19432c8f0fd2914b58e388143e88a0e93c18479fb0a18315b327d5bfbd99f"
  },
+ "ventanas": {
+  "aprendizaje": {
+   "compras": "2018-2021",
+   "etiqueta": "sanción que empieza en 2022 o 2023 (hasta el 31/12/2023)"
+  },
+  "examen": {
+   "compras": "2022-2023",
+   "etiqueta": "sanción que empieza desde el 1/1/2024"
+  }
+ },
  "metrica": "precisión en los 1000 primeros: de los 1000 primeros de la lista, qué porcentaje tuvo sanción posterior",
  "contrapeso": "carga por entidad: cuántos de esos proveedores le tocan a cada entidad (mediana y percentil 90)",
  "incertidumbre": "bootstrap de proveedores con pesos de Poisson, 1000 repeticiones, semilla 11, pareado entre listas",
+ "receta_v0": {
+  "modelo": "regresión logística L1 (liblinear)",
+  "C": 0.01,
+  "variables": [
+   "empresa_espejo",
+   "mismo_dueno",
+   "funcionario_propio",
+   "doble_percepcion",
+   "familiar",
+   "log_multas",
+   "log_penalidades",
+   "evasion",
+   "reciente"
+  ],
+  "muestra": "todos los sancionados y 100 000 no sancionados al azar (semilla 7)"
+ },
  "modo_demo": false,
- "fecha": "2026-10-29T14:27:24"
+ "fecha": "2026-10-29T15:53:36"
 }

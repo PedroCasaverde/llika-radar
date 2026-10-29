@@ -41,8 +41,11 @@ impedimentos, el v0 con antecedentes, la corrección de la fuga de etiquetas y l
 ## 4. Corridas
 
 La corrida de las 14:27 se hizo con la versión anterior del notebook, que buscaba C con validación cruzada: eligió el
-mismo C y dio los mismos números.
+mismo C y dio los mismos números. Las dos de las 15:53 son la reproducción desde un clon limpio del repositorio, en un
+entorno nuevo: la primera con `correr_taller.py`, con la salida guardada en un archivo, y la segunda con el notebook.
 
 | Fecha | Modo | Referencia | Candidato | Diferencia en p.p. [rango 95 %] | Entorno | Archivo |
 |---|---|---|---|---|---|---|
 | 2026-10-29 14:27 | completo | 3,7 % | 14,3 % (v0) | +10,6 [+8,4 a +12,9] | Python 3.13.12, scikit-learn 1.9.1 | `corrida_20261029_142748.json` |
+| 2026-10-29 15:53 | completo | 3,7 % | 14,3 % (v0) | +10,6 [+8,4 a +12,9] | Python 3.13.12, scikit-learn 1.9.1 | `corrida_20261029_155332.json` |
+| 2026-10-29 15:53 | completo | 3,7 % | 14,3 % (v0) | +10,6 [+8,4 a +12,9] | Python 3.13.12, scikit-learn 1.9.1 | `corrida_20261029_155359.json` |
