@@ -1,5 +1,5 @@
 {
- "fecha": "2026-10-29T12:53:32",
+ "fecha": "2026-10-29T14:27:48",
  "modo_demo": false,
  "python": "3.13.12",
  "numpy": "2.5.4",
@@ -179,6 +179,86 @@
   "log_penalidades": 0.197,
   "evasion": 0.0,
   "reciente": 0.0
+ },
+ "kpis_e3": {
+  "top50": {
+   "hoy": {
+    "k": 50,
+    "aciertos": 2,
+    "precision": 0.04,
+    "wilson": [
+     0.011038652660826577,
+     0.13460337877954667
+    ],
+    "veces_el_azar": 18.88104208416834,
+    "fuera_del_monto": 0.0,
+    "peso_pequenos": 0.0
+   },
+   "regla": {
+    "k": 50,
+    "aciertos": 6,
+    "precision": 0.12,
+    "wilson": [
+     0.05617523710624646,
+     0.23805078886623582
+    ],
+    "veces_el_azar": 56.64312625250501,
+    "fuera_del_monto": 1.0,
+    "peso_pequenos": 0.0
+   },
+   "v0": {
+    "k": 50,
+    "aciertos": 16,
+    "precision": 0.32,
+    "wilson": [
+     0.20758044093999403,
+     0.45810557136276076
+    ],
+    "veces_el_azar": 151.0483366733467,
+    "fuera_del_monto": 0.94,
+    "peso_pequenos": 0.08003788820007689
+   }
+  },
+  "top1000": {
+   "hoy": {
+    "k": 1000,
+    "aciertos": 37,
+    "precision": 0.037,
+    "wilson": [
+     0.02696102468045289,
+     0.05058268341054474
+    ],
+    "veces_el_azar": 17.464963927855713,
+    "fuera_del_monto": 0.0,
+    "peso_pequenos": 0.0
+   },
+   "regla": {
+    "k": 1000,
+    "aciertos": 71,
+    "precision": 0.071,
+    "wilson": [
+     0.05666945999361375,
+     0.08861401899350932
+    ],
+    "veces_el_azar": 33.5138496993988,
+    "fuera_del_monto": 0.847,
+    "peso_pequenos": 0.21210040373020375
+   },
+   "v0": {
+    "k": 1000,
+    "aciertos": 143,
+    "precision": 0.143,
+    "wilson": [
+     0.12266696873653779,
+     0.16606543685414507
+    ],
+    "veces_el_azar": 67.4997254509018,
+    "fuera_del_monto": 0.888,
+    "peso_pequenos": 0.12205777950511724
+   }
+  },
+  "mediana_monto": 11000.0,
+  "peso_pequenos_universo": 0.4997633108460947
  },
  "linea_plenaria": "Referencia (lo más caro primero) 3.7% · candidato (v0) 14.3% · diferencia +10.6 p.p. · dispersión: rango 95 % de la diferencia [+8.4 a +12.9] p.p. (1000 repeticiones, semilla 11)"
 }

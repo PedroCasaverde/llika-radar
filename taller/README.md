@@ -29,6 +29,7 @@ Tarda entre 2 y 5 minutos. Al final imprime la línea de la plenaria y guarda la
 | Métrica | Precisión en los 1000 primeros: qué porcentaje tuvo una sanción posterior |
 | Incertidumbre | Bootstrap de proveedores con pesos de Poisson, 1000 repeticiones, semilla 11 |
 | Contrapeso | Carga por entidad: cuántos de esos proveedores le tocan a cada entidad |
+| KPIs del E3 | Aciertos en el top-50 y el top-1000 frente al monto y al azar, cuántos no habrían entrado ordenando por monto y el peso de los proveedores pequeños en la lista |
 
 Resultado esperado (el del E5): referencia 3,7 %, regla por puntos 7,1 %, v0 14,3 %; diferencia v0 menos referencia
 +10,6 puntos porcentuales, con rango de +8,4 a +12,9. El notebook compara solo contra estas cifras y avisa si algo no

@@ -11,7 +11,7 @@
 # 1. **Pre-registro**: referencia, conjunto, métrica, repeticiones y semillas, antes de correr nada.
 # 2. **La referencia** (lo que se hace hoy: revisar primero lo más caro) con su número y su rango. Es la tarea del carril A.
 # 3. **El candidato v0** (opcional): el modelo del E5, entrenado con la misma receta.
-# 4. **Contrapeso, segmentos y comprobación** contra las cifras del E5.
+# 4. **Contrapeso, segmentos, KPIs del E3 y comprobación** contra las cifras del E5.
 # 5. **Registro de la corrida** en un JSON, para que el auditor compare.
 #
 # Si la descarga falla, poner `MODO_DEMO = True`: usa el 10 % de los proveedores y los números cambian (hay que declararlo).
@@ -116,7 +116,7 @@ def wilson(k, n, z=1.96):
     p = k / n
     c = (p + z * z / (2 * n)) / (1 + z * z / n)
     m = z * np.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / (1 + z * z / n)
-    return [float(c - m), float(c + m)]
+    return [float(max(0.0, c - m)), float(min(1.0, c + m))]
 
 
 def carga(top_ids):
@@ -204,6 +204,43 @@ print(pd.DataFrame({n_: {g_: f"{v_['con_sancion']}/{v_['n']}" for g_, v_ in s_.i
 motivos = te.iloc[listas["hoy"][:K]].query("y == 1")["motivo"].value_counts().to_dict()
 print("\nmotivo de la sanción en la referencia:", motivos)
 
+# %% [markdown]
+# ## KPIs del E3
+# Los indicadores de impacto y el guardarraíl de tamaño que definimos en el E3, medidos sobre el mismo conjunto
+# congelado: aciertos en los primeros puestos frente a ordenar por monto y frente al azar, cuántos de la lista no
+# habrían entrado ordenando por monto y el peso de los proveedores pequeños dentro de la lista.
+
+# %%
+K50 = 5 if MODO_DEMO else 50
+mediana_monto = float(te["monto"].median())
+pequeno = te["monto"].to_numpy() < mediana_monto     # pequeño = vendió menos que la mitad de los proveedores
+peso_universo = float(pequeno.mean())
+
+
+def kpis_e3(k):
+    top_monto = set(listas["hoy"][:k])
+    fila = {}
+    for n_, idx in listas.items():
+        top = idx[:k]
+        a = int(y[top].sum())
+        fila[n_] = {"k": k, "aciertos": a, "precision": a / k, "wilson": wilson(a, k),
+                    "veces_el_azar": (a / k) / float(y.mean()),
+                    "fuera_del_monto": len(set(top) - top_monto) / k,
+                    "peso_pequenos": float(pequeno[top].mean()) / peso_universo}
+    return fila
+
+
+KPI_E3 = {"top50": kpis_e3(K50), "top1000": kpis_e3(K), "mediana_monto": mediana_monto,
+          "peso_pequenos_universo": peso_universo}
+for clave in ("top50", "top1000"):
+    print(f"\n{clave}")
+    for n_, r_ in KPI_E3[clave].items():
+        print(f"  {n_:<6} {r_['aciertos']}/{r_['k']} = {r_['precision']:.1%} "
+              f"[{r_['wilson'][0]:.1%} a {r_['wilson'][1]:.1%}] · {r_['veces_el_azar']:.0f} veces el azar · "
+              f"{r_['fuera_del_monto']:.1%} no habría entrado por monto · pequeños: {r_['peso_pequenos']:.2f} de su peso")
+print(f"\nPequeño = vendió en 2022-2023 menos de S/ {mediana_monto:,.0f} (la mediana); son el {peso_universo:.0%} "
+      "de los proveedores. «De su peso» = su parte en la lista dividida entre su parte en el total.")
+
 # %%
 # Comprobación contra el E5 (solo con las tablas completas)
 ESPERADO = {"hoy": 0.037, "regla": 0.071, "v0": 0.143}
@@ -231,7 +268,8 @@ corrida = {"fecha": datetime.now().isoformat(timespec="seconds"), "modo_demo": M
            "python": platform.python_version(), "numpy": np.__version__, "pandas": pd.__version__,
            "sklearn": sklearn.__version__, "semillas": {"bootstrap": SEMILLA_BOOT, "negativos": 7, "cv": 1},
            "k": K, "repeticiones": B, "huellas": {f: h["sha256"] for f, h in huellas["archivos"].items()},
-           "resultados": res, "diferencias": dif, "segmentos": seg, "pesos_v0": coef, "linea_plenaria": linea}
+           "resultados": res, "diferencias": dif, "segmentos": seg, "pesos_v0": coef, "kpis_e3": KPI_E3,
+           "linea_plenaria": linea}
 nombre = f"bitacora/corrida_{datetime.now():%Y%m%d_%H%M%S}.json"
 Path(nombre).write_text(json.dumps(corrida, ensure_ascii=False, indent=1), encoding="utf-8")
 print("guardado:", nombre)

@@ -12,5 +12,5 @@
  "contrapeso": "carga por entidad: cuántos de esos proveedores le tocan a cada entidad (mediana y percentil 90)",
  "incertidumbre": "bootstrap de proveedores con pesos de Poisson, 1000 repeticiones, semilla 11, pareado entre listas",
  "modo_demo": false,
- "fecha": "2026-10-29T12:53:10"
+ "fecha": "2026-10-29T14:27:24"
 }
