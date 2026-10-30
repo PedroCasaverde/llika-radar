@@ -11,16 +11,37 @@ todos los proveedores de cada ventana.
 [Abrir el notebook en Colab](https://colab.research.google.com/github/PedroCasaverde/llika-radar/blob/main/taller/taller_experimento_minimo.ipynb)
 y elegir *Entorno de ejecución → Ejecutar todas*. El notebook baja solo las tablas desde este repositorio.
 
-**Opción 2, en una laptop.**
+**Opción 2, en una laptop.** Desde la raíz del repositorio:
 
 ```
+python -m venv .venv
+.venv\Scripts\activate             # en Mac o Linux: source .venv/bin/activate
+pip install -r taller/requirements.txt
 cd taller
-pip install -r requirements.txt
-python correr_taller.py          # o abrir el notebook en Jupyter o VS Code
+python correr_taller.py
 ```
+
+El script se corre dentro de `taller/`, para que la corrida quede en `taller/bitacora/`. Para usar el notebook en VS
+Code, se abre `taller_experimento_minimo.ipynb` y se elige el entorno `.venv` como kernel (*Select Kernel* → *Python
+Environments* → `.venv`). Si VS Code pide instalar `ipykernel`, es que tomó otro Python.
 
 En la PC donde se probó tardó unos 30 segundos. Al final imprime la línea de la plenaria, guarda la corrida en
 `bitacora/` y suma una fila a `bitacora/BITACORA.md`.
+
+## El costo del error
+
+La pregunta 2 del Bloque 3 pide el costo de un falso positivo y de un falso negativo en unidades del negocio. Lo calcula
+`radar/18_costo_de_no_usar.py` con estas mismas tablas, desde la raíz del repositorio:
+
+```
+python radar/18_costo_de_no_usar.py
+```
+
+Da las revisiones por acierto de cada lista, su costo en horas y en soles, lo que vendieron los sancionados que cada
+lista deja fuera y el rendimiento por tramos, con los supuestos declarados al inicio del script: 30 minutos por
+revisión y el sueldo de un Auditor/a Especialista I de la Contraloría (S/ 7 500 en su convocatoria de setiembre de
+2026), que con gratificaciones, CTS y EsSalud cuesta unos S/ 68 por hora trabajada. Lo que paga el Estado en órdenes con
+alerta necesita los datos completos del radar.
 
 ## De dónde salen las tablas
 
