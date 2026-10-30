@@ -1,6 +1,6 @@
 # LLIKA: radar de vínculos e impedimentos en las compras menores
 
-Proyecto del curso Capstone Project I de la Maestría en Ciencia de Datos e Inteligencia Artificial de UTEC Posgrado.
+Proyecto del curso Proyecto Integrador I de la Maestría en Ciencia de Datos e Inteligencia Artificial de UTEC Posgrado.
 Equipo 05: Pedro Casaverde, Gian Carlo Quiroz y Sherly Salazar.
 
 El radar cruza las órdenes de compras menores (hasta 8 UIT) de todo el país con registros públicos del OECE, la
