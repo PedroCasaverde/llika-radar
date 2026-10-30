@@ -49,3 +49,4 @@ entorno nuevo: la primera con `correr_taller.py`, con la salida guardada en un a
 | 2026-10-29 14:27 | completo | 3,7 % | 14,3 % (v0) | +10,6 [+8,4 a +12,9] | Python 3.13.12, scikit-learn 1.9.1 | `corrida_20261029_142748.json` |
 | 2026-10-29 15:53 | completo | 3,7 % | 14,3 % (v0) | +10,6 [+8,4 a +12,9] | Python 3.13.12, scikit-learn 1.9.1 | `corrida_20261029_155332.json` |
 | 2026-10-29 15:53 | completo | 3,7 % | 14,3 % (v0) | +10,6 [+8,4 a +12,9] | Python 3.13.12, scikit-learn 1.9.1 | `corrida_20261029_155359.json` |
+| 2026-10-30 13:14 | completo | 3,7 % | 14,3 % (v0) | +10,6 [+8,4 a +12,9] | Python 3.12.11, scikit-learn 1.9.1 | `corrida_20261030_131439.json` |

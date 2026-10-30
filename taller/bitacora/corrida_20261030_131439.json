@@ -1,0 +1,298 @@
+{
+ "fecha": "2026-10-30T13:14:39",
+ "modo_demo": false,
+ "python": "3.12.11",
+ "numpy": "2.5.4",
+ "pandas": "3.1.0",
+ "sklearn": "1.9.1",
+ "semillas": {
+  "bootstrap": 11,
+  "negativos": 7
+ },
+ "receta_v0": {
+  "modelo": "regresión logística L1 (liblinear)",
+  "C": 0.01,
+  "variables": [
+   "empresa_espejo",
+   "mismo_dueno",
+   "funcionario_propio",
+   "doble_percepcion",
+   "familiar",
+   "log_multas",
+   "log_penalidades",
+   "evasion",
+   "reciente"
+  ],
+  "muestra": "todos los sancionados y 100 000 no sancionados al azar (semilla 7)"
+ },
+ "k": 1000,
+ "repeticiones": 1000,
+ "huellas": {
+  "aprendizaje.parquet": "14bdd57f72b596d3156d9b43eae32e6e334d8eb88e21bc418e8beaf2121919f1",
+  "examen.parquet": "25e19432c8f0fd2914b58e388143e88a0e93c18479fb0a18315b327d5bfbd99f",
+  "examen_entidades.parquet": "e78c72f6870618237ee884a7869087a851f4dd117b83becbe5c727df05f10352"
+ },
+ "resultados": {
+  "hoy": {
+   "precision": 0.037,
+   "con_sancion": 37,
+   "wilson": [
+    0.02696102468045289,
+    0.05058268341054474
+   ],
+   "carga": {
+    "entidades": 2564,
+    "mediana": 7.0,
+    "p90": 34.0
+   },
+   "rango": [
+    0.025,
+    0.049
+   ]
+  },
+  "regla": {
+   "precision": 0.071,
+   "con_sancion": 71,
+   "wilson": [
+    0.05666945999361375,
+    0.08861401899350932
+   ],
+   "carga": {
+    "entidades": 2272,
+    "mediana": 4.0,
+    "p90": 17.0
+   },
+   "rango": [
+    0.054945054945054944,
+    0.08591408591408592
+   ]
+  },
+  "v0": {
+   "precision": 0.143,
+   "con_sancion": 143,
+   "wilson": [
+    0.12266696873653779,
+    0.16606543685414507
+   ],
+   "carga": {
+    "entidades": 2164,
+    "mediana": 3.0,
+    "p90": 17.0
+   },
+   "rango": [
+    0.12187508100681753,
+    0.16502085414585413
+   ]
+  }
+ },
+ "diferencias": {
+  "regla-hoy": {
+   "dif": 0.033999999999999996,
+   "rango": [
+    0.015982792207792206,
+    0.05104981095674015
+   ]
+  },
+  "v0-hoy": {
+   "dif": 0.10599999999999998,
+   "rango": [
+    0.08385709290709291,
+    0.12900087412587413
+   ]
+  }
+ },
+ "segmentos": {
+  "hoy": {
+   "con alerta de vínculo": {
+    "n": 158,
+    "con_sancion": 9,
+    "precision": 0.056962025316455694
+   },
+   "sin alerta de vínculo": {
+    "n": 842,
+    "con_sancion": 28,
+    "precision": 0.0332541567695962
+   },
+   "persona natural": {
+    "n": 58,
+    "con_sancion": 0,
+    "precision": 0.0
+   },
+   "empresa": {
+    "n": 942,
+    "con_sancion": 37,
+    "precision": 0.03927813163481953
+   },
+   "vende a una sola entidad": {
+    "n": 99,
+    "con_sancion": 0,
+    "precision": 0.0
+   }
+  },
+  "regla": {
+   "con alerta de vínculo": {
+    "n": 1000,
+    "con_sancion": 71,
+    "precision": 0.071
+   },
+   "sin alerta de vínculo": {
+    "n": 0,
+    "con_sancion": 0,
+    "precision": null
+   },
+   "persona natural": {
+    "n": 108,
+    "con_sancion": 1,
+    "precision": 0.009259259259259259
+   },
+   "empresa": {
+    "n": 892,
+    "con_sancion": 70,
+    "precision": 0.07847533632286996
+   },
+   "vende a una sola entidad": {
+    "n": 312,
+    "con_sancion": 8,
+    "precision": 0.02564102564102564
+   }
+  },
+  "v0": {
+   "con alerta de vínculo": {
+    "n": 384,
+    "con_sancion": 40,
+    "precision": 0.10416666666666667
+   },
+   "sin alerta de vínculo": {
+    "n": 616,
+    "con_sancion": 103,
+    "precision": 0.1672077922077922
+   },
+   "persona natural": {
+    "n": 129,
+    "con_sancion": 17,
+    "precision": 0.13178294573643412
+   },
+   "empresa": {
+    "n": 871,
+    "con_sancion": 126,
+    "precision": 0.1446613088404133
+   },
+   "vende a una sola entidad": {
+    "n": 169,
+    "con_sancion": 25,
+    "precision": 0.14792899408284024
+   }
+  }
+ },
+ "motivos": {
+  "hoy": {
+   "falsedad": 18,
+   "incumplimiento": 16,
+   "impedimento": 3
+  },
+  "regla": {
+   "incumplimiento": 36,
+   "falsedad": 27,
+   "impedimento": 7,
+   "otros": 1
+  },
+  "v0": {
+   "falsedad": 73,
+   "incumplimiento": 66,
+   "impedimento": 3,
+   "otros": 1
+  }
+ },
+ "pesos_v0": {
+  "empresa_espejo": 0.077,
+  "mismo_dueno": 0.18,
+  "funcionario_propio": 0.0,
+  "doble_percepcion": 0.0,
+  "familiar": 0.0,
+  "log_multas": 0.079,
+  "log_penalidades": 0.197,
+  "evasion": 0.0,
+  "reciente": 0.0
+ },
+ "kpis_e3": {
+  "top50": {
+   "hoy": {
+    "k": 50,
+    "aciertos": 2,
+    "precision": 0.04,
+    "wilson": [
+     0.011038652660826577,
+     0.13460337877954667
+    ],
+    "veces_el_azar": 18.88104208416834,
+    "fuera_del_monto": 0.0,
+    "peso_pequenos": 0.0
+   },
+   "regla": {
+    "k": 50,
+    "aciertos": 6,
+    "precision": 0.12,
+    "wilson": [
+     0.05617523710624646,
+     0.23805078886623582
+    ],
+    "veces_el_azar": 56.64312625250501,
+    "fuera_del_monto": 1.0,
+    "peso_pequenos": 0.0
+   },
+   "v0": {
+    "k": 50,
+    "aciertos": 16,
+    "precision": 0.32,
+    "wilson": [
+     0.20758044093999403,
+     0.45810557136276076
+    ],
+    "veces_el_azar": 151.0483366733467,
+    "fuera_del_monto": 0.94,
+    "peso_pequenos": 0.08003788820007689
+   }
+  },
+  "top1000": {
+   "hoy": {
+    "k": 1000,
+    "aciertos": 37,
+    "precision": 0.037,
+    "wilson": [
+     0.02696102468045289,
+     0.05058268341054474
+    ],
+    "veces_el_azar": 17.464963927855713,
+    "fuera_del_monto": 0.0,
+    "peso_pequenos": 0.0
+   },
+   "regla": {
+    "k": 1000,
+    "aciertos": 71,
+    "precision": 0.071,
+    "wilson": [
+     0.05666945999361375,
+     0.08861401899350932
+    ],
+    "veces_el_azar": 33.5138496993988,
+    "fuera_del_monto": 0.847,
+    "peso_pequenos": 0.21210040373020375
+   },
+   "v0": {
+    "k": 1000,
+    "aciertos": 143,
+    "precision": 0.143,
+    "wilson": [
+     0.12266696873653779,
+     0.16606543685414507
+    ],
+    "veces_el_azar": 67.4997254509018,
+    "fuera_del_monto": 0.888,
+    "peso_pequenos": 0.12205777950511724
+   }
+  },
+  "mediana_monto": 11000.0,
+  "peso_pequenos_universo": 0.4997633108460947
+ },
+ "linea_plenaria": "Referencia (lo más caro primero) 3,7 % · candidato (v0) 14,3 % · diferencia +10,6 p.p. · dispersión: rango 95 % de la diferencia [+8,4 a +12,9] p.p. (1000 repeticiones, semilla 11)"
+}
