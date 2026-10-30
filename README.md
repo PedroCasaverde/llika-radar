@@ -93,7 +93,7 @@ Todo se corre desde la raíz del repositorio. Los scripts solo imprimen cifras a
    | `radar/15_mejoras_ronda2.py` | Variantes con antecedentes, evasión y recencia, con la misma regla de selección |
    | `radar/16_mejoras_ronda3.py` | Las variantes aprendidas aplicadas solo a los casos del radar |
    | `radar/17_mejoras_ronda4.py` | Bayesiana con la ley como previa, riesgo de entidad, fusión de rangos y boosting |
-   | `radar/18_costo_de_no_usar.py` | Costo del error en revisiones, horas y soles; con los datos completos, lo que paga el Estado en órdenes con alerta |
+   | `radar/18_costo_de_no_usar.py` | Costo del error en revisiones, horas y soles, y lo que paga el Estado en órdenes con alerta; corre con las tablas del taller y sus agregados sin RUC |
 
 Una corrida completa sobre ocho años toma menos de una hora en una computadora personal, sin contar la limpieza inicial
 de los cortes de socios. La ficha de una entidad sale en unos cuatro segundos.

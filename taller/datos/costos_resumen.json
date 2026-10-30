@@ -1,0 +1,45 @@
+{
+ "nota": "Agregados sin RUC ni DNI para las partes B, D y E de radar/18_costo_de_no_usar.py. Las filas de costos_proveedores siguen el orden de examen.parquet.",
+ "entidades_total": 2993,
+ "gravedad_3": {
+  "ordenes": 46934,
+  "monto": 452465824.0499
+ },
+ "familiar": {
+  "bruto": 124601215.86129999,
+  "ponderado": 40287959.50471055
+ },
+ "confirmacion_2026": {
+  "hoy": 0.01,
+  "v0": 0.043,
+  "dif": {
+   "dif": 0.032999999999999995,
+   "rango": [
+    0.020979020979020983,
+    0.046953445358231
+   ]
+  }
+ },
+ "archivos": {
+  "costos_anio.parquet": {
+   "sha256": "5366ac75a4e8a594074e050ece85376c8b2de5936aff4d68665741910891c349",
+   "MB": 0.01
+  },
+  "costos_tarjetas.parquet": {
+   "sha256": "9a27103a6fee29efe55277a8536d8f55d02dbec857a5520453aea86e0f44cf55",
+   "MB": 0.0
+  },
+  "costos_entidades.parquet": {
+   "sha256": "e74b4042b0d75da662eea9ed65fc2af22c43960730fda8935bc3affa25e9721c",
+   "MB": 0.02
+  },
+  "costos_entidad_anio.parquet": {
+   "sha256": "e827158312a951fb68b994fba09f524deb44d6ef857652b91853235d3c2832b6",
+   "MB": 0.1
+  },
+  "costos_proveedores.parquet": {
+   "sha256": "f82d03f8cebc4ceda346876ea90aa2467bfc2e5f42c589ae165a285d39b31eab",
+   "MB": 2.95
+  }
+ }
+}

@@ -28,7 +28,7 @@ Environments* → `.venv`). Si VS Code pide instalar `ipykernel`, es que tomó o
 En la PC donde se probó tardó unos 30 segundos. Al final imprime la línea de la plenaria, guarda la corrida en
 `bitacora/` y suma una fila a `bitacora/BITACORA.md`.
 
-## El costo del error
+## El costo del error y lo que paga el Estado
 
 La pregunta 2 del Bloque 3 pide el costo de un falso positivo y de un falso negativo en unidades del negocio. Lo calcula
 `radar/18_costo_de_no_usar.py` con estas mismas tablas, desde la raíz del repositorio:
@@ -40,8 +40,13 @@ python radar/18_costo_de_no_usar.py
 Da las revisiones por acierto de cada lista, su costo en horas y en soles, lo que vendieron los sancionados que cada
 lista deja fuera y el rendimiento por tramos, con los supuestos declarados al inicio del script: 30 minutos por
 revisión y el sueldo de un Auditor/a Especialista I de la Contraloría (S/ 7 500 en su convocatoria de setiembre de
-2026), que con gratificaciones, CTS y EsSalud cuesta unos S/ 68 por hora trabajada. Lo que paga el Estado en órdenes con
-alerta necesita los datos completos del radar.
+2026), que con gratificaciones, CTS y EsSalud cuesta unos S/ 68 por hora trabajada.
+
+También calcula lo que paga el Estado en órdenes con alerta, por capa de certeza legal, y el dinero en contratos con
+alerta que cada lista pone delante del auditor con el mismo presupuesto. Esas partes salen de los datos completos del
+radar, que no se publican: aquí se usan sus agregados sin RUC ni DNI (`datos/costos_*.parquet`, con su huella en
+`datos/costos_resumen.json`), y el resultado es idéntico al que da con los datos completos. Los agregados se regeneran
+con `python radar/18_costo_de_no_usar.py --exportar` en una máquina que tenga los datos completos.
 
 ## De dónde salen las tablas
 

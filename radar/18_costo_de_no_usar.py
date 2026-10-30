@@ -10,16 +10,24 @@ con su receta congelada (regresión L1, C = 0,01). Para las tres listas (lo más
   trajo (falsos negativos), con el monto que vendieron.
 Todo con el mismo bootstrap pareado del E5 (pesos de Poisson, 1 000 repeticiones, semilla 11).
 
-Parte B, con los datos completos del radar (si están): cuánto dinero pasa por órdenes con alerta, año por año, cómo se
-concentra por entidad, y cuánto trabajo es para un OCI revisar sus casos frente a cruzar a mano a todos sus proveedores.
+Parte B: cuánto dinero pasa por órdenes con alerta, año por año, cómo se concentra por entidad, y cuánto trabajo es
+para un OCI revisar sus casos frente a cruzar a mano a todos sus proveedores. Parte C: lo que valen esas horas en soles,
+con sueldos oficiales de auditores. Parte D: lo que paga el Estado en órdenes con alerta, por capa de certeza legal.
+Parte E: el dinero en contratos con alerta que cada lista pone delante del auditor con el mismo presupuesto.
+
+Las partes B, D y E necesitan los datos completos del radar. Con ellos, --exportar guarda sus agregados sin RUC ni DNI
+en la carpeta de las tablas del taller (costos_*.parquet y costos_resumen.json, con huella sha256); sin ellos, como en
+el repositorio público, el script lee esos agregados y comprueba su huella.
 
 Un acierto es un proveedor con una sanción posterior del Tribunal: no es una irregularidad confirmada. Los minutos por
 revisión y por cruce son supuestos hasta la prueba de uso (14/11).
 
-    E:/UTEC_llika/.venv/Scripts/python.exe -I -X utf8 -W ignore 18_costo_de_no_usar.py [carpeta con las tablas del taller]
+    python radar/18_costo_de_no_usar.py [carpeta con las tablas del taller] [--exportar]
 
 Guarda los agregados en datos/procesados/radar/costo_de_no_usar.json.
 """
+import argparse
+import hashlib
 import json
 import sys
 import time
@@ -65,7 +73,12 @@ def pct(x, d=1):
 
 # las tablas del taller: en el repositorio están en taller/datos; en el curso, en el clon local del repositorio
 _CANDIDATAS = [Path(__file__).resolve().parents[1] / "taller" / "datos", Path(r"D:\UTEC\llika-radar\taller\datos")]
-TALLER = Path(sys.argv[1]) if len(sys.argv) > 1 else next(
+ap = argparse.ArgumentParser(description="El costo de no usar LLIKA, en tiempo y dinero")
+ap.add_argument("carpeta", nargs="?", help="carpeta con las tablas del taller (por defecto, taller/datos)")
+ap.add_argument("--exportar", action="store_true",
+                help="con los datos completos, guarda en esa carpeta los agregados sin RUC de las partes B, D y E")
+ARGS = ap.parse_args()
+TALLER = Path(ARGS.carpeta) if ARGS.carpeta else next(
     (c for c in _CANDIDATAS if (c / "examen.parquet").exists()), _CANDIDATAS[0])
 tr = pd.read_parquet(TALLER / "aprendizaje.parquet")
 te = pd.read_parquet(TALLER / "examen.parquet")
@@ -276,49 +289,134 @@ if "motivo" in te.columns:
         R["motivos"][n] = {k: int(v) for k, v in mo.items()}
         print(f"  {n:<6}", {k: (v, es(K / v, 0) + " rev/acierto") for k, v in mo.items()})
 
-# confirmación con 2026, ya calculada en el paso 12
-try:
-    ej = json.loads((SALIDA / "evaluacion_e5.json").read_text(encoding="utf-8"))["confirmacion_2026"]
-    h26, v26 = ej["filas"]["hoy"], ej["filas"]["v0"]
-    R["confirmacion_2026"] = {"hoy": h26["precision"], "v0": v26["precision"], "dif": ej["diferencias"]["v0-hoy"],
-                              "revisiones_por_acierto_hoy": 1 / h26["precision"], "revisiones_por_acierto_v0": 1 / v26["precision"]}
-    print(f"\n7. Confirmación con 2026 (paso 12): hoy {pct(h26['precision'])}, v0 {pct(v26['precision'])}; "
-          f"{es(1 / h26['precision'])} y {es(1 / v26['precision'])} revisiones por acierto; diferencia {es(100 * ej['diferencias']['v0-hoy']['dif'], 1)} p.p. "
-          f"[{es(100 * ej['diferencias']['v0-hoy']['rango'][0], 1)} a {es(100 * ej['diferencias']['v0-hoy']['rango'][1], 1)}]")
-except (OSError, KeyError):
-    pass
+# --- Agregados de los datos completos (partes B, D y E) ---
+# Con los datos completos del radar se calculan aquí. Con --exportar se guardan, sin RUC ni DNI, en la carpeta de las
+# tablas del taller (costos_*.parquet y costos_resumen.json, con su huella sha256): así el repositorio público corre las
+# partes B, D y E sin los datos completos.
+CAPA = {"sancionado": 1, "funcionario_propio": 1, "doble_percepcion": 1, "empresa_espejo": 2, "mismo_dueno": 3, "familiar": 3}
+INCIDENCIA_CGR = 0.127
+TABLAS_COSTOS = ("anio", "tarjetas", "entidades", "entidad_anio", "proveedores")
 
-# --- Parte B: datos completos del radar ---
-if (SALIDA / "ordenes.parquet").exists() and (SALIDA / "radar_alertas.parquet").exists():
-    print("\n--- Parte B: datos completos del radar ---")
+
+def agregados_completos():
     o = pd.read_parquet(SALIDA / "ordenes.parquet", columns=["id", "ruc_entidad", "ruc", "anio", "monto"])
-    al = pd.read_parquet(SALIDA / "radar_alertas.parquet", columns=["id", "tarjeta", "gravedad", "prob", "anio", "monto", "ruc_entidad"])
-    casos = pd.read_parquet(SALIDA / "radar_casos.parquet", columns=["ruc_entidad", "ruc", "anio", "puntaje", "monto", "ordenes"])
-    tot = o.groupby("anio").agg(ordenes=("id", "size"), monto=("monto", "sum"))
-    uni = al.groupby("id").agg(anio=("anio", "first"), monto=("monto", "first"), ent=("ruc_entidad", "first"), grav=("gravedad", "max"))
-    ex = uni.groupby("anio").agg(ordenes=("monto", "size"), monto=("monto", "sum"))
-    ex["pct_ordenes"] = ex["ordenes"] / tot["ordenes"]
-    ex["pct_monto"] = ex["monto"] / tot["monto"]
+    al = pd.read_parquet(SALIDA / "radar_alertas.parquet",
+                         columns=["id", "tarjeta", "gravedad", "prob", "anio", "monto", "ruc_entidad", "ruc"])
+    casos = pd.read_parquet(SALIDA / "radar_casos.parquet", columns=["ruc_entidad", "ruc", "anio"])
+    s_ = pd.read_parquet(SALIDA / "sanciones.parquet", columns=["ruc", "inicio"])
+    al["capa"] = al["tarjeta"].map(CAPA)
+    # una fila por orden con alerta, en su capa más cierta
+    uni = al.sort_values("capa").groupby("id").agg(anio=("anio", "first"), monto=("monto", "first"),
+                                                   ent=("ruc_entidad", "first"), ruc=("ruc", "first"),
+                                                   capa=("capa", "min"), grav=("gravedad", "max"))
+
+    def por_capa(df, f, indice="anio"):
+        return df.pivot_table(index=indice, columns="capa", values="monto", aggfunc=f).reindex(columns=[1, 2, 3]).fillna(0)
+
+    anio = o.groupby("anio").agg(ordenes_total=("id", "size"), monto_total=("monto", "sum"))
+    anio = anio.join(uni.groupby("anio").agg(ordenes_alerta=("monto", "size"), monto_alerta=("monto", "sum")))
+    anio = anio.join(por_capa(uni, "sum").rename(columns=lambda c: f"capa{c}"))
+    anio = anio.join(por_capa(uni, "count").rename(columns=lambda c: f"ordenes_capa{c}"))
+    anio["casos"] = casos.groupby("anio").size()
+    anio = anio.fillna(0).reset_index()
+    tarjetas = (al.drop_duplicates(["id", "tarjeta"]).groupby("tarjeta").agg(ordenes=("id", "size"), monto=("monto", "sum"))
+                .reset_index())
+    entidades = uni.groupby("ent")["monto"].sum().sort_values(ascending=False).reset_index(drop=True).to_frame("monto_alerta")
+    eny = o.groupby(["ruc_entidad", "anio"]).agg(ordenes=("id", "size"), proveedores=("ruc", "nunique"))
+    eny = eny.join(casos.groupby(["ruc_entidad", "anio"]).size().rename("casos"), how="left").fillna({"casos": 0})
+    entidad_anio = eny.reset_index()[["anio", "ordenes", "proveedores", "casos"]]
+    # proveedores del examen, en el orden de las tablas del taller: RUC ordenados, sin los sancionados antes de 2024
+    X = o[(o["anio"] >= 2022) & (o["anio"] <= 2023)].groupby("ruc").agg(monto=("monto", "sum"))
+    X = X[~X.index.isin(set(s_.loc[s_["inicio"] < pd.Timestamp("2024-01-01"), "ruc"]))]
+    mal = por_capa(uni[(uni["anio"] >= 2022) & (uni["anio"] <= 2023)], "sum", indice="ruc").reindex(X.index).fillna(0)
+    proveedores = pd.DataFrame({"monto": X["monto"].to_numpy(), **{f"capa{c}": mal[c].to_numpy() for c in (1, 2, 3)}})
+    fam = al[al["tarjeta"] == "familiar"].groupby("id").agg(monto=("monto", "first"), prob=("prob", "max"))
+    g3 = uni[uni["grav"] >= 3]
+    resumen = {"entidades_total": int(o["ruc_entidad"].nunique()),
+               "gravedad_3": {"ordenes": int(len(g3)), "monto": float(g3["monto"].sum())},
+               "familiar": {"bruto": float(fam["monto"].sum()), "ponderado": float((fam["monto"] * fam["prob"]).sum())}}
+    try:
+        ej = json.loads((SALIDA / "evaluacion_e5.json").read_text(encoding="utf-8"))["confirmacion_2026"]
+        resumen["confirmacion_2026"] = {"hoy": ej["filas"]["hoy"]["precision"], "v0": ej["filas"]["v0"]["precision"],
+                                        "dif": ej["diferencias"]["v0-hoy"]}
+    except (OSError, KeyError):
+        pass
+    agg = {"anio": anio, "tarjetas": tarjetas, "entidades": entidades, "entidad_anio": entidad_anio,
+           "proveedores": proveedores}
+    return agg, resumen
+
+
+def exportar(agg, resumen, carpeta):
+    archivos = {}
+    for nombre in TABLAS_COSTOS:
+        p = carpeta / f"costos_{nombre}.parquet"
+        agg[nombre].to_parquet(p, index=False)
+        archivos[p.name] = {"sha256": hashlib.sha256(p.read_bytes()).hexdigest(), "MB": round(p.stat().st_size / 1e6, 2)}
+    doc = {"nota": "Agregados sin RUC ni DNI para las partes B, D y E de radar/18_costo_de_no_usar.py. Las filas de "
+                   "costos_proveedores siguen el orden de examen.parquet.", **resumen, "archivos": archivos}
+    (carpeta / "costos_resumen.json").write_text(json.dumps(doc, ensure_ascii=False, indent=1), encoding="utf-8")
+    print(f"\nagregados exportados en {carpeta}: " + ", ".join(f"{k} ({v['MB']} MB)" for k, v in archivos.items()))
+
+
+def agregados_taller(carpeta):
+    doc = json.loads((carpeta / "costos_resumen.json").read_text(encoding="utf-8"))
+    agg = {}
+    for nombre in TABLAS_COSTOS:
+        p = carpeta / f"costos_{nombre}.parquet"
+        assert hashlib.sha256(p.read_bytes()).hexdigest() == doc["archivos"][p.name]["sha256"], f"la huella de {p.name} no coincide"
+        agg[nombre] = pd.read_parquet(p)
+    return agg, doc
+
+
+COMPLETOS = (SALIDA / "ordenes.parquet").exists() and (SALIDA / "radar_alertas.parquet").exists()
+AGG, RES = None, {}
+if COMPLETOS:
+    AGG, RES = agregados_completos()
+    if ARGS.exportar:
+        exportar(AGG, RES, TALLER)
+elif (TALLER / "costos_resumen.json").exists():
+    AGG, RES = agregados_taller(TALLER)
+    print("\nlas partes B, D y E usan los agregados del taller (sin RUC), con su huella comprobada")
+
+# confirmación con 2026, ya calculada en el paso 12
+if "confirmacion_2026" in RES:
+    c26 = RES["confirmacion_2026"]
+    R["confirmacion_2026"] = {"hoy": c26["hoy"], "v0": c26["v0"], "dif": c26["dif"],
+                              "revisiones_por_acierto_hoy": 1 / c26["hoy"], "revisiones_por_acierto_v0": 1 / c26["v0"]}
+    print(f"\n7. Confirmación con 2026 (paso 12): hoy {pct(c26['hoy'])}, v0 {pct(c26['v0'])}; "
+          f"{es(1 / c26['hoy'])} y {es(1 / c26['v0'])} revisiones por acierto; diferencia {es(100 * c26['dif']['dif'], 1)} p.p. "
+          f"[{es(100 * c26['dif']['rango'][0], 1)} a {es(100 * c26['dif']['rango'][1], 1)}]")
+
+# --- Parte B: el dinero con alerta, las entidades y el trabajo de un OCI ---
+if AGG is not None:
+    print("\n--- Parte B: el dinero con alerta, las entidades y el trabajo de un OCI ---")
+    A = AGG["anio"].set_index("anio")
+    ex = A[["ordenes_alerta", "monto_alerta"]].rename(columns={"ordenes_alerta": "ordenes", "monto_alerta": "monto"})
+    ex["ordenes"] = ex["ordenes"].astype(int)
+    ex["pct_ordenes"] = ex["ordenes"] / A["ordenes_total"]
+    ex["pct_monto"] = ex["monto"] / A["monto_total"]
+    n_al, m_al = int(A["ordenes_alerta"].sum()), float(A["monto_alerta"].sum())
+    n_o, m_o = int(A["ordenes_total"].sum()), float(A["monto_total"].sum())
     R["exposicion"] = {
-        "ordenes": int(len(uni)), "monto": float(uni["monto"].sum()), "ordenes_total": int(len(o)), "monto_total": float(o["monto"].sum()),
+        "ordenes": n_al, "monto": m_al, "ordenes_total": n_o, "monto_total": m_o,
         "por_anio": {int(a): {"ordenes": int(r_.ordenes), "monto": float(r_.monto), "pct_monto": float(r_.pct_monto),
-                              "monto_total_anio": float(tot.loc[a, "monto"])} for a, r_ in ex.iterrows()}}
+                              "monto_total_anio": float(A.loc[a, "monto_total"])} for a, r_ in ex.iterrows()}}
     anios = len(ex)
-    R["exposicion"]["monto_por_anio"] = float(uni["monto"].sum() / anios)
-    print(f"órdenes con alerta: {es(len(uni))} de {es(len(o))} ({pct(len(uni) / len(o), 2)}), S/ {es(uni['monto'].sum() / 1e6, 0)} M de "
-          f"S/ {es(o['monto'].sum() / 1e6, 0)} M ({pct(uni['monto'].sum() / o['monto'].sum(), 2)}); S/ {es(uni['monto'].sum() / anios / 1e6, 0)} M por año")
+    R["exposicion"]["monto_por_anio"] = m_al / anios
+    print(f"órdenes con alerta: {es(n_al)} de {es(n_o)} ({pct(n_al / n_o, 2)}), S/ {es(m_al / 1e6, 0)} M de "
+          f"S/ {es(m_o / 1e6, 0)} M ({pct(m_al / m_o, 2)}); S/ {es(m_al / anios / 1e6, 0)} M por año")
     print(ex.assign(monto=(ex["monto"] / 1e6).round(1), pct_ordenes=(100 * ex["pct_ordenes"]).round(2),
                     pct_monto=(100 * ex["pct_monto"]).round(2)).to_string())
-    g3 = uni[uni["grav"] >= 3]
-    R["exposicion"]["gravedad_3"] = {"ordenes": int(len(g3)), "monto": float(g3["monto"].sum())}
-    print(f"con gravedad legal 3 (impedimento directo): {es(len(g3))} órdenes, S/ {es(g3['monto'].sum() / 1e6, 1)} M")
-    ta = al.drop_duplicates(["id", "tarjeta"]).groupby("tarjeta").agg(ordenes=("id", "size"), monto=("monto", "sum"))
+    g3 = RES["gravedad_3"]
+    R["exposicion"]["gravedad_3"] = {"ordenes": int(g3["ordenes"]), "monto": float(g3["monto"])}
+    print(f"con gravedad legal 3 (impedimento directo): {es(g3['ordenes'])} órdenes, S/ {es(g3['monto'] / 1e6, 1)} M")
+    ta = AGG["tarjetas"].set_index("tarjeta")
     R["exposicion"]["por_tarjeta"] = {k: {"ordenes": int(r_.ordenes), "monto": float(r_.monto)} for k, r_ in ta.iterrows()}
     print((ta.assign(monto=(ta["monto"] / 1e6).round(1))).to_string())
-    pe = uni.groupby("ent")["monto"].sum().sort_values(ascending=False)
-    n_ent = o["ruc_entidad"].nunique()
+    pe = AGG["entidades"]["monto_alerta"]
+    n_ent = int(RES["entidades_total"])
     R["exposicion"]["entidades_con_alerta"] = int(len(pe))
-    R["exposicion"]["entidades_total"] = int(n_ent)
+    R["exposicion"]["entidades_total"] = n_ent
     cum = pe.cumsum() / pe.sum()
     R["exposicion"]["concentracion"] = {"top_10": float(cum.iloc[9]), "top_100": float(cum.iloc[99]),
                                         "top_10_pct_entidades": float(cum.iloc[max(int(0.1 * len(pe)) - 1, 0)])}
@@ -326,9 +424,8 @@ if (SALIDA / "ordenes.parquet").exists() and (SALIDA / "radar_alertas.parquet").
           f"con alerta, las 100 primeras {pct(cum.iloc[99], 0)}, el 10 % de las entidades {pct(R['exposicion']['concentracion']['top_10_pct_entidades'], 0)}")
 
     # trabajo de un OCI: casos de su entidad frente a cruzar a mano a todos sus proveedores
-    eny = o.groupby(["ruc_entidad", "anio"]).agg(ordenes=("id", "size"), proveedores=("ruc", "nunique"))
-    cy = casos.groupby(["ruc_entidad", "anio"]).size().rename("casos")
-    d = eny.join(cy, how="left").fillna({"casos": 0})
+    d = AGG["entidad_anio"]
+    n_casos = int(A["casos"].sum())
     q = lambda s: {"mediana": float(s.median()), "p75": float(s.quantile(.75)), "p90": float(s.quantile(.90)), "p99": float(s.quantile(.99)), "max": float(s.max())}
     R["oci"] = {"entidad_anio": int(len(d)), "ordenes": q(d["ordenes"]), "proveedores": q(d["proveedores"]),
                 "con_casos": int((d["casos"] > 0).sum()), "casos": q(d.loc[d["casos"] > 0, "casos"])}
@@ -344,17 +441,17 @@ if (SALIDA / "ordenes.parquet").exists() and (SALIDA / "radar_alertas.parquet").
                                       "mano_mediana": float(h_mano.median()), "mano_p90": float(h_mano.quantile(.9))}
         print(f"  {mm} min por caso: revisar los casos de LLIKA toma {es(h_casos.median(), 1)} h (mediana) y {es(h_casos.quantile(.9), 0)} h (p90) por entidad-año; "
               f"cruzar a mano a todos los proveedores a {MIN_CRUCE} min toma {es(h_mano.median(), 0)} h y {es(h_mano.quantile(.9), 0)} h")
-    n_anios = d.index.get_level_values("anio").nunique()
+    n_anios = int(d["anio"].nunique())
     mano_total = float(d["proveedores"].sum()) * MIN_CRUCE / 60
-    R["oci"]["nacional"] = {"anios": int(n_anios), "pares_proveedor_entidad_anio": int(d["proveedores"].sum()),
+    R["oci"]["nacional"] = {"anios": n_anios, "pares_proveedor_entidad_anio": int(d["proveedores"].sum()),
                             "cruce_a_mano_horas_por_anio": mano_total / n_anios,
-                            "cruce_a_mano_auditores_anio": mano_total / n_anios / HORAS_AUDITOR, "casos": int(len(casos))}
+                            "cruce_a_mano_auditores_anio": mano_total / n_anios / HORAS_AUDITOR, "casos": n_casos}
     for mm in MIN_REVISION:
-        R["oci"]["nacional"][f"casos_{mm}_auditores_anio"] = len(casos) * mm / 60 / n_anios / HORAS_AUDITOR
+        R["oci"]["nacional"][f"casos_{mm}_auditores_anio"] = n_casos * mm / 60 / n_anios / HORAS_AUDITOR
     print(f"\ntodo el país, por año: cruzar a mano a todos los proveedores de todas las entidades ({es(d['proveedores'].sum() / n_anios)} pares "
           f"proveedor-entidad) a {MIN_CRUCE} min son {es(mano_total / n_anios)} h, o {es(mano_total / n_anios / HORAS_AUDITOR)} auditores-año")
-    print("  revisar todos los casos del radar (" + es(len(casos) / n_anios) + " por año): " + ", ".join(
-        f"{mm} min: {es(len(casos) * mm / 60 / n_anios)} h = {es(R['oci']['nacional'][f'casos_{mm}_auditores_anio'], 1)} auditores-año"
+    print("  revisar todos los casos del radar (" + es(n_casos / n_anios) + " por año): " + ", ".join(
+        f"{mm} min: {es(n_casos * mm / 60 / n_anios)} h = {es(R['oci']['nacional'][f'casos_{mm}_auditores_anio'], 1)} auditores-año"
         for mm in MIN_REVISION))
     # costo de operar frente a lo expuesto
     anual_sol = COSTO_ANUAL_USD * CAMBIO
@@ -451,27 +548,25 @@ print(f"  operar LLIKA un año: S/ {es(COSTO_ANUAL_USD * CAMBIO)} de servidor m�
 # No es pérdida: es lo que se pagó a quien no debía contratar (capas 1 y 2) o en condiciones que piden revisión (capa 3).
 # Como referencia de escala, la Contraloría estimó que la corrupción y la inconducta funcional costaron en 2023 el 12,7 %
 # del presupuesto ejecutado (S/ 24 268 millones; citado por la prensa): no es una tasa medida en estas órdenes.
-CAPA = {"sancionado": 1, "funcionario_propio": 1, "doble_percepcion": 1, "empresa_espejo": 2, "mismo_dueno": 3, "familiar": 3}
-INCIDENCIA_CGR = 0.127
-if "exposicion" in R:
+if AGG is not None:
     print("\n--- Parte D: lo que paga el Estado en órdenes con alerta ---")
-    al["capa"] = al["tarjeta"].map(CAPA)
-    oc = al.sort_values("capa").groupby("id").agg(anio=("anio", "first"), monto=("monto", "first"), capa=("capa", "min"))
-    pc = oc.pivot_table(index="anio", columns="capa", values="monto", aggfunc="sum").fillna(0)
-    fam = al[al["tarjeta"] == "familiar"].groupby("id").agg(monto=("monto", "first"), prob=("prob", "max"))
-    ult = int(pc.index.max())
-    casos_ult = int((casos["anio"] == ult).sum())
+    A = AGG["anio"].set_index("anio")
+    pc = A[["capa1", "capa2", "capa3"]]
+    ult = int(A.index.max())
+    casos_ult = int(A.loc[ult, "casos"])
     rev_ult = casos_ult * MIN_BASE / 60 * chb
     tot_ult = float(pc.loc[ult].sum())
     R["estado"] = {
-        "por_anio": {int(a): {"capa1": float(r_[1]), "capa2": float(r_[2]), "capa3": float(r_[3]), "total": float(r_.sum()),
-                              "pct_del_anio": float(r_.sum() / tot.loc[a, "monto"])} for a, r_ in pc.iterrows()},
-        "total": {f"capa{c}": float(pc[c].sum()) for c in (1, 2, 3)},
-        "ordenes": {f"capa{int(c)}": int(n) for c, n in oc["capa"].value_counts().sort_index().items()},
-        "familiar_bruto": float(fam["monto"].sum()), "familiar_ponderado": float((fam["monto"] * fam["prob"]).sum()),
+        "por_anio": {int(a): {"capa1": float(r_["capa1"]), "capa2": float(r_["capa2"]), "capa3": float(r_["capa3"]),
+                              "total": float(r_.sum()), "pct_del_anio": float(r_.sum() / A.loc[a, "monto_total"])}
+                     for a, r_ in pc.iterrows()},
+        "total": {c: float(pc[c].sum()) for c in pc.columns},
+        "ordenes": {f"capa{c}": int(A[f"ordenes_capa{c}"].sum()) for c in (1, 2, 3)},
+        "familiar_bruto": float(RES["familiar"]["bruto"]), "familiar_ponderado": float(RES["familiar"]["ponderado"]),
         "ultimo_anio": ult, "casos_ultimo_anio": casos_ult, "revisar_casos_ultimo_anio": rev_ult,
         "fraccion_que_paga_la_revision": rev_ult / tot_ult,
-        "referencia_cgr": {"incidencia": INCIDENCIA_CGR, "capas_1_2_ultimo_anio": INCIDENCIA_CGR * float(pc.loc[ult, 1] + pc.loc[ult, 2]),
+        "referencia_cgr": {"incidencia": INCIDENCIA_CGR,
+                           "capas_1_2_ultimo_anio": INCIDENCIA_CGR * float(pc.loc[ult, "capa1"] + pc.loc[ult, "capa2"]),
                            "total_ultimo_anio": INCIDENCIA_CGR * tot_ult},
         "sancion_posterior": {"vendieron_2022_2023": float(monto[y == 1].sum()),
                               "en_las_1000": {n: float(punto[f"monto_{n}"][i1]) for n in NOM}},
@@ -492,6 +587,49 @@ if "exposicion" in R:
     sp_ = R["estado"]["sancion_posterior"]
     print(f"  los 1 996 proveedores sancionados después vendieron S/ {es(sp_['vendieron_2022_2023'] / 1e6, 1)} M en 2022-2023; "
           + ", ".join(f"{n} trae S/ {es(v / 1e6, 1)} M en sus 1 000 primeros" for n, v in sp_["en_las_1000"].items()))
+
+# --- Parte E: el gasto en contratos con alerta que cada lista pone delante del auditor ---
+# Con el mismo presupuesto de revisiones, el tiempo del auditor cuesta lo mismo con cualquier lista; lo que cambia es
+# cuánto dinero en contratos con alerta (órdenes de 2022-2023, por capa) queda a la vista y cuánto queda sin revisar.
+# Las filas de costos_proveedores siguen el orden de las tablas del taller, y se comprueba con el monto de cada proveedor.
+if AGG is not None:
+    pv = AGG["proveedores"]
+    assert len(pv) == len(te) and np.allclose(pv["monto"].to_numpy(), monto), "el orden de proveedores no coincide con el taller"
+    capas = {c: pv[f"capa{c}"].to_numpy(float) for c in (1, 2, 3)}
+    m12 = capas[1] + capas[2]
+    tot_mal = {c: float(v.sum()) for c, v in capas.items()}
+    R["contratos_malos"] = {"total_2022_2023": tot_mal, "listas": {}}
+    print("\n--- Parte E: dinero en contratos con alerta de 2022-2023 que cada lista pone delante del auditor ---")
+    print(f"  proveedores del examen, total con alerta: capa 1 S/ {es(tot_mal[1] / 1e6, 1)} M; capa 2 S/ {es(tot_mal[2] / 1e6, 1)} M; "
+          f"capa 3 S/ {es(tot_mal[3] / 1e6, 1)} M")
+    for k in (1000, 2000, 5000):
+        rev = k * MIN_BASE / 60 * chb
+        print(f"  con {es(k)} revisiones (S/ {es(rev / 1e3, 0)} mil de tiempo de auditor a {MIN_BASE} min y S/ {es(chb, 0)} la hora):")
+        for n in NOM:
+            top = listas[n][:k]
+            c1, c2, c3 = (float(capas[c][top].sum()) for c in (1, 2, 3))
+            fuera = float(m12[(y == 1)].sum() - m12[top][y[top] == 1].sum())
+            R["contratos_malos"]["listas"].setdefault(n, {})[str(k)] = {
+                "capa1": c1, "capa2": c2, "capa3": c3, "capas12": c1 + c2, "total": c1 + c2 + c3,
+                "pct_capas12": (c1 + c2) / (tot_mal[1] + tot_mal[2]), "soles_por_sol_de_auditor_capas12": (c1 + c2) / rev,
+                "sancionados_capas12_fuera": fuera}
+            print(f"    {n:<6} capa 1 S/ {es(c1 / 1e6, 1):>5} M, capa 2 S/ {es(c2 / 1e6, 1):>5} M, capa 3 S/ {es(c3 / 1e6, 1):>5} M | "
+                  f"capas 1-2: {pct((c1 + c2) / (tot_mal[1] + tot_mal[2]), 1)} del total, S/ {es((c1 + c2) / rev, 0)} por cada sol de auditor")
+    # rango del 95 % de las diferencias frente a hoy en las capas 1 y 2, con 1 000 revisiones (pesos de Poisson, semilla 11)
+    rng_e = np.random.default_rng(SEMILLA)
+    tops = {n: listas[n][:K] for n in NOM}
+    sumas = {n: [] for n in NOM}
+    for _ in range(B):
+        w = rng_e.poisson(1.0, size=len(y)).astype(float)
+        for n in NOM:
+            sumas[n].append(float((w[tops[n]] * m12[tops[n]]).sum()))
+    sumas = {n: np.asarray(v) for n, v in sumas.items()}
+    for n in ("v0", "regla"):
+        d_b = sumas[n] - sumas["hoy"]
+        d_p = float(m12[tops[n]].sum() - m12[tops["hoy"]].sum())
+        R["contratos_malos"][f"dif_{n}_hoy_capas12_1000"] = [d_p, float(np.percentile(d_b, 2.5)), float(np.percentile(d_b, 97.5))]
+        print(f"  diferencia {n} menos hoy en capas 1-2, con 1 000 revisiones: S/ {es(d_p / 1e6, 1)} M "
+              f"[{es(np.percentile(d_b, 2.5) / 1e6, 1)} a {es(np.percentile(d_b, 97.5) / 1e6, 1)}]")
 
 SALIDA.mkdir(parents=True, exist_ok=True)
 (SALIDA / "costo_de_no_usar.json").write_text(json.dumps(R, ensure_ascii=False, indent=1, default=float), encoding="utf-8")
