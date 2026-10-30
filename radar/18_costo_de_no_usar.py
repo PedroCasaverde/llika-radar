@@ -54,7 +54,7 @@ CARTAS = ["empresa_espejo", "mismo_dueno", "funcionario_propio", "doble_percepci
 ANTEC = ["log_multas", "log_penalidades", "evasion", "reciente"]
 C_V0 = 0.01
 # Supuestos, a medir en la prueba de uso
-MIN_REVISION = (15, 30, 60)      # minutos que toma revisar un caso (abrirlo, mirar sus fuentes y decidir)
+MIN_REVISION = (20, 60, 180)     # minutos por revisión de un caso: de 20 min a 3 h, según el equipo (30/10/2026)
 MIN_CRUCE = 20                   # minutos para cruzar a mano un proveedor en cuatro fuentes (5 por fuente)
 # horas trabajadas al año en el sector público: 8 h de lunes a viernes. En 2026 hay 261 días hábiles, 13 feriados
 # nacionales caen en día hábil y las vacaciones (30 días calendario) son 22 días hábiles: 226 días de 8 horas
@@ -471,7 +471,8 @@ SUELDOS = (5500, 6500, 7500, 8500, 9500, 12500, 15000)
 # sueldos al año que paga la entidad en el régimen DL 728: 12 sueldos, 2 gratificaciones con su bonificación de 9 %,
 # la CTS (un sueldo más un sexto de cada gratificación) y EsSalud (9 % de los 12 sueldos)
 CARGA = (12 + 2 * 1.09 + (1 + 2 / 12) + 12 * 0.09) / 12
-SUELDO_BASE, MIN_BASE = 7500, 30   # cifra base: Auditor/a Especialista I de la Contraloría (2026) y 30 minutos por revisión
+SUELDO_BASE, MIN_BASE = 7500, 60   # cifra base: Auditor/a Especialista I de la Contraloría (2026) y 1 hora por revisión,
+#                                   hasta que respondan las solicitudes de acceso a la información a la Contraloría
 HORAS_DESCARGA_MES = 4      # supuesto: horas al mes de la descarga manual de las fuentes (por medir)
 
 
@@ -510,7 +511,7 @@ if "oci" in R and "nacional" in R["oci"]:
                                             **{f"casos_{mm}": nac[f"casos_{mm}_auditores_anio"] * s * 12 * CARGA for mm in MIN_REVISION}}
                                    for s in SUELDOS}
     print("  todo el país, por año (millones de soles): " + "; ".join(
-        f"S/ {es(s)}: a mano {es(v['mano'] / 1e6, 1)}, casos de LLIKA a 30 min {es(v['casos_30'] / 1e6, 2)}"
+        f"S/ {es(s)}: a mano {es(v['mano'] / 1e6, 1)}, casos de LLIKA a {MIN_BASE} min {es(v[f'casos_{MIN_BASE}'] / 1e6, 2)}"
         for s, v in ((int(k), v) for k, v in R["soles"]["pais_por_anio"].items())))
 # la cifra base
 chb = costo_hora(SUELDO_BASE)

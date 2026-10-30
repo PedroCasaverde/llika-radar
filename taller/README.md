@@ -38,9 +38,11 @@ python radar/18_costo_de_no_usar.py
 ```
 
 Da las revisiones por acierto de cada lista, su costo en horas y en soles, lo que vendieron los sancionados que cada
-lista deja fuera y el rendimiento por tramos, con los supuestos declarados al inicio del script: 30 minutos por
-revisión y el sueldo de un Auditor/a Especialista I de la Contraloría (S/ 7 500 en su convocatoria de setiembre de
-2026), que con gratificaciones, CTS y EsSalud cuesta unos S/ 68 por hora trabajada.
+lista deja fuera y el rendimiento por tramos, con los supuestos declarados al inicio del script: 1 hora por revisión
+(con escenarios de 20 minutos y 3 horas), hasta contar con los tiempos que se pidieron a la Contraloría, y el sueldo de
+un Auditor/a Especialista I de la Contraloría (S/ 7 500 en su convocatoria de setiembre de 2026), que con
+gratificaciones, CTS y EsSalud cuesta unos S/ 68 por hora trabajada. Con esos supuestos, cada acierto cuesta S/ 1 842
+ordenando por monto y S/ 477 con el v0.
 
 También calcula lo que paga el Estado en órdenes con alerta, por capa de certeza legal, y el dinero en contratos con
 alerta que cada lista pone delante del auditor con el mismo presupuesto. Esas partes salen de los datos completos del
