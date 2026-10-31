@@ -56,9 +56,9 @@ C_V0 = 0.01
 # Supuestos, a medir en la prueba de uso
 MIN_REVISION = (20, 60, 180)     # minutos por revisión de un caso: de 20 min a 3 h, según el equipo (30/10/2026)
 MIN_CRUCE = 20                   # minutos para cruzar a mano un proveedor en cuatro fuentes (5 por fuente)
-# horas trabajadas al año en el sector público: 8 h de lunes a viernes. En 2026 hay 261 días hábiles, 13 feriados
-# nacionales caen en día hábil y las vacaciones (30 días calendario) son 22 días hábiles: 226 días de 8 horas
-HORAS_AUDITOR = 226 * 8
+# horas al año de un auditor, el estándar de la Contraloría: 230 días hábiles de 8 horas (Directiva N° 005-2025-CG/GMPL,
+# num. 7.1.7, nota 5), el mismo divisor de su costo directo hora/hombre (Anexo 01)
+HORAS_AUDITOR = 230 * 8
 COSTO_ANUAL_USD = 400            # servidor encendido todo el año, unos USD 33 al mes (precios del 23/10, por confirmar)
 CAMBIO = 4.0                     # soles por dólar, supuesto
 
@@ -460,19 +460,17 @@ if AGG is not None:
     print(f"\ncosto anual de operar: USD {COSTO_ANUAL_USD} = S/ {es(anual_sol)} = {pct(R['equilibrio']['fraccion'], 4)} de lo expuesto por año")
 
 # --- Parte C: lo que valen esas horas en soles ---
-# Sueldos mensuales brutos de auditores de OCI.
-# Fuentes oficiales: Contraloría General de la República, Concurso Público de Méritos N° 06-2026-CG (DL 728, Anexo 2,
-# puestos y posiciones, set. 2026; 1 049 plazas, media ponderada S/ 5 887): Auditor/a Analista I 5 500, Analista II 6 500,
-# Especialista I 7 500 y Especialista II 8 500 (el monto más alto de esa convocatoria). CENEPRED, CAS 082 y 084-2024:
-# Especialista en Control Gubernamental, 8 000.
-# Sin fuente oficial hallada: 9 500 y 12 500 (rangos de mercado para especialista senior y directivo) y 15 000, una cota
-# alta de sensibilidad para jefatura.
-SUELDOS = (5500, 6500, 7500, 8500, 9500, 12500, 15000)
-# sueldos al año que paga la entidad en el régimen DL 728: 12 sueldos, 2 gratificaciones con su bonificación de 9 %,
-# la CTS (un sueldo más un sexto de cada gratificación) y EsSalud (9 % de los 12 sueldos)
-CARGA = (12 + 2 * 1.09 + (1 + 2 / 12) + 12 * 0.09) / 12
-SUELDO_BASE, MIN_BASE = 7500, 60   # cifra base: Auditor/a Especialista I de la Contraloría (2026) y 1 hora por revisión,
-#                                   hasta que respondan las solicitudes de acceso a la información a la Contraloría
+# Ingresos mensuales de los auditores de la Contraloría: planilla de septiembre de 2026 en el Portal de Transparencia
+# Estándar (id_entidad 19, régimen DL 728), 3 391 especialistas de las unidades de control y de los OCI. Mediana del
+# total de ingresos por cargo: Especialista I 5 907, II 6 907, III 7 907, IV 8 907, V 9 907 y VI 10 942; de todos,
+# 7 855. Se usa la mediana: el promedio sube con pagos extraordinarios del mes.
+SUELDOS = (5907, 6907, 7855, 7907, 8907, 9907, 10942)
+# Costo directo hora/hombre de la Contraloría (Directiva N° 005-2025-CG/GMPL, Anexo 01, num. 3): remuneración bruta total
+# anual (sueldos, gratificaciones, bonificaciones y aporte del empleador a la salud) entre 1 840 horas. En el régimen
+# DL 728: 12 sueldos, 2 gratificaciones con su bonificación de 9 % y EsSalud (9 % de los 12 sueldos); sin CTS.
+CARGA = (12 + 2 * 1.09 + 12 * 0.09) / 12
+SUELDO_BASE, MIN_BASE = 7855, 60   # cifra base: mediana de los especialistas de control (planilla de set. 2026) y 1 hora
+#                                   por revisión, hasta que respondan las solicitudes de acceso a la información
 HORAS_DESCARGA_MES = 4      # supuesto: horas al mes de la descarga manual de las fuentes (por medir)
 
 
@@ -538,7 +536,7 @@ operar = COSTO_ANUAL_USD * CAMBIO + HORAS_DESCARGA_MES * 12 * chb
 R["soles"]["equilibrio"] = {"costo_operar_anual": operar, "horas_descarga_mes": HORAS_DESCARGA_MES,
                             "horas_de_auditor_para_pagarse": {str(s): operar / costo_hora(s) for s in SUELDOS}}
 print(f"  operar LLIKA un año: S/ {es(COSTO_ANUAL_USD * CAMBIO)} de servidor más {HORAS_DESCARGA_MES * 12} h de descarga (a S/ {es(chb, 0)} la hora) = "
-      f"S/ {es(operar)}; se paga con " + ", ".join(f"{es(operar / costo_hora(s), 0)} h de auditor (sueldo S/ {es(s)})" for s in (5500, 8500, 12500, 15000)))
+      f"S/ {es(operar)}; se paga con " + ", ".join(f"{es(operar / costo_hora(s), 0)} h de auditor (sueldo S/ {es(s)})" for s in (5907, 7855, 9907, 10942)))
 
 # --- Parte D: lo que paga el Estado en órdenes con alerta ---
 # Cada orden va a su capa más cierta:
