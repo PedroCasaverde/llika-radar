@@ -1,0 +1,2 @@
+# La demo se guarda byte por byte, sin convertir saltos de línea: su README cita la huella SHA-256 del archivo
+demo/llika_pe_demo.html -text

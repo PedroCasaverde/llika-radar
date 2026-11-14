@@ -1,0 +1,1237 @@
+<!doctype html>
+<html lang="es-PE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>llika.pe</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Demo de llika.pe: a quién le compró cada entidad pública sin concurso y por cuáles proveedores conviene empezar a revisar, con el motivo de cada uno. Los casos son inventados.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  /* LLIKA, herramienta de consulta. Reglas del sistema: dos familias y tres pesos; tamaños, espacios y radios solo de estas escalas;
+     borde de 1 px antes que sombra (la sombra queda para lo que flota); un solo color de acento; toda señal lleva ícono y texto.
+     Contraste sobre blanco: texto 16.5:1; atenuado 6.5:1; sutil 5.0:1; acción 5.0:1; señal 5.9:1; borde de controles 3.1:1. Números en formato es-PE. */
+  --font-sans: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --t-xs: 12px; --l-xs: 16px;
+  --t-sm: 13px; --l-sm: 20px;
+  --t-base: 14px; --l-base: 20px;
+  --t-ui: 14px; --l-ui: 20px;
+  --t-md: 16px; --l-md: 24px;
+  --t-lg: 18px; --l-lg: 28px;
+  --t-xl: 20px; --l-xl: 28px;
+  --t-2xl: 24px; --l-2xl: 32px;
+  --t-3xl: 30px; --l-3xl: 36px;
+  --w-regular: 400; --w-medium: 500; --w-semibold: 600;
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-6: 24px; --s-8: 32px; --s-12: 48px; --s-16: 64px;
+  --r-xs: 4px; --r-sm: 6px; --r-md: 8px; --r-lg: 12px; --r-full: 999px;
+  --bg: #FFFFFF; --surface: #F6F8F9; --surface-2: #EDF1F3;
+  --border: #DDE3E8; --border-strong: #8794A0;
+  --text: #15202B; --text-muted: #51606E; --text-subtle: #64717D;
+  --action: #00799E; --action-hover: #005E7A; --on-action: #FFFFFF; --action-soft: #E6F3F7;
+  --signal: #8A5A00; --signal-soft: #FBF3DF; --signal-mark: #C98A1B;
+  --neutral-mark: #A7B3BD;
+  --focus: #00799E;
+  --scrim: rgb(21 32 43 / .28);
+  --shadow-2: 0 1px 2px rgb(21 32 43 / .06), 0 4px 12px rgb(21 32 43 / .08);
+  --shadow-3: 0 2px 4px rgb(21 32 43 / .06), 0 12px 32px rgb(21 32 43 / .12);
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --d-press: 100ms; --d-hover: 120ms; --d-enter: 200ms;
+  --control-h: 36px; --row-h: 40px; --header-h: 56px;
+  --gutter: 24px;
+  --flecha: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E");
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1419; --surface: #151D24; --surface-2: #1C262F; --border: #27333D; --border-strong: #6E7C88;
+    --text: #E6ECF0; --text-muted: #A4B1BC; --text-subtle: #8C99A5;
+    --action: #4CC8DF; --action-hover: #86DCEB; --on-action: #0B1A22; --action-soft: #0F2F3B;
+    --signal: #E7B65C; --signal-soft: #2E2410; --signal-mark: #CF9A3A; --neutral-mark: #5D6B78; --focus: #4CC8DF;
+    --scrim: rgb(0 0 0 / .55);
+    --shadow-2: 0 1px 2px rgb(0 0 0 / .4), 0 4px 12px rgb(0 0 0 / .5);
+    --shadow-3: 0 2px 4px rgb(0 0 0 / .4), 0 12px 32px rgb(0 0 0 / .6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1419; --surface: #151D24; --surface-2: #1C262F; --border: #27333D; --border-strong: #6E7C88;
+  --text: #E6ECF0; --text-muted: #A4B1BC; --text-subtle: #8C99A5;
+  --action: #4CC8DF; --action-hover: #86DCEB; --on-action: #0B1A22; --action-soft: #0F2F3B;
+  --signal: #E7B65C; --signal-soft: #2E2410; --signal-mark: #CF9A3A; --neutral-mark: #5D6B78; --focus: #4CC8DF;
+  --scrim: rgb(0 0 0 / .55);
+  --shadow-2: 0 1px 2px rgb(0 0 0 / .4), 0 4px 12px rgb(0 0 0 / .5);
+  --shadow-3: 0 2px 4px rgb(0 0 0 / .4), 0 12px 32px rgb(0 0 0 / .6);
+  color-scheme: dark;
+}
+@media (max-width: 767px) {
+  :root { --t-base: 16px; --l-base: 24px; --control-h: 44px; --header-h: 0px; --gutter: 16px; }
+}
+
+/* Base */
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { background: var(--bg); padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); scroll-padding-top: var(--header-h); }
+body { margin: 0; background: var(--bg); color: var(--text); font: var(--w-regular) var(--t-base)/var(--l-base) var(--font-sans); -webkit-font-smoothing: antialiased; }
+body.con-panel { overflow: hidden; }
+img { max-width: 100%; height: auto; }
+h1, h2, h3, p, ul, ol, dl, dd, figure { margin: 0; }
+h1, h2, h3 { font-weight: var(--w-semibold); color: var(--text); text-wrap: balance; }
+h1 { font-size: var(--t-2xl); line-height: var(--l-2xl); letter-spacing: -0.02em; }
+h2 { font-size: var(--t-xl); line-height: var(--l-xl); letter-spacing: -0.01em; }
+h3 { font-size: var(--t-base); line-height: var(--l-base); }
+b, strong { font-weight: var(--w-semibold); }
+a { color: var(--action); text-decoration-thickness: 1px; text-underline-offset: 3px; transition: color var(--d-hover); }
+a:hover { color: var(--action-hover); }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+h1:focus, h2:focus, main:focus { outline: none; }
+.envoltura { max-width: 1200px; margin-inline: auto; padding-left: max(var(--gutter), env(safe-area-inset-left, 0px)); padding-right: max(var(--gutter), env(safe-area-inset-right, 0px)); }
+.sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.mono { font-family: var(--font-mono); }
+.num { font-variant-numeric: tabular-nums; }
+.suave { color: var(--text-muted); }
+.chico { font-size: var(--t-sm); line-height: var(--l-sm); }
+.ico { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.salto { position: absolute; left: var(--s-4); top: -64px; z-index: 60; display: inline-flex; align-items: center; min-height: 44px; background: var(--bg); color: var(--text); border: 1px solid var(--border-strong); border-radius: var(--r-sm); padding: var(--s-2) var(--s-3); }
+.salto:focus { top: var(--s-2); }
+
+/* Aviso de demo y cabecera */
+.aviso { background: var(--surface-2); color: var(--text-muted); font-size: var(--t-xs); line-height: var(--l-xs); border-bottom: 1px solid var(--border); }
+.aviso .envoltura { padding-block: var(--s-2); }
+.aviso b { color: var(--text); font-weight: var(--w-medium); }
+.cabecera { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bottom: 1px solid var(--border); }
+.cab-fila { display: flex; align-items: center; gap: var(--s-6); min-height: 56px; }
+.logo { display: inline-flex; align-items: center; gap: var(--s-2); color: var(--text); text-decoration: none; flex: none; }
+.logo:hover { color: var(--text); }
+.logo-red { width: 24px; height: 24px; }
+.logo-red .n circle { fill: currentColor; }
+.logo-red .n5 { fill: var(--action); stroke: var(--bg); stroke-width: 1.5; }
+.logo-txt { font-size: var(--t-lg); line-height: var(--l-lg); font-weight: var(--w-semibold); letter-spacing: -0.01em; }
+.logo-pe { color: var(--action); }
+.nav { display: flex; gap: var(--s-6); align-self: stretch; }
+.nav a { display: inline-flex; align-items: center; color: var(--text-muted); text-decoration: none; font-weight: var(--w-medium); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.nav a:hover { color: var(--text); }
+.nav a[aria-current="page"] { color: var(--text); border-bottom-color: var(--action); }
+.cab-busca { margin-left: auto; width: min(320px, 100%); }
+body[data-vista="inicio"] .cab-busca { visibility: hidden; }
+.busca { position: relative; }
+.busca > .ico { position: absolute; left: var(--s-3); top: 50%; transform: translateY(-50%); color: var(--text-subtle); pointer-events: none; }
+.busca input { width: 100%; height: var(--control-h); background: var(--bg); border: 1px solid var(--border-strong); border-radius: var(--r-sm); padding: 0 var(--s-3) 0 36px; }
+.busca input::placeholder { color: var(--text-subtle); opacity: 1; }
+.busca input:focus-visible { border-color: var(--action); outline-offset: 0; }
+.icono { flex: none; width: var(--control-h); height: var(--control-h); display: grid; place-items: center; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--bg); color: var(--text-muted); cursor: pointer; text-decoration: none; transition: background var(--d-hover), color var(--d-hover); }
+.icono:hover { background: var(--surface); color: var(--text); }
+.icono:active { transform: scale(.97); transition-duration: var(--d-press); }
+.icono[aria-disabled="true"] { opacity: .4; pointer-events: none; }
+.sugerencias { position: absolute; left: 0; right: 0; top: calc(100% + var(--s-2)); z-index: 30; list-style: none; padding: var(--s-1); background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-md); box-shadow: var(--shadow-2); }
+.sugerencias a, .sugerencias p { display: block; padding: var(--s-2) var(--s-3); border-radius: var(--r-xs); text-decoration: none; color: var(--text); }
+.sugerencias a:hover, .sugerencias a.activo { background: var(--surface-2); }
+.sugerencias small { display: block; color: var(--text-muted); font-size: var(--t-xs); line-height: var(--l-xs); }
+.sugerencias p { color: var(--text-muted); }
+@media (max-width: 767px) {
+  .cabecera { position: static; }
+  .cab-fila { flex-wrap: wrap; gap: var(--s-2) var(--s-4); padding-block: var(--s-2); }
+  .logo { min-height: 44px; }
+  .nav { order: 3; width: 100%; overflow-x: auto; gap: var(--s-4); min-height: 44px; }
+  .nav a { font-size: var(--t-ui); line-height: var(--l-ui); }
+  .cab-busca { order: 4; width: 100%; margin-left: 0; }
+  body[data-vista="inicio"] .cab-busca { display: none; }
+  .tema { margin-left: auto; }
+}
+
+main { padding-block: var(--s-8) var(--s-16); }
+.vista { display: grid; gap: var(--s-6); }
+.pag-cab { display: grid; gap: var(--s-2); }
+.pag-cab h1 { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-1) var(--s-3); }
+.pag-sub { color: var(--text-muted); max-width: 72ch; }
+.meta { color: var(--text-muted); font-size: var(--t-sm); line-height: var(--l-sm); display: flex; flex-wrap: wrap; gap: 0 var(--s-4); }
+.meta .mono { color: var(--text); }
+.tag { font-size: var(--t-xs); line-height: var(--l-xs); font-weight: var(--w-medium); letter-spacing: 0; color: var(--text-muted); border: 1px solid var(--border); border-radius: var(--r-xs); padding: 0 var(--s-1); }
+.migas { font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text-muted); display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.migas a { color: var(--text-muted); }
+.migas a:hover { color: var(--text); }
+
+/* Tablas */
+.caja { background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-md); }
+.scroll-x { overflow-x: auto; }
+.tabla { width: 100%; border-collapse: separate; border-spacing: 0; }
+.tabla th { text-align: left; font-size: var(--t-xs); line-height: var(--l-sm); font-weight: var(--w-medium); color: var(--text-muted); padding: var(--s-2) var(--s-3); border-bottom: 1px solid var(--border); background: var(--surface); white-space: nowrap; }
+.tabla th:first-child { border-top-left-radius: var(--r-md); }
+.tabla th:last-child { border-top-right-radius: var(--r-md); }
+.tabla td { padding: calc((var(--row-h) - var(--l-base)) / 2) var(--s-3); border-bottom: 1px solid var(--border); vertical-align: top; }
+.tabla tbody tr:last-child td { border-bottom: 0; }
+.tabla .der { text-align: right; }
+.tabla-entidades tbody tr { cursor: pointer; transition: background var(--d-hover); }
+.tabla-entidades tbody tr:hover { background: var(--surface); }
+.tabla-entidades a { display: inline-block; padding-block: var(--s-1); margin-block: calc(-1 * var(--s-1)); color: var(--text); font-weight: var(--w-medium); text-decoration: none; }
+.tabla-entidades a:hover { text-decoration: underline; }
+.conteo { font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text-muted); }
+.nota-pie { font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text-muted); max-width: 80ch; }
+.vacio { padding: var(--s-8) var(--s-4); display: grid; gap: var(--s-2); justify-items: center; text-align: center; color: var(--text-muted); }
+.vacio .ico { width: 24px; height: 24px; color: var(--text-subtle); }
+.vacio .v-t { color: var(--text); font-weight: var(--w-medium); }
+.vacio .boton { margin-top: var(--s-2); justify-self: center; }
+@media (max-width: 767px) {
+  .tabla-entidades thead { display: none; }
+  .tabla-entidades, .tabla-entidades tbody { display: block; }
+  .tabla-entidades tr { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-1) var(--s-4); padding: var(--s-3) var(--s-4); border-bottom: 1px solid var(--border); }
+  .tabla-entidades td:first-child a::after { content: ""; position: absolute; inset: 0; }
+  .tabla-entidades tr:last-child { border-bottom: 0; }
+  .tabla-entidades td { display: block; padding: 0; border: 0; text-align: left !important; }
+  .tabla-entidades td:first-child, .tabla-entidades td:nth-child(2) { grid-column: 1 / -1; }
+  .tabla-entidades td[data-et]::before { content: attr(data-et); display: block; font-size: var(--t-xs); line-height: var(--l-xs); color: var(--text-muted); }
+  .tabla-apilada thead { display: none; }
+  .tabla-apilada, .tabla-apilada tbody { display: block; }
+  .tabla-apilada tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--s-1) var(--s-3); padding: var(--s-3) var(--s-4); border-bottom: 1px solid var(--border); }
+  .tabla-apilada tr:last-child { border-bottom: 0; }
+  .tabla-apilada td { display: block; padding: 0; border: 0; }
+  .tabla-apilada td:first-child { font-weight: var(--w-medium); }
+  .tabla-apilada td:nth-child(2) { grid-column: 1 / -1; grid-row: 2; color: var(--text-muted); }
+  .tabla-apilada td:nth-child(3) { grid-column: 2; grid-row: 1; }
+}
+
+/* Entidad: cifras, barra de herramientas y lista */
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--border); border-radius: var(--r-md); }
+.kpis > div { padding: var(--s-3) var(--s-4); display: flex; flex-direction: column-reverse; justify-content: flex-end; gap: var(--s-1); min-width: 0; }
+.kpis > div + div { border-left: 1px solid var(--border); }
+.kpis dd { font-size: var(--t-xl); line-height: var(--l-xl); font-weight: var(--w-semibold); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.kpis dt { font-size: var(--t-xs); line-height: var(--l-xs); color: var(--text-muted); }
+@media (max-width: 767px) {
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpis > div:nth-child(3) { border-left: 0; }
+  .kpis > div:nth-child(n+3) { border-top: 1px solid var(--border); }
+  .kpis dd { font-size: var(--t-lg); line-height: var(--l-lg); }
+}
+.herramientas { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); }
+.herramientas .busca { flex: 1 1 240px; max-width: 320px; }
+.herramientas .busca-ini { max-width: 480px; }
+.filtros { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.filtro { display: inline-flex; align-items: center; gap: var(--s-2); height: var(--control-h); padding: 0 var(--s-3); border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--bg); color: var(--text-muted); font-size: var(--t-sm); font-weight: var(--w-medium); cursor: pointer; transition: background var(--d-hover), color var(--d-hover), border-color var(--d-hover); }
+.filtro:hover { background: var(--surface); color: var(--text); }
+.filtro:active { transform: scale(.97); transition-duration: var(--d-press); }
+.filtro .n { font-weight: var(--w-regular); color: var(--text-subtle); font-variant-numeric: tabular-nums; }
+.filtro .tipo { display: inline-flex; }
+.filtro .marca { display: none; }
+.filtro[aria-pressed="true"] { background: var(--action-soft); border-color: var(--action); color: var(--action-hover); }
+.filtro[aria-pressed="true"] .n { color: var(--action-hover); }
+.filtro[aria-pressed="true"] .tipo { display: none; }
+.filtro[aria-pressed="true"] .marca { display: inline-flex; }
+.lista-bloque { display: grid; gap: var(--s-3); min-width: 0; }
+.lista-cab { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-2) var(--s-4); }
+.segmento { margin-left: auto; display: inline-flex; align-items: center; gap: var(--s-2); font-size: var(--t-sm); color: var(--text-muted); }
+.segmento .opc { display: inline-flex; padding: 2px; background: var(--surface-2); border-radius: var(--r-md); }
+.segmento button { height: calc(var(--control-h) - 4px); padding: 0 var(--s-3); border: 0; border-radius: var(--r-sm); background: transparent; color: var(--text-muted); font-size: var(--t-sm); font-weight: var(--w-medium); cursor: pointer; transition: background var(--d-hover), color var(--d-hover); }
+.segmento button:hover { color: var(--text); }
+.segmento button[aria-pressed="true"] { background: var(--bg); color: var(--text); box-shadow: 0 0 0 1px var(--border); }
+@media (max-width: 767px) {
+  .herramientas .busca, .herramientas .busca-ini { flex-basis: 100%; max-width: none; }
+  .segmento { margin-left: 0; width: 100%; justify-content: space-between; }
+  .segmento button { height: var(--control-h); }
+}
+
+.lista th:first-child, .lista td:first-child { width: 48px; text-align: right; padding-right: var(--s-1); }
+.lista tbody tr.fila { cursor: pointer; transition: background var(--d-hover); }
+.lista tbody tr.fila:hover { background: var(--surface); }
+.lista td.rk { color: var(--text-subtle); font-variant-numeric: tabular-nums; }
+.lista tr.top td.rk { color: var(--action); font-weight: var(--w-semibold); box-shadow: inset 2px 0 0 var(--action); }
+.lista .p-nom { color: var(--text); font-weight: var(--w-medium); text-decoration: none; }
+.lista .p-nom:hover { text-decoration: underline; }
+.lista .p-sub { display: block; font-size: var(--t-xs); line-height: var(--l-xs); color: var(--text-subtle); white-space: nowrap; }
+.lista td.prov { min-width: 240px; }
+.lista td.ev { min-width: 120px; }
+.lista .monto b { font-weight: var(--w-medium); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lista .monto span { display: block; font-size: var(--t-xs); line-height: var(--l-xs); color: var(--text-subtle); white-space: nowrap; }
+.lista tr.grupo td { background: var(--surface); font-size: var(--t-xs); line-height: var(--l-sm); font-weight: var(--w-medium); color: var(--text-muted); padding: var(--s-1) var(--s-3); text-align: left; width: auto; }
+.lista tr.grupo.g-top td { color: var(--action-hover); box-shadow: inset 2px 0 0 var(--action); }
+.m { display: inline-flex; align-items: flex-start; gap: var(--s-2); font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text); }
+.m .ico { margin-top: 2px; color: var(--text-muted); }
+.nada { color: var(--border-strong); }
+@media (min-width: 1024px) {
+  .tabla-caja { overflow: visible; }
+  .lista thead th { position: sticky; top: var(--header-h); z-index: 5; }
+}
+@media (max-width: 767px) {
+  .lista thead { display: none; }
+  .lista, .lista tbody { display: block; }
+  .lista tr.fila { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: var(--s-1) var(--s-3); padding: var(--s-3) var(--s-4) var(--s-3) var(--s-2); border-bottom: 1px solid var(--border); }
+  .lista tr.fila td { display: block; padding: 0; border: 0; width: auto; }
+  .lista tr.fila td.rk { grid-row: 1 / span 2; text-align: right; box-shadow: none; }
+  .lista tr.fila.top { box-shadow: inset 2px 0 0 var(--action); }
+  .lista tr.fila td.prov { grid-column: 2; min-width: 0; }
+  .lista .p-sub { white-space: normal; }
+  .lista tr.fila td.monto { grid-column: 3; grid-row: 1; text-align: right; }
+  .lista tr.fila td.ev { grid-column: 2 / span 2; min-width: 0; }
+  .lista tr.fila td.ev.sin { display: none; }
+  .lista tr.grupo, .lista tr.grupo td { display: block; }
+  .lista tr.grupo.g-top td { box-shadow: inset 2px 0 0 var(--action); }
+}
+
+/* Botones y formularios */
+.boton { display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); height: var(--control-h); padding: 0 var(--s-4); border: 1px solid transparent; border-radius: var(--r-md); background: var(--action); color: var(--on-action); font-weight: var(--w-medium); text-decoration: none; cursor: pointer; justify-self: start; transition: background var(--d-hover); }
+.boton:hover { background: var(--action-hover); color: var(--on-action); }
+.boton:active { transform: scale(.97); transition-duration: var(--d-press); }
+.boton-sec { background: var(--bg); color: var(--text); border-color: var(--border-strong); }
+.boton-sec:hover { background: var(--surface); color: var(--text); }
+.campo { display: grid; gap: var(--s-2); }
+.campo label { font-size: var(--t-sm); line-height: var(--l-sm); font-weight: var(--w-medium); }
+.campo select, .campo textarea, .campo input { width: 100%; min-height: var(--control-h); background: var(--bg); border: 1px solid var(--border-strong); border-radius: var(--r-sm); padding: var(--s-2) var(--s-3); font-size: var(--t-base); line-height: var(--l-base); }
+.campo textarea { min-height: 96px; resize: vertical; }
+.campo [aria-invalid="true"] { border-color: var(--signal); }
+.error { color: var(--signal); font-size: var(--t-sm); line-height: var(--l-sm); }
+.error:empty { display: none; }
+.ok { padding: var(--s-3) var(--s-4); border-left: 2px solid var(--action); background: var(--action-soft); color: var(--text); font-size: var(--t-sm); line-height: var(--l-sm); }
+
+/* Panel del proveedor */
+.velo { position: fixed; inset: 0; background: var(--scrim); z-index: 40; }
+.panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(520px, 100%); background: var(--bg); z-index: 50; border-left: 1px solid var(--border); box-shadow: var(--shadow-3); display: flex; flex-direction: column;
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); padding-right: env(safe-area-inset-right, 0px); }
+.panel-cab { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); min-height: 56px; padding: var(--s-2) var(--s-4) var(--s-2) var(--s-6); border-bottom: 1px solid var(--border); flex: none; }
+.panel-cab .pos { font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.panel-cab .pos b { color: var(--text); font-weight: var(--w-medium); }
+.panel-cab .navs { display: flex; gap: var(--s-2); }
+.panel-cuerpo { overflow-y: auto; padding: var(--s-6) var(--s-6) var(--s-12); display: grid; gap: var(--s-6); align-content: start; flex: 1; }
+.p-cab { display: grid; gap: var(--s-2); }
+.ids { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-1) var(--s-4); font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text-muted); }
+.ids .mono { color: var(--text); }
+.copiar { position: relative; height: 24px; padding: 0 var(--s-2); border: 1px solid var(--border); border-radius: var(--r-xs); background: var(--bg); color: var(--text-muted); font-size: var(--t-xs); cursor: pointer; }
+.copiar:hover { background: var(--surface); color: var(--text); }
+.p-cifras { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-block: 1px solid var(--border); }
+.p-cifras > div { padding: var(--s-3) var(--s-4) var(--s-3) 0; display: flex; flex-direction: column-reverse; justify-content: flex-end; gap: var(--s-1); min-width: 0; }
+.p-cifras > div + div { padding-left: var(--s-4); border-left: 1px solid var(--border); }
+.p-cifras dd { font-size: var(--t-lg); line-height: var(--l-lg); font-weight: var(--w-semibold); font-variant-numeric: tabular-nums; }
+.p-cifras dt { font-size: var(--t-xs); line-height: var(--l-xs); color: var(--text-muted); }
+.por { display: grid; gap: var(--s-2); padding-left: var(--s-4); border-left: 2px solid var(--action); }
+.por h3 { font-size: var(--t-sm); line-height: var(--l-sm); font-weight: var(--w-medium); color: var(--action); }
+.por .frase { font-size: var(--t-md); line-height: var(--l-md); font-weight: var(--w-medium); }
+.por .tasa { font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text-muted); }
+.bloque-p { display: grid; gap: var(--s-3); }
+.bloque-p > h3 { display: flex; align-items: baseline; gap: var(--s-2); }
+.bloque-p > h3 .n { font-size: var(--t-sm); font-weight: var(--w-regular); color: var(--text-muted); }
+.calculo { list-style: none; padding: 0; display: grid; border-top: 1px solid var(--border); counter-reset: paso; }
+.calculo li { counter-increment: paso; display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 0 var(--s-2); padding: var(--s-2) 0; border-bottom: 1px solid var(--border); font-size: var(--t-sm); line-height: var(--l-sm); }
+.calculo li::before { content: counter(paso); color: var(--text-subtle); font-variant-numeric: tabular-nums; }
+.calculo .c-t { color: var(--text-muted); }
+.calculo .c-v { grid-column: 2; color: var(--text); }
+.calculo li.decide .c-v { font-weight: var(--w-medium); }
+.calculo .c-extra { grid-column: 2; margin-top: var(--s-2); }
+details.fija summary { font-size: var(--t-sm); line-height: var(--l-sm); font-weight: var(--w-medium); color: var(--action); width: max-content; }
+.t-fija { width: 100%; border-collapse: collapse; margin: var(--s-2) 0; font-size: var(--t-sm); line-height: var(--l-sm); }
+.t-fija th { text-align: left; font-size: var(--t-xs); line-height: var(--l-xs); font-weight: var(--w-medium); color: var(--text-muted); padding: var(--s-1) var(--s-3) var(--s-1) 0; border-bottom: 1px solid var(--border); }
+.t-fija td { padding: var(--s-2) var(--s-3) var(--s-2) 0; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--text); }
+.t-fija td:first-child { width: 42%; font-weight: var(--w-medium); }
+.t-fija .d, details.fija > .d { display: block; font-size: var(--t-xs); line-height: var(--l-xs); font-weight: var(--w-regular); color: var(--text-muted); }
+.decide-tag { margin-left: var(--s-2); font-size: var(--t-xs); line-height: var(--l-xs); font-weight: var(--w-medium); color: var(--action-hover); background: var(--action-soft); border-radius: var(--r-xs); padding: 0 var(--s-1); white-space: nowrap; }
+.senales { list-style: none; padding: 0; display: grid; border-top: 1px solid var(--border); }
+.senal { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: var(--s-1) var(--s-3); padding: var(--s-3) 0; border-bottom: 1px solid var(--border); }
+.senal > .ico { margin-top: 2px; color: var(--text-muted); }
+.senal b { font-weight: var(--w-medium); }
+.senal small { grid-column: 2; font-size: var(--t-xs); line-height: var(--l-xs); color: var(--text-subtle); }
+.senal ul { grid-column: 2; padding-left: var(--s-4); font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text-muted); }
+.prob { grid-column: 2; display: flex; align-items: center; gap: var(--s-2); font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text-muted); }
+.prob b { color: var(--text); font-weight: var(--w-semibold); font-variant-numeric: tabular-nums; }
+.prob i { flex: 0 1 120px; height: 4px; border-radius: var(--r-full); background: var(--surface-2); overflow: hidden; }
+.prob i span { display: block; height: 100%; background: var(--text-muted); width: var(--p); }
+details.sin { font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text-muted); }
+details summary { cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: var(--s-1); min-height: 24px; }
+details summary::-webkit-details-marker { display: none; }
+details summary::before { content: ""; flex: none; width: 16px; height: 16px; background: currentColor; -webkit-mask: var(--flecha) center / 16px no-repeat; mask: var(--flecha) center / 16px no-repeat; transition: transform var(--d-hover); }
+details[open] > summary::before { transform: rotate(90deg); }
+details.sin p { margin-top: var(--s-1); }
+.g-caja { min-width: 0; }
+.g-caja svg { display: block; max-width: 100%; height: auto; }
+.g-t { font: var(--w-regular) 12px/1 var(--font-sans); fill: var(--text-muted); }
+.g-flag { fill: var(--signal); font-weight: var(--w-medium); }
+.g-valor { fill: var(--text); font-weight: var(--w-medium); }
+.g-halo { paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round; }
+.g-banda { fill: var(--signal-soft); }
+.g-base { stroke: var(--border-strong); stroke-width: 1; }
+.g-tope { stroke: var(--text-muted); stroke-width: 1; stroke-dasharray: 4 4; }
+.g-ventana { fill: none; stroke: var(--signal-mark); stroke-width: 1; stroke-dasharray: 4 4; }
+.g-b { fill: var(--neutral-mark); }
+.g-b-acento { fill: var(--action); }
+.g-b-flag { fill: var(--signal-mark); }
+.leyenda { display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-4); font-size: var(--t-xs); line-height: var(--l-xs); color: var(--text-muted); }
+.leyenda i { display: inline-block; width: 8px; height: 8px; border-radius: var(--r-full); margin-right: var(--s-1); }
+.l-gris { background: var(--neutral-mark); } .l-acento { background: var(--action); } .l-flag { background: var(--signal-mark); }
+details.ords summary { font-size: var(--t-sm); line-height: var(--l-sm); font-weight: var(--w-medium); color: var(--action); width: max-content; }
+details.ords[open] summary { margin-bottom: var(--s-2); }
+.t-ords { width: 100%; border-collapse: collapse; font-size: var(--t-sm); line-height: var(--l-sm); }
+.t-ords th { text-align: left; font-size: var(--t-xs); font-weight: var(--w-medium); color: var(--text-muted); padding: var(--s-1) var(--s-2) var(--s-1) 0; border-bottom: 1px solid var(--border); }
+.t-ords td { padding: var(--s-2) var(--s-2) var(--s-2) 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+.t-ords td.f { white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--text-muted); }
+.t-ords .d { font-size: var(--t-xs); line-height: var(--l-xs); color: var(--text-subtle); }
+.t-ords .der { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; padding-right: 0; }
+.mini { display: inline-block; margin-left: var(--s-2); font-size: var(--t-xs); line-height: var(--l-xs); font-weight: var(--w-medium); color: var(--signal); background: var(--signal-soft); border-radius: var(--r-xs); padding: 0 var(--s-1); white-space: nowrap; }
+.datos { display: grid; grid-template-columns: 176px minmax(0, 1fr); font-size: var(--t-sm); line-height: var(--l-sm); border-top: 1px solid var(--border); }
+.datos dt, .datos dd { padding: var(--s-2) 0; border-bottom: 1px solid var(--border); }
+.datos dt { color: var(--text-muted); padding-right: var(--s-3); }
+.p-pie { display: grid; gap: var(--s-3); font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text-muted); }
+.correccion { display: grid; gap: var(--s-4); padding: var(--s-4); border: 1px solid var(--border); border-radius: var(--r-md); color: var(--text); }
+@media (max-width: 767px) {
+  .panel { border-left: 0; }
+  .panel-cab { padding-left: var(--s-4); }
+  .panel-cuerpo { padding: var(--s-4) var(--s-4) var(--s-12); }
+  .datos { grid-template-columns: 1fr; }
+  .datos dt { border: 0; padding-bottom: 0; }
+  .copiar { height: 32px; }
+  .copiar::after { content: ""; position: absolute; inset: -8px -4px; }
+  details summary { min-height: 44px; }
+}
+
+/* Páginas de texto */
+.texto { max-width: 720px; display: grid; gap: var(--s-12); font-size: var(--t-md); line-height: var(--l-md); }
+.texto > header { display: grid; gap: var(--s-3); }
+.texto h1 { font-size: var(--t-3xl); line-height: var(--l-3xl); }
+.texto .lead { font-size: var(--t-lg); line-height: var(--l-lg); color: var(--text-muted); }
+.texto section { display: grid; gap: var(--s-4); }
+.texto h3 { font-size: var(--t-md); line-height: var(--l-md); }
+.texto ul { padding-left: var(--s-4); display: grid; gap: var(--s-2); }
+.texto .tabla { font-size: var(--t-base); line-height: var(--l-base); }
+.texto .chico { color: var(--text-muted); }
+.flujo { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-4); counter-reset: paso; }
+.flujo li { counter-increment: paso; display: grid; gap: var(--s-1); align-content: start; padding-top: var(--s-3); border-top: 1px solid var(--border-strong); }
+.flujo li::before { content: counter(paso); font-family: var(--font-mono); font-size: var(--t-xs); line-height: var(--l-xs); color: var(--text-subtle); }
+.flujo h3 { font-size: var(--t-base); line-height: var(--l-base); }
+.flujo p { font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text-muted); }
+.formula { font-family: var(--font-mono); font-size: var(--t-sm); line-height: var(--l-sm); padding: var(--s-3) var(--s-4); background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-sm); overflow-x: auto; white-space: nowrap; }
+.grafico { display: grid; gap: var(--s-2); padding: var(--s-4); }
+.g-titulo { font-size: var(--t-md); line-height: var(--l-md); font-weight: var(--w-semibold); max-width: 56ch; }
+.g-sub { font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text-muted); }
+.barras { display: grid; gap: var(--s-2); margin-block: var(--s-2); }
+.barra-fila { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: var(--s-3); align-items: center; }
+.barra-etq { font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text-muted); }
+.barra-pista { display: flex; align-items: center; gap: var(--s-2); min-width: 0; }
+.barra { flex: none; height: 12px; width: calc(var(--v) * .8); background: var(--neutral-mark); border-radius: var(--r-xs); }
+.barra-num { font-size: var(--t-sm); line-height: var(--l-sm); font-weight: var(--w-medium); font-variant-numeric: tabular-nums; color: var(--text-muted); white-space: nowrap; }
+.acento .barra { background: var(--action); }
+.acento .barra-etq, .acento .barra-num { color: var(--action); font-weight: var(--w-semibold); }
+.pesos { display: grid; gap: var(--s-3); margin-top: var(--s-2); }
+.peso-fila { display: grid; grid-template-columns: minmax(0, 16rem) minmax(0, 1fr); gap: var(--s-1) var(--s-4); align-items: center; }
+.peso-t { display: grid; }
+.peso-n { font-size: var(--t-sm); line-height: var(--l-sm); font-weight: var(--w-medium); color: var(--text); }
+.peso-q { font-size: var(--t-xs); line-height: var(--l-xs); color: var(--text-muted); }
+.peso-fila.acento .peso-n, .peso-fila.acento .barra-num { color: var(--action); font-weight: var(--w-semibold); }
+.peso-fila.acento .barra { background: var(--action); }
+.dos { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--border); border-radius: var(--r-md); }
+.dos > div { padding: var(--s-4); display: grid; gap: var(--s-1); align-content: start; }
+.dos > div + div { border-left: 1px solid var(--border); }
+.dos b { font-size: var(--t-2xl); line-height: var(--l-2xl); font-weight: var(--w-semibold); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.dos span { font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text-muted); }
+.dos h3 { font-size: var(--t-sm); line-height: var(--l-sm); font-weight: var(--w-medium); color: var(--text-muted); }
+details.tecnico { border-top: 1px solid var(--border); padding-top: var(--s-4); }
+details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); font-weight: var(--w-medium); color: var(--text-muted); width: max-content; }
+.tec-cuerpo { display: grid; gap: var(--s-4); margin-top: var(--s-4); font-size: var(--t-base); line-height: var(--l-base); color: var(--text-muted); }
+.mascota { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: var(--s-6); align-items: center; }
+.mascota img { width: 96px; }
+.no-hay { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: var(--s-6); align-items: center; max-width: 64ch; }
+.no-hay img { width: 96px; }
+.no-hay > div { display: grid; gap: var(--s-4); justify-items: start; }
+@media (max-width: 767px) {
+  .texto { gap: var(--s-8); }
+  .texto h1 { font-size: var(--t-2xl); line-height: var(--l-2xl); }
+  .flujo { grid-template-columns: 1fr 1fr; }
+  .no-hay { grid-template-columns: 72px minmax(0, 1fr); gap: var(--s-4); align-items: start; }
+  .no-hay img { width: 72px; }
+  .dos { grid-template-columns: 1fr; }
+  .dos > div + div { border-left: 0; border-top: 1px solid var(--border); }
+  .barra-fila { grid-template-columns: 80px minmax(0, 1fr); }
+  .peso-fila { grid-template-columns: minmax(0, 1fr); }
+}
+
+.pie { border-top: 1px solid var(--border); font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text-muted); }
+.pie .envoltura { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s-4) var(--s-8); padding-block: var(--s-6) var(--s-8); }
+.pie p { max-width: 72ch; }
+.pie nav { display: flex; gap: var(--s-6); }
+.pie a { color: var(--text-muted); }
+.pie a:hover { color: var(--text); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .panel:not([hidden]) { animation: entra var(--d-enter) var(--ease-out); }
+  .velo:not([hidden]) { animation: aparece var(--d-enter) var(--ease-out); }
+  @keyframes entra { from { transform: translateX(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes aparece { from { opacity: 0; } to { opacity: 1; } }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+  .icono:active, .filtro:active, .boton:active { transform: none; }
+}
+</style>
+</head>
+
+<body>
+<a class="salto" href="#principal">Saltar al contenido</a>
+<div class="aviso" role="note"><div class="envoltura"><b>Demo.</b> Las entidades, los proveedores, los RUC, los DNI y los montos son inventados. Las cifras del método son las reales de LLIKA.</div></div>
+
+<header class="cabecera"><div class="envoltura cab-fila">
+  <a class="logo" href="#inicio" aria-label="llika.pe, inicio">
+    <svg class="logo-red" viewBox="0 0 28 28" aria-hidden="true" focusable="false"><path d="M4 9 14 4 24 9 21 22 7 22Z M4 9 14 14 24 9 M14 4v10 M7 22 14 14 21 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><g class="n"><circle cx="4" cy="9" r="2"/><circle cx="14" cy="4" r="2"/><circle cx="24" cy="9" r="2"/><circle cx="21" cy="22" r="2"/><circle cx="7" cy="22" r="2"/></g><circle class="n5" cx="14" cy="14" r="3.5"/></svg>
+    <span class="logo-txt">llika<span class="logo-pe">.pe</span></span>
+  </a>
+  <nav class="nav" aria-label="Principal">
+    <a href="#inicio" data-nav="inicio">Entidades</a>
+    <a href="#como-funciona" data-nav="como-funciona">Cómo funciona</a>
+    <a href="#datos" data-nav="datos">Datos y fuentes</a>
+  </nav>
+  <div class="busca cab-busca" data-busca>
+    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <label class="sr" for="q-cab">Buscar entidad o proveedor</label>
+    <input id="q-cab" type="search" autocomplete="off" spellcheck="false" placeholder="Buscar entidad, proveedor o RUC" role="combobox" aria-expanded="false" aria-controls="sug-cab" aria-autocomplete="list">
+    <ul class="sugerencias" id="sug-cab" role="listbox" hidden></ul>
+  </div>
+  <button class="icono tema" id="tema" type="button" aria-label="Tema de color: sistema" title="Cambiar tema de color">
+    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16Z" fill="currentColor"/></svg>
+  </button>
+</div></header>
+
+<main id="principal" class="envoltura">
+<noscript><p>Esta demo necesita JavaScript.</p></noscript>
+
+<!-- INICIO -->
+<section class="vista" data-vista="inicio" aria-labelledby="t-inicio">
+  <header class="pag-cab">
+    <h1 id="t-inicio" tabindex="-1">Compras sin concurso, entidad por entidad</h1>
+    <p class="pag-sub">Elige una municipalidad, un hospital u otra entidad pública. Verás a quién le compró sin concurso en 2025 y por cuáles proveedores conviene empezar a revisar, con el motivo de cada uno.</p>
+  </header>
+  <div class="herramientas">
+    <div class="busca busca-ini" data-busca>
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <label class="sr" for="q-ini">Buscar entidad o proveedor</label>
+      <input id="q-ini" type="search" autocomplete="off" spellcheck="false" placeholder="Buscar entidad, proveedor, RUC o DNI" role="combobox" aria-expanded="false" aria-controls="sug-ini" aria-autocomplete="list">
+      <ul class="sugerencias" id="sug-ini" role="listbox" hidden></ul>
+    </div>
+    <p class="conteo" id="conteo-ini"></p>
+  </div>
+  <div class="caja scroll-x">
+    <table class="tabla tabla-entidades">
+      <thead><tr><th scope="col">Entidad</th><th scope="col">Tipo</th><th scope="col" class="der">Proveedores</th><th scope="col" class="der">Compró en 2025</th><th scope="col" class="der">Con alguna señal</th></tr></thead>
+      <tbody id="t-entidades"></tbody>
+    </table>
+  </div>
+  <p class="nota-pie">LLIKA mira tres cosas: si el proveedor tiene un vínculo con una autoridad de la entidad, si vende de forma parecida a proveedores que después fueron sancionados, y cuánto depende de esa entidad. Aparecer en una lista no es una acusación. <a href="#como-funciona">Cómo funciona</a></p>
+</section>
+
+<!-- ENTIDAD -->
+<section class="vista" data-vista="entidad" hidden><div class="vista" id="entidad"></div></section>
+
+<!-- CÓMO FUNCIONA -->
+<section class="vista" data-vista="como-funciona" hidden aria-labelledby="t-como">
+  <div class="texto">
+    <header>
+      <h1 id="t-como" tabindex="-1">Cómo funciona</h1>
+      <p class="lead">LLIKA te dice por cuáles proveedores conviene empezar a revisar en cada entidad pública, y por qué. No acusa a nadie ni reemplaza a quien revisa.</p>
+    </header>
+
+    <section aria-labelledby="t-c0">
+      <h2 id="t-c0">Para qué sirve</h2>
+      <ul>
+        <li>El Estado hace millones de compras pequeñas sin concurso: en 2025, de hasta S/&nbsp;42,800 cada una. Se llaman compras menores.</li>
+        <li>Las oficinas que las vigilan no alcanzan a revisarlas todas.</li>
+        <li>LLIKA ordena a los proveedores de cada entidad, para que quien revise empiece por donde hay más motivos.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="t-c1">
+      <h2 id="t-c1">Cómo decide el orden</h2>
+      <p>En cada entidad hay cinco primeros puestos. Un proveedor llega a ellos por una de estas cuatro razones, siempre en este orden:</p>
+      <ol class="flujo">
+        <li><h3>Vínculo</h3><p>Es una autoridad de la entidad, su empresa o un posible pariente. Va primero.</p></li>
+        <li><h3>Parecido</h3><p>Vende de forma parecida a proveedores que después fueron sancionados o penalizados.</p></li>
+        <li><h3>Dependencia</h3><p>Le vende mucho a esta entidad y poco a las demás.</p></li>
+        <li><h3>Compra partida</h3><p>El quinto puesto es para la compra más grande que parece partida en varias para no pasar el tope.</p></li>
+      </ol>
+      <p class="chico">El orden no califica a la persona ni a la empresa. Es una sugerencia de por dónde empezar. La página muestra hasta 100 proveedores por entidad; los cinco primeros son la recomendación.</p>
+    </section>
+
+    <section aria-labelledby="t-c1b">
+      <h2 id="t-c1b">De dónde sale el «parecido»</h2>
+      <ul>
+        <li>Un programa revisó a miles de proveedores de años anteriores, de los que ya se sabe cómo terminaron.</li>
+        <li>Aprendió qué tenían en común los que después recibieron una sanción o una penalidad, y con eso compara a los proveedores de hoy.</li>
+        <li><b>Es un parecido, no una prueba.</b> No dice que el proveedor haya hecho algo indebido.</li>
+      </ul>
+      <figure class="grafico caja" aria-labelledby="g3">
+        <figcaption class="g-titulo" id="g3">Lo que más pesa es cuánto trabaja el proveedor con el Estado</figcaption>
+        <p class="g-sub">Qué parte del parecido se pierde si se esconde cada grupo de datos. Modelos de la lista de 2025, con 54 datos por proveedor.</p>
+        <div class="pesos" id="pesos" role="list"></div>
+      </figure>
+      <p><b>Por qué pesan más los contratos.</b> Las sanciones y las penalidades nacen de los contratos con el Estado: quien tiene más contratos y vende más tiene más ocasiones de que algo salga mal. Por eso el parecido no es una acusación.</p>
+      <p><b>Los antecedentes pesan poco en promedio, pero no en quien los tiene.</b> Solo 5 de cada 1,000 proveedores tienen alguno. Entre los 2 de cada 100 que más se parecen, 18 de cada 100. Cada ficha muestra los de ese proveedor.</p>
+    </section>
+
+    <section aria-labelledby="t-c2">
+      <h2 id="t-c2">¿Acierta?</h2>
+      <figure class="grafico caja" aria-labelledby="g1">
+        <figcaption class="g-titulo" id="g1">Con el mismo trabajo, LLIKA encuentra 2.7 veces más que elegir a los que más vendieron</figcaption>
+        <p class="g-sub">Proveedores que después recibieron una sanción, una penalidad o una observación de la Contraloría, entre los cinco primeros de cada entidad. Listas de 2022 y 2024.</p>
+        <div class="barras" role="img" aria-label="LLIKA 412; por monto 150; por tamaño 160; al azar 72">
+          <div class="barra-fila acento"><span class="barra-etq">LLIKA</span><span class="barra-pista"><span class="barra" style="--v:100%"></span><span class="barra-num">412</span></span></div>
+          <div class="barra-fila"><span class="barra-etq">Por monto</span><span class="barra-pista"><span class="barra" style="--v:36.4%"></span><span class="barra-num">150</span></span></div>
+          <div class="barra-fila"><span class="barra-etq">Por tamaño</span><span class="barra-pista"><span class="barra" style="--v:38.8%"></span><span class="barra-num">160</span></span></div>
+          <div class="barra-fila"><span class="barra-etq">Al azar</span><span class="barra-pista"><span class="barra" style="--v:17.5%"></span><span class="barra-num">72</span></span></div>
+        </div>
+      </figure>
+      <p><b>No lo ve todo.</b> De 1,254 proveedores que terminaron así, la lista trajo a 412: uno de cada tres. Aun así, de las formas de elegir que probamos, es la que menos deja pasar.</p>
+    </section>
+
+    <section aria-labelledby="t-c4">
+      <h2 id="t-c4">Cuánto cuesta equivocarse</h2>
+      <p>Hay dos formas de equivocarse, y no cuestan lo mismo.</p>
+      <div class="dos">
+        <div><h3>Revisar a quien no tenía nada</h3><b>63 casos</b><span>se abren en vano por cada proveedor que sí tenía algo. Eligiendo por monto son 174. Se pierde tiempo de quien revisa.</span></div>
+        <div><h3>No revisar a quien sí</h3><b>S/&nbsp;524 millones</b><span>le facturaron al Estado 3,742 proveedores antes de ser sancionados. Entre el cierre del año y la sanción pasan más de dos años.</span></div>
+      </div>
+      <p><b>Ese dinero no se perdió:</b> el Estado recibió lo que compró. Es lo que un proveedor sigue facturando mientras nadie lo ha detectado.</p>
+    </section>
+
+    <section aria-labelledby="t-c5">
+      <h2 id="t-c5">¿Y si los proveedores aprenden la regla?</h2>
+      <figure class="grafico caja" aria-labelledby="g2">
+        <figcaption class="g-titulo" id="g2">Con LLIKA, a quien incumple lo revisan con más del doble de probabilidad</figcaption>
+        <p class="g-sub">Probabilidad de que revisen a un proveedor que incumple, con el mismo trabajo. Listas de 2020, 2021 y 2023.</p>
+        <div class="barras" role="img" aria-label="LLIKA 28.9%; por monto 13.4%; al azar 5.1%">
+          <div class="barra-fila acento"><span class="barra-etq">LLIKA</span><span class="barra-pista"><span class="barra" style="--v:100%"></span><span class="barra-num">28.9%</span></span></div>
+          <div class="barra-fila"><span class="barra-etq">Por monto</span><span class="barra-pista"><span class="barra" style="--v:46.4%"></span><span class="barra-num">13.4%</span></span></div>
+          <div class="barra-fila"><span class="barra-etq">Al azar</span><span class="barra-pista"><span class="barra" style="--v:17.6%"></span><span class="barra-num">5.1%</span></span></div>
+        </div>
+      </figure>
+      <p>La regla es pública a propósito. Para bajar de puesto, un proveedor tendría que venderle menos a esa entidad, dejar de partir sus compras o no acumular penalidades. Además, la lista se arma al cierre del año, cuando las compras ya están hechas.</p>
+    </section>
+
+    <section aria-labelledby="t-c7">
+      <h2 id="t-c7">Qué significa cada señal</h2>
+      <div class="caja scroll-x"><table class="tabla tabla-apilada">
+        <thead><tr><th scope="col">Señal</th><th scope="col">Qué quiere decir</th><th scope="col" class="der">En las listas de 2025</th></tr></thead>
+        <tbody>
+          <tr><td>Vínculo</td><td>Es una autoridad de la entidad, su empresa, un posible pariente o un familiar declarado</td><td class="der num">589</td></tr>
+          <tr><td>Antecedentes</td><td>Ya tuvo penalidades, multas o prohibiciones de venderle al Estado</td><td class="der suave">Decide el orden</td></tr>
+          <tr><td>Compras partidas</td><td>Dos o más compras que en 30 días pasan el tope, o una sola de 90% del tope o más</td><td class="der suave">Decide el orden</td></tr>
+          <tr><td>Ganó sin competidores</td><td>Ganó concursos donde nadie más se presentó, o participó cuando tenía prohibido vender</td><td class="der num">1,187</td></tr>
+          <tr><td>Proveedor nuevo</td><td>Es su primer año vendiéndole al Estado</td><td class="der num">758</td></tr>
+          <tr><td>En informes de la Contraloría</td><td>La Contraloría lo nombra en alguno de sus informes de control</td><td class="der num">442</td></tr>
+          <tr><td>Mismo dueño</td><td>Varias empresas de un mismo dueño que, juntas, pasan el tope</td><td class="der num">234</td></tr>
+          <tr><td>Misma dirección</td><td>Tiene la misma dirección que otro proveedor de la entidad</td><td class="der num">138</td></tr>
+          <tr><td>Socio sancionado</td><td>Uno de sus socios está sancionado o es socio de una empresa sancionada</td><td class="der num">136</td></tr>
+          <tr><td>Llegó con un funcionario</td><td>Empezó a venderle cuando llegó un funcionario que venía de otra entidad donde ya le vendía</td><td class="der num">121</td></tr>
+          <tr><td>Vendió estando prohibido</td><td>Recibió compras cuando tenía prohibido venderle al Estado</td><td class="der num">34</td></tr>
+          <tr><td>Cobra en dos entidades</td><td>Cobró aquí mientras tenía un cargo en otra entidad</td><td class="der num">10</td></tr>
+        </tbody>
+      </table></div>
+      <p class="chico">Las tres primeras deciden el orden. Las demás se muestran en la ficha de cada proveedor, para quien quiera mirar más. El número dice en cuántas de las 13,164 filas de las listas de 2025 aparece cada señal.</p>
+    </section>
+
+    <section aria-labelledby="t-c8">
+      <h2 id="t-c8">Lo que todavía no sabemos</h2>
+      <ul>
+        <li>Las listas de 2025 quedaron guardadas sin mirar sus resultados. Se comprobarán cuando se conozcan las sanciones de ese año. Si entonces no le ganan con claridad a elegir por monto, se volverá a una regla simple.</li>
+        <li>El parentesco se estima por los apellidos, y falla seguido: de 29 coincidencias muy probables, 14 eran parientes de verdad.</li>
+        <li>Falta probar la página con especialistas de control.</li>
+      </ul>
+    </section>
+
+    <details class="tecnico">
+      <summary>Detalle técnico</summary>
+      <div class="tec-cuerpo">
+        <p class="formula">orden = vínculo primero; luego R × log(1 + M) × C_local</p>
+        <ul>
+          <li><b>R</b> es el parecido, de 0 a 1. Sale de dos modelos (una regresión logística y LightGBM, con 54 datos por proveedor): uno para sanciones y otro para penalidades. <b>M</b> es lo que le vendió a la entidad, y <b>C_local</b>, la parte de sus ventas que va a ella.</li>
+          <li><b>Qué pesa más:</b> se mezcló cada grupo de datos entre los 751,237 proveedores de 2025, cinco veces, y se midió cuánto cambia R (importancia por permutación). Con el aporte de cada dato al puntaje (valores SHAP de los árboles y del margen por tamaño), los dos primeros grupos son los mismos, en otro orden: cuánto vende, 56% a 69%; concursos y contratos, 18% a 22%.</li>
+          <li>Ventaja frente al monto en 2022 y 2024: 2.75 veces; intervalo de 90%, de 2.4 a 3.1. En observaciones de la Contraloría casi empata: 61 frente a 68.</li>
+          <li>Revisar en vano toma de 63 a 87 horas por acierto con LLIKA, y de 147 a 198 eligiendo por monto (tiempos estimados por un auditor).</li>
+          <li>Publicar la regla es un juego de inspección en el que quien revisa anuncia primero. Lo que se muestra es una condición de disuasión, no un equilibrio calculado.</li>
+        </ul>
+        <p>¿Hace falta inteligencia artificial? Misma fórmula, cambiando solo de dónde sale R. Proveedores encontrados en 2020, 2021 y 2023, antes de retirar las compras por catálogo:</p>
+        <div class="caja scroll-x"><table class="tabla">
+          <tbody>
+            <tr><td>Solo el vínculo y la compra</td><td class="der num">207</td></tr>
+            <tr><td>El tamaño del proveedor</td><td class="der num">303</td></tr>
+            <tr><td>Sus hechos pasados, sin entrenar</td><td class="der num">453</td></tr>
+            <tr><td>Una regresión con 14 datos</td><td class="der num">494</td></tr>
+            <tr><td><b>Los dos modelos de LLIKA</b></td><td class="der num"><b>646</b></td></tr>
+            <tr><td>Un solo modelo con 116 datos</td><td class="der num">570</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- DATOS -->
+<section class="vista" data-vista="datos" hidden aria-labelledby="t-datos">
+  <div class="texto">
+    <header>
+      <h1 id="t-datos" tabindex="-1">Datos y fuentes</h1>
+      <p class="lead">Todo sale de información que el Estado ya publica. La mostramos tal cual: nombre o razón social, RUC y DNI.</p>
+    </header>
+    <section aria-labelledby="t-d1">
+      <h2 id="t-d1">Fuentes</h2>
+      <div class="caja scroll-x"><table class="tabla tabla-apilada">
+        <thead><tr><th scope="col">Fuente</th><th scope="col">Qué aporta</th></tr></thead>
+        <tbody>
+          <tr><td>Órdenes de compra de las entidades (SEACE, el sistema de contrataciones del Estado)</td><td>Quién compró qué, a quién, cuándo y por cuánto</td></tr>
+          <tr><td>Concursos y contratos del Estado (datos abiertos)</td><td>Si el proveedor participa en concursos, si gana y si gana sin competidores</td></tr>
+          <tr><td>Tribunal de Contrataciones (10,972 resoluciones)</td><td>Sanciones y prohibiciones de venderle al Estado</td></tr>
+          <tr><td>Penalidades que aplican las entidades (17,298)</td><td>Descuentos por incumplir un contrato</td></tr>
+          <tr><td>Informes de la Contraloría (2,847)</td><td>Lo que la Contraloría observó en compras concretas</td></tr>
+          <tr><td>Autoridades electas (JNE), declaraciones juradas y socios de empresas</td><td>Quién es autoridad, quién podría ser su pariente y de quién es cada empresa</td></tr>
+          <tr><td>Padrón de SUNAT</td><td>La dirección de cada RUC</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+    <section aria-labelledby="t-d2">
+      <h2 id="t-d2">Reglas</h2>
+      <ul>
+        <li><b>Nada del futuro:</b> cada lista usa solo lo que se sabía al terminar su año.</li>
+        <li><b>Solo compras sin concurso:</b> quedan fuera el agua, la luz, el teléfono, las compras a otras entidades públicas y las compras por el catálogo electrónico del Estado.</li>
+        <li><b>El parentesco es una coincidencia de apellidos,</b> con su probabilidad. Nunca se muestra como un hecho.</li>
+        <li><b>Cualquiera puede pedir una corrección</b> desde la ficha de un proveedor.</li>
+        <li><b>Los documentos se leyeron con ayuda de programas:</b> Claude leyó las resoluciones del Tribunal de Contrataciones, y DeepSeek, los informes de la Contraloría. Lo que sacaron se verificó después.</li>
+      </ul>
+    </section>
+    <section aria-labelledby="t-d3">
+      <h2 id="t-d3">Sobre el proyecto</h2>
+      <div class="mascota">
+__MASCOTA__
+        <p>LLIKA quiere decir telaraña en quechua. Es una propuesta académica del Equipo 05 de la Maestría en Ciencia de Datos e Inteligencia Artificial de UTEC Posgrado (Proyecto Integrador I, 2026). No es un servicio del Estado ni de la Contraloría.</p>
+      </div>
+      <p class="chico">En esta demo, las entidades, los proveedores, los RUC, los DNI y los montos son inventados; los RUC llevan un dígito verificador inválido para que no coincidan con ninguno real.</p>
+    </section>
+  </div>
+</section>
+
+<!-- NO ENCONTRADA -->
+<section class="vista" data-vista="no-encontrada" hidden aria-labelledby="t-404">
+  <div class="no-hay">
+    <img data-mascota alt="" width="338" height="520">
+    <div>
+      <h1 id="t-404" tabindex="-1">No encontramos esa página</h1>
+      <p class="suave">El enlace puede estar incompleto, o esa entidad no está en la demo. En la demo hay tres entidades.</p>
+      <a class="boton" href="#inicio">Ver las entidades</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<div class="velo" id="velo" hidden></div>
+<aside class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="p-nombre" hidden>
+  <div class="panel-cab">
+    <span class="pos" id="p-pos"></span>
+    <div class="navs">
+      <a class="icono" id="p-ant" href="#" aria-label="Proveedor anterior" title="Proveedor anterior"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></a>
+      <a class="icono" id="p-sig" href="#" aria-label="Proveedor siguiente" title="Proveedor siguiente"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></a>
+      <a class="icono" id="p-cerrar" href="#" aria-label="Cerrar" title="Cerrar"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></a>
+    </div>
+  </div>
+  <div class="panel-cuerpo" id="panel-cuerpo"></div>
+</aside>
+<p class="sr" id="vivo" aria-live="polite"></p>
+
+<footer class="pie"><div class="envoltura">
+  <p><b>llika.pe</b> es una propuesta académica de UTEC Posgrado (2026), hecha con datos públicos del Estado peruano. Una señal no es una acusación: dice por dónde conviene empezar a revisar.</p>
+  <nav aria-label="Pie de página"><a href="#inicio">Entidades</a><a href="#como-funciona">Cómo funciona</a><a href="#datos">Datos y fuentes</a></nav>
+</div></footer>
+
+<script type="application/json" id="datos-llika">__DATOS__</script>
+
+<script>
+(() => {
+  'use strict';
+  const D = JSON.parse(document.getElementById('datos-llika').textContent);
+  const TOPE = D.tope, NB = ' ', DIA = 864e5;
+  const MES_CORTO = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'set', 'oct', 'nov', 'dic'];
+  const svg = d => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+  // Un solo juego de íconos, de trazo 1,5: cada señal lleva ícono y texto, no solo color
+  const ICO = {
+    busca: svg('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>'),
+    vin: svg('<circle cx="9" cy="12" r="5"/><circle cx="15" cy="12" r="5"/>'),
+    ant: svg('<circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/>'),
+    fra: svg('<rect x="3" y="9" width="5" height="6" rx="1"/><rect x="9.5" y="9" width="5" height="6" rx="1"/><rect x="16" y="9" width="5" height="6" rx="1"/>'),
+    otra: svg('<path d="M6 21V4"/><path d="M6 5h11l-2.5 4 2.5 4H6"/>'),
+    marca: svg('<path d="m5 12.5 4.5 4.5L19 7.5"/>')
+  };
+  // Catálogo de señales: etiqueta corta (tabla) y fuente (ficha)
+  const SEN = {
+    procesos: ['Ganó sin competidores', 'Datos abiertos de concursos y contratos del Estado'],
+    nuevo: ['Proveedor nuevo', 'Órdenes de compra de las entidades (SEACE), desde 2018'],
+    informes: ['En informes de la Contraloría', 'Informes de control de la Contraloría'],
+    mismodueno: ['Mismo dueño', 'Socios de empresas (OECE) y órdenes de compra (SEACE)'],
+    espejo: ['Socio sancionado', 'Socios de empresas (OECE) y Tribunal de Contrataciones'],
+    direccion: ['Misma dirección', 'Padrón de SUNAT (2026)'],
+    funcionario: ['Llegó con un funcionario', 'Declaraciones juradas de intereses (Contraloría) y órdenes de compra (SEACE)'],
+    inhabilitado: ['Vendió estando prohibido', 'Registro de inhabilitados del Tribunal de Contrataciones'],
+    doble: ['Cobra en dos entidades', 'Declaraciones juradas de intereses (Contraloría)'],
+    puerta: ['Un funcionario trabajó ahí', 'Declaraciones juradas de intereses (Contraloría)']
+  };
+  const CATALOGO = ['Vínculo', 'Antecedentes', 'Compras partidas', ...Object.values(SEN).map(s => s[0])];
+  const VIN = { autoridad: 'Vínculo con una autoridad', pariente: 'Posible pariente de una autoridad', declarado: 'Vínculo declarado' };
+  // Por cada 100 filas con ese motivo, cuántas trajeron un proveedor con sanción, penalidad o hallazgo posterior (2022 y 2024)
+  const TASA = { autoridad: 4.1, pariente: 2.2, antecedentes: 4.4, perfil: 1.6, peso: 0.4, bandera: 0.6, mayor: 0.4 };
+  // Qué pesa más en el parecido: parte del cambio en R al mezclar cada grupo de datos entre proveedores (modelos de la lista de 2025; HALLAZGOS 160, sección 91)
+  const PESOS = [{"id": "contratos", "nombre": "Concursos y contratos", "pct": 49.6, "que": "En cuántos concursos participó, cuántos ganó y cuántos contratos tiene o tuvo"}, {"id": "vende", "nombre": "Cuánto vende sin concurso", "pct": 20.7, "que": "Cuánto vendió en el año sin concurso, en cuántas compras y a cuántas entidades"}, {"id": "anti", "nombre": "Antigüedad y crecimiento", "pct": 8.4, "que": "Desde cuándo le vende al Estado y cuánto creció"}, {"id": "rubro", "nombre": "Qué vende", "pct": 7.2, "que": "Si vende bienes o servicios, y en cuántos rubros"}, {"id": "ant", "nombre": "Antecedentes", "pct": 6.8, "que": "Penalidades, multas, sanciones y prohibiciones de antes"}, {"id": "cat", "nombre": "Compras por catálogo", "pct": 6.4, "que": "Lo que vende por el catálogo electrónico del Estado"}, {"id": "conc", "nombre": "Cómo le va en los concursos", "pct": 0.8, "que": "Si gana sin competidores, compite siempre con los mismos o vende después de perder"}];
+  const ACENTO_PESOS = 2;
+  const pctPeso = v => (v < 1 ? 'menos de 1' : new Intl.NumberFormat('es-PE', { maximumFractionDigits: 0 }).format(v)) + '%';
+
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const ENTERO = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 0 });
+  const miles = n => ENTERO.format(Math.round(n));
+  const soles = n => 'S/' + NB + miles(n);
+  const dec = (x, d = 1) => new Intl.NumberFormat('es-PE', { minimumFractionDigits: d, maximumFractionDigits: d }).format(x);
+  const millones = n => n >= 1e6 ? 'S/' + NB + dec(n / 1e6) + NB + 'millones' : soles(n);
+    const fecha = iso => { const [y, m, d] = iso.split('-'); return `${Number(d)} ${MES_CORTO[Number(m) - 1]} ${y}`; };
+  const tiempo = iso => { const [y, m, d] = iso.split('-').map(Number); return Date.UTC(y, m - 1, d); };
+  const plural = (n, u, v) => `${miles(n)}${NB}${n === 1 ? u : v}`;
+  const norm = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const anunciar = t => { const v = document.getElementById('vivo'); v.textContent = ''; setTimeout(() => { v.textContent = t; }, 30); };
+
+  // ---------- Cada caso: totales, compras partidas (misma regla que LLIKA) y evidencia ----------
+  function preparar(ent, c) {
+    const os = (c.ord || []).map((o, k) => ({ k, f: o[0], t: tiempo(o[0]), num: o[1], desc: o[2], m: Number(o[3]) || 0 })).sort((a, b) => a.t - b.t || a.k - b.k);
+    let ventana = null;
+    os.forEach(o => {
+      const dentro = os.filter(p => p.t > o.t - 30 * DIA && p.t <= o.t);
+      const s = dentro.reduce((a, p) => a + p.m, 0);
+      o.b30 = dentro.length >= 2 && s > TOPE;
+      o.cerca = o.m >= 0.9 * TOPE;
+      if (o.b30 && (!ventana || s > ventana.suma)) ventana = { ordenes: dentro, suma: s, dias: Math.round((o.t - dentro[0].t) / DIA) };
+    });
+    if (ventana) ventana.ordenes.forEach(p => { p.enVentana = true; });
+    const total = os.reduce((a, o) => a + o.m, 0);
+    const conB = os.filter(o => o.b30 || o.cerca);
+    const base = c.motivo === 'bandera' && conB.length ? conB : os;
+    const visible = base.length ? base.reduce((a, o) => (o.m > a.m ? o : a), base[0]) : null;
+    const x = Object.assign({}, c, { ent, os, total, n: os.length, ventana, cercas: os.filter(o => o.cerca), visible, exp: c.exp || [], ant: c.ant || {} });
+    x.ev = evidencia(x);
+    x.busca = norm([c.prov.nombre, c.prov.ruc, c.prov.dni].join(' '));
+    return x;
+  }
+  function antecedentesTexto(a) {
+    const p = [];
+    if ((a.pen || []).length) p.push(plural(a.pen.length, 'penalidad', 'penalidades'));
+    if ((a.inh || []).length) p.push(plural(a.inh.length, 'inhabilitación', 'inhabilitaciones'));
+    if ((a.mul || []).length) p.push(plural(a.mul.length, 'multa', 'multas'));
+    return p.join(' y ');
+  }
+  function evidencia(c) {
+    const ev = [];
+    if (c.vin) {
+      const corto = c.vin.tipo === 'autoridad' ? 'Autoridad' : c.vin.tipo === 'pariente' ? `Posible pariente, ${c.vin.prob}%` : 'Declarado';
+      ev.push({ g: 'vin', etq: VIN[c.vin.tipo] || 'Vínculo', corto, x: c.vin.x, f: c.vin.fuente, prob: c.vin.prob, extra: c.vin.tipo === 'declarado' ? 'No sube en la lista: este tipo de vínculo no acertó en 2022 y 2024 (0 de 106).' : '' });
+    }
+    const a = antecedentesTexto(c.ant);
+    if (a) {
+      ev.push({ g: 'ant', etq: 'Antecedentes', corto: a[0].toUpperCase() + a.slice(1), x: `${a[0].toUpperCase() + a.slice(1)} antes de terminar ${D.anio}.`, det: [...(c.ant.pen || []), ...(c.ant.inh || []), ...(c.ant.mul || [])],
+        extra: 'Una penalidad es un descuento por incumplir un contrato. Una inhabilitación es la prohibición de venderle al Estado por un tiempo.', f: 'Tribunal de Contrataciones y penalidades de las entidades' });
+    }
+    if (c.ventana || c.cercas.length) {
+      const partes = [], cortos = [];
+      if (c.ventana) { partes.push(`${plural(c.ventana.ordenes.length, 'compra', 'compras')} en ${plural(c.ventana.dias, 'día', 'días')} suman ${soles(c.ventana.suma)}, más que el tope de ${soles(TOPE)} para comprar sin concurso.`); cortos.push(`${c.ventana.ordenes.length} compras en ${c.ventana.dias} días`); }
+      c.cercas.forEach(o => { partes.push(`Una compra de ${soles(o.m)} llega al ${Math.round(100 * o.m / TOPE)}% del tope.`); });
+      if (c.cercas.length) cortos.push(`${Math.round(100 * Math.max(...c.cercas.map(o => o.m)) / TOPE)}% del tope`);
+      ev.push({ g: 'fra', etq: 'Compras que parecen partidas', corto: cortos.join(' · '), x: partes.join(' '), f: 'Órdenes de compra de las entidades (SEACE)' });
+    }
+    c.exp.forEach(e => { const s = SEN[e.t] || ['Otra señal', 'Sin fuente']; ev.push({ g: 'otra', etq: s[0], corto: s[0], x: e.x, f: s[1] }); });
+    return ev;
+  }
+  const ENT = {};
+  D.entidades.forEach(e => { e.casos = e.casos.map(c => preparar(e, c)); ENT[e.id] = e; e.conSenal = e.casos.filter(c => c.ev.length).length; });
+  const tiene = (c, g) => c.ev.some(x => x.g === g);
+  const nombre = c => esc(c.prov.nombre || 'Sin nombre');
+  const tipoProv = c => c.prov.tipo === 'natural' ? 'Persona natural' : 'Empresa';
+  const idsTxt = c => `RUC ${c.prov.ruc}${c.prov.dni ? ` · DNI ${c.prov.dni}` : ''}`;
+  const parteVentas = c => c.clocal == null ? 'sin dato' : (c.clocal >= 100 ? '100' : c.clocal) + '%';
+
+  // ---------- Buscador (cabecera e inicio): entidades y proveedores ----------
+  function buscar(texto) {
+    const t = norm(texto).trim();
+    if (!t) return { items: [] };
+    if (/^\d+$/.test(t) && t.length > 11) return { aviso: 'Un RUC tiene 11 dígitos y un DNI, 8. Revisa el número.' };
+    if (t.length < 2) return { aviso: 'Escribe al menos 2 letras.' };
+    const p = t.split(/\s+/);
+    const ents = D.entidades.filter(e => { const h = norm([e.nombre, e.corto, e.tipo, e.sector, e.ruc].join(' ')); return p.every(x => h.includes(x)); })
+      .map(e => ({ href: `#entidad-${e.id}`, t: e.nombre, s: `${e.tipo} · RUC ${e.ruc}` }));
+    const provs = [];
+    D.entidades.forEach(e => e.casos.forEach(c => { if (p.every(x => c.busca.includes(x))) provs.push({ href: `#caso-${e.id}-${c.rk}`, t: c.prov.nombre, s: `Puesto ${c.rk} en ${e.corto} · ${idsTxt(c)}` }); }));
+    return { items: [...ents, ...provs.slice(0, 8)], mas: provs.length > 8 ? provs.length - 8 : 0 };
+  }
+  document.querySelectorAll('[data-busca]').forEach(caja => {
+    const inp = caja.querySelector('input'), ul = caja.querySelector('.sugerencias');
+    let activo = -1;
+    const cerrar = () => { ul.hidden = true; inp.setAttribute('aria-expanded', 'false'); inp.removeAttribute('aria-activedescendant'); activo = -1; };
+    const pintar = () => {
+      const r = buscar(inp.value);
+      if (!inp.value.trim()) { cerrar(); return; }
+      ul.innerHTML = r.aviso ? `<li><p>${esc(r.aviso)}</p></li>`
+        : r.items.length ? r.items.map((x, i) => `<li role="option" id="${ul.id}-${i}"><a href="${x.href}">${esc(x.t)}<small>${esc(x.s)}</small></a></li>`).join('') + (r.mas ? `<li><p>Hay ${r.mas} proveedores más. Escribe más letras para acotar.</p></li>` : '')
+          : `<li><p>No encontramos «${esc(inp.value.trim())}». Prueba con Wayrapampa, Ccori Llacta o Pukyu, las tres entidades de la demo.</p></li>`;
+      ul.hidden = false; inp.setAttribute('aria-expanded', 'true'); activo = -1;
+    };
+    inp.addEventListener('input', pintar);
+    inp.addEventListener('focus', () => { if (inp.value.trim()) pintar(); });
+    inp.addEventListener('keydown', ev => {
+      const links = [...ul.querySelectorAll('a')];
+      if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+        if (!links.length) return;
+        ev.preventDefault();
+        activo = (activo + (ev.key === 'ArrowDown' ? 1 : -1) + links.length) % links.length;
+        links.forEach((a, i) => a.classList.toggle('activo', i === activo));
+        inp.setAttribute('aria-activedescendant', `${ul.id}-${activo}`);
+      } else if (ev.key === 'Enter') {
+        ev.preventDefault();
+        const a = links[activo >= 0 ? activo : 0];
+        if (a) { location.hash = a.getAttribute('href').slice(1); inp.value = ''; cerrar(); inp.blur(); }
+      } else if (ev.key === 'Escape') { cerrar(); }
+    });
+    ul.addEventListener('click', ev => { if (ev.target.closest('a')) { inp.value = ''; cerrar(); } });
+    document.addEventListener('click', ev => { if (!caja.contains(ev.target)) cerrar(); });
+  });
+
+  // ---------- Inicio: la lista de entidades ----------
+  document.getElementById('t-entidades').innerHTML = D.entidades.map(e => `<tr data-href="#entidad-${e.id}">
+    <td><a href="#entidad-${e.id}">${esc(e.nombre)}</a> <span class="tag">ficticia</span></td>
+    <td class="suave">${esc(e.tipo)}</td>
+    <td class="der num" data-et="Proveedores">${miles(e.proveedores)}</td>
+    <td class="der num" data-et="Comprado en ${D.anio}">${millones(e.monto)}</td>
+    <td class="der num" data-et="Con alguna señal">${miles(e.conSenal)} de ${miles(e.casos.length)}</td></tr>`).join('');
+  document.getElementById('t-entidades').addEventListener('click', ev => { const tr = ev.target.closest('tr[data-href]'); if (tr && !ev.target.closest('a')) location.hash = tr.dataset.href.slice(1); });
+  document.getElementById('conteo-ini').textContent = `${plural(D.entidades.length, 'entidad', 'entidades')} en la demo. Listas de ${D.anio}, armadas al cierre del año.`;
+
+  // ---------- Entidad: tabla de hasta 100 proveedores ----------
+  const ES = { e: null, q: '', f: new Set(), orden: 'rk' };
+  const FILTROS = [['vin', 'Vínculo'], ['ant', 'Antecedentes'], ['fra', 'Compras partidas'], ['otra', 'Otras señales']];
+  const SIN = '<span class="nada" aria-hidden="true">—</span><span class="sr">sin señal</span>';
+  function celdaEv(c, g) {
+    const xs = c.ev.filter(x => x.g === g);
+    if (!xs.length) return SIN;
+    const t = g === 'otra' ? xs.slice(0, 2).map(x => x.corto).join(' · ') + (xs.length > 2 ? ` y ${xs.length - 2} más` : '') : xs[0].corto;
+    return `<span class="m">${ICO[g]}<span>${esc(t)}</span></span>`;
+  }
+  function filaHTML(c) {
+    return `<tr class="fila${c.rk <= 5 ? ' top' : ''}" data-rk="${c.rk}">
+      <td class="rk">${c.rk}</td>
+      <td class="prov"><a class="p-nom" href="#caso-${c.ent.id}-${c.rk}">${nombre(c)}</a><span class="p-sub">${tipoProv(c)} · RUC <span class="mono">${esc(c.prov.ruc)}</span></span></td>
+      <td class="monto der"><b>${soles(c.total)}</b><span>${plural(c.n, 'compra', 'compras')}</span></td>
+      ${FILTROS.map(([g]) => `<td class="ev${tiene(c, g) ? '' : ' sin'}">${celdaEv(c, g)}</td>`).join('')}
+    </tr>`;
+  }
+  function renderEntidad(e) {
+    ES.e = e; ES.q = ''; ES.f = new Set(); ES.orden = 'rk';
+    const cuenta = g => e.casos.filter(c => tiene(c, g)).length;
+    document.getElementById('entidad').innerHTML = `
+      <nav class="migas" aria-label="Ruta"><a href="#inicio">Entidades</a><span aria-hidden="true">/</span><span>${esc(e.corto)}</span></nav>
+      <header class="pag-cab">
+        <h1 tabindex="-1">${esc(e.nombre)} <span class="tag">ficticia</span></h1>
+        <p class="meta"><span>${esc(e.tipo)}</span><span>RUC <span class="mono">${esc(e.ruc)}</span></span><span>Lista de ${D.anio}, con lo que se sabía al 31 dic ${D.anio}</span></p>
+      </header>
+      <dl class="kpis">
+        <div><dt>proveedores le vendieron</dt><dd>${miles(e.proveedores)}</dd></div>
+        <div><dt>compras sin concurso</dt><dd>${miles(e.ordenes)}</dd></div>
+        <div><dt>en esas compras, en ${D.anio}</dt><dd>${millones(e.monto)}</dd></div>
+        <div><dt>de los ${e.casos.length} primeros tienen alguna señal</dt><dd>${miles(e.conSenal)}</dd></div>
+      </dl>
+      <div class="herramientas" role="search">
+        <div class="busca">${ICO.busca}<label class="sr" for="fq">Buscar en esta lista</label><input id="fq" type="search" placeholder="Buscar proveedor, RUC o DNI" autocomplete="off"></div>
+        <div class="filtros" role="group" aria-label="Mostrar solo proveedores con">
+          ${FILTROS.map(([g, t]) => `<button type="button" class="filtro" data-f="${g}" aria-pressed="false"><span class="tipo">${ICO[g]}</span><span class="marca">${ICO.marca}</span>${t}<span class="n">${cuenta(g)}</span></button>`).join('')}
+        </div>
+      </div>
+      <div class="lista-bloque">
+      <div class="lista-cab">
+        <p class="conteo" id="conteo" aria-live="polite"></p>
+        <div class="segmento" role="group" aria-label="Ordenar por"><span aria-hidden="true">Ordenar por</span>
+          <span class="opc"><button type="button" data-orden="rk" aria-pressed="true">Orden sugerido</button><button type="button" data-orden="monto" aria-pressed="false">Monto</button></span>
+        </div>
+      </div>
+      <div class="caja scroll-x tabla-caja">
+        <table class="tabla lista">
+          <thead><tr><th scope="col"><span aria-hidden="true">#</span><span class="sr">Puesto</span></th><th scope="col">Proveedor</th><th scope="col" class="der">Le vendió en ${D.anio}</th><th scope="col">Vínculo</th><th scope="col">Antecedentes</th><th scope="col">Compras partidas</th><th scope="col">Otras señales</th></tr></thead>
+          <tbody id="filas"></tbody>
+        </table>
+      </div>
+      </div>
+      <p class="nota-pie">Los cinco primeros son los que LLIKA recomienda revisar primero; el resto sigue el mismo orden. Aparecer aquí no es una acusación: solo dice por dónde conviene empezar. Incluso con el motivo más fuerte, 4 de cada 100 tuvieron después una sanción, una penalidad o una observación de la Contraloría. <a href="#como-funciona">Cómo funciona</a></p>`;
+    pintarFilas();
+    document.title = `${e.corto} · llika.pe`;
+  }
+  function pintarFilas() {
+    const e = ES.e, q = norm(ES.q).trim();
+    let filas = e.casos.filter(c => (!q || q.split(/\s+/).every(x => c.busca.includes(x))) && [...ES.f].every(g => tiene(c, g)));
+    if (ES.orden === 'monto') filas = [...filas].sort((a, b) => b.total - a.total);
+    const tb = document.getElementById('filas');
+    if (!filas.length) {
+      tb.innerHTML = `<tr><td colspan="7"><div class="vacio">${ICO.busca}<p class="v-t">Ningún proveedor coincide</p><p>Prueba con otro nombre o número, o quita los filtros.</p><button type="button" class="boton boton-sec" data-limpiar>Quitar filtros</button></div></td></tr>`;
+    } else if (ES.orden === 'rk') {
+      const a = filas.filter(c => c.rk <= 5), b = filas.filter(c => c.rk > 5);
+      tb.innerHTML = (a.length ? `<tr class="grupo g-top"><td colspan="7">Para empezar: los cinco que LLIKA recomienda revisar primero</td></tr>${a.map(filaHTML).join('')}` : '')
+        + (b.length ? `<tr class="grupo"><td colspan="7">Siguientes, en el mismo orden</td></tr>${b.map(filaHTML).join('')}` : '');
+    } else tb.innerHTML = filas.map(filaHTML).join('');
+    const filtrado = q || ES.f.size;
+    document.getElementById('conteo').textContent = filtrado ? `${plural(filas.length, 'proveedor', 'proveedores')} de ${e.casos.length} con esos criterios`
+      : `Los ${e.casos.length} primeros de ${miles(e.proveedores)} proveedores, ${ES.orden === 'monto' ? 'del que más vendió al que menos' : 'en el orden en que conviene revisarlos'}`;
+  }
+  const cajaEnt = document.getElementById('entidad');
+  cajaEnt.addEventListener('input', ev => { if (ev.target.id === 'fq') { ES.q = ev.target.value; pintarFilas(); } });
+  cajaEnt.addEventListener('click', ev => {
+    const f = ev.target.closest('[data-f]');
+    if (f) { const g = f.dataset.f; if (ES.f.has(g)) ES.f.delete(g); else ES.f.add(g); f.setAttribute('aria-pressed', String(ES.f.has(g))); pintarFilas(); return; }
+    const o = ev.target.closest('[data-orden]');
+    if (o) { ES.orden = o.dataset.orden; cajaEnt.querySelectorAll('[data-orden]').forEach(b => b.setAttribute('aria-pressed', String(b === o))); pintarFilas(); return; }
+    if (ev.target.closest('[data-limpiar]')) { ES.f.clear(); ES.q = ''; cajaEnt.querySelectorAll('[data-f]').forEach(b => b.setAttribute('aria-pressed', 'false')); document.getElementById('fq').value = ''; pintarFilas(); document.getElementById('fq').focus(); return; }
+    const tr = ev.target.closest('tr.fila');
+    if (tr && !ev.target.closest('a')) location.hash = `caso-${ES.e.id}-${tr.dataset.rk}`;
+  });
+
+  // ---------- Panel del proveedor ----------
+  function graficoOrdenes(c, ancho) {
+    const W = Math.round(Math.max(280, Math.min(ancho, 760))), H = 200, ml = 8, mr = 8, mt = 36, mb = 24;
+    const x0 = Date.UTC(D.anio, 0, 1), x1 = Date.UTC(D.anio, 11, 31);
+    const X = t => ml + (t - x0) / (x1 - x0) * (W - ml - mr);
+    const maxV = Math.max(TOPE * 1.12, ...c.os.map(o => o.m * 1.12));
+    const Y = v => H - mb - v / maxV * (H - mt - mb);
+    const bw = W < 460 ? 6 : 8, f = n => n.toFixed(1), s = [];
+    s.push(`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(`${plural(c.n, 'compra', 'compras')} en ${D.anio}; tope para comprar sin concurso: ${soles(TOPE)}`)}">`);
+    s.push(`<rect class="g-banda" x="${ml}" y="${f(Y(TOPE))}" width="${W - ml - mr}" height="${f(Y(0.9 * TOPE) - Y(TOPE))}"/>`);
+    if (c.ventana) { const a = X(c.ventana.ordenes[0].t) - bw, b = X(c.ventana.ordenes[c.ventana.ordenes.length - 1].t) + bw; s.push(`<rect class="g-ventana" x="${f(a)}" y="${mt - 6}" width="${f(b - a)}" height="${f(Y(0) - mt + 6)}" rx="4"/>`); }
+    s.push(`<line class="g-base" x1="${ml}" x2="${W - mr}" y1="${f(Y(0))}" y2="${f(Y(0))}"/><line class="g-tope" x1="${ml}" x2="${W - mr}" y1="${f(Y(TOPE))}" y2="${f(Y(TOPE))}"/>`);
+    c.os.forEach(o => { const cls = (o.b30 || o.cerca || o.enVentana) ? 'g-b-flag' : o === c.visible ? 'g-b-acento' : 'g-b'; const y = Y(o.m); s.push(`<rect class="${cls}" x="${f(X(o.t) - bw / 2)}" y="${f(y)}" width="${bw}" height="${f(Y(0) - y)}" rx="2"><title>${fecha(o.f)} · ${esc(o.num)} · ${soles(o.m)}</title></rect>`); });
+    const t3 = (W - ml - mr) / 3, izq = Math.max(0, ...c.os.filter(o => X(o.t) < ml + t3 * 1.2).map(o => o.m)) <= Math.max(0, ...c.os.filter(o => X(o.t) > W - mr - t3 * 1.2).map(o => o.m));
+    s.push(`<text class="g-t g-halo" x="${izq ? ml + 2 : W - mr - 2}" y="${f(Y(TOPE) - 6)}" text-anchor="${izq ? 'start' : 'end'}">Tope sin concurso: ${soles(TOPE)}</text>`);
+    if (c.ventana) { const v = c.ventana, a = X(v.ordenes[0].t), b = X(v.ordenes[v.ordenes.length - 1].t), cx = Math.min(Math.max((a + b) / 2, ml + 105), W - mr - 105); s.push(`<text class="g-t g-flag g-halo" x="${f(cx)}" y="${mt - 12}" text-anchor="middle">${v.ordenes.length} compras en ${v.dias} días: ${soles(v.suma)}</text>`); }
+    if (c.visible) {
+      const v = c.visible, vx = X(v.t);
+      if (v.m >= 0.8 * TOPE) { const der = vx < W - mr - 76; s.push(`<text class="g-t g-valor g-halo" x="${f(der ? vx + bw / 2 + 5 : vx - bw / 2 - 5)}" y="${f(Y(0.9 * TOPE) + 14)}" text-anchor="${der ? 'start' : 'end'}">${soles(v.m)}</text>`); }
+      else { const anc = vx < ml + 44 ? 'start' : vx > W - mr - 44 ? 'end' : 'middle'; s.push(`<text class="g-t g-valor g-halo" x="${f(anc === 'start' ? vx - bw / 2 : anc === 'end' ? vx + bw / 2 : vx)}" y="${f(Y(v.m) - 6)}" text-anchor="${anc}">${soles(v.m)}</text>`); }
+    }
+    for (let m = 0; m < 12; m++) { if (W < 520 && m % 2) continue; s.push(`<text class="g-t" x="${f(X(Date.UTC(D.anio, m, 15)))}" y="${H - 7}" text-anchor="middle">${MES_CORTO[m]}</text>`); }
+    return s.join('') + '</svg>';
+  }
+  // Lo que más pesa en el parecido (para todos) junto a lo de este proveedor; solo los grupos de los que la demo tiene datos
+  function enQueSeFija(c, abierto) {
+    const a = antecedentesTexto(c.ant), e = t => c.exp.find(x => x.t === t);
+    const cl = Math.min(Number(c.clocal) || 0, 100);
+    const pais = cl > 0 ? Math.round(c.total * 100 / cl / 10) * 10 : null;
+    const k = c.con || {};
+    const H = {
+      contratos: !k.proc ? 'No participó en concursos' : `Participó en ${plural(k.proc, 'concurso', 'concursos')} y ganó ${miles(k.gan)}${k.ctr ? `; ${plural(k.ctr, 'contrato', 'contratos')} en curso` : ''}`,
+      rubro: c.rubro || '',
+      ant: a ? a[0].toUpperCase() + a.slice(1) : `Ninguno antes de terminar ${D.anio}`,
+      vende: pais && pais > c.total ? `Unos ${soles(pais)} sin concurso en ${D.anio}; ${soles(c.total)} a esta entidad` : `${soles(c.total)} sin concurso en ${D.anio}, todo a esta entidad`,
+      conc: (e('procesos') || e('inhabilitado') || {}).x || '',
+      anti: e('nuevo') ? 'Es su primer año vendiéndole al Estado' : c.previa ? `Le vende a esta entidad desde ${c.previa.desde}` : c.previa === null ? `${D.anio} es su primer año con esta entidad` : ''
+    };
+    const filas = PESOS.filter(p => H[p.id]);
+    return `<details class="fija"${abierto ? ' open' : ''}><summary>En qué se fija el programa</summary>
+      <table class="t-fija"><thead><tr><th scope="col">Lo que más pesa, para todos</th><th scope="col">Este proveedor</th></tr></thead>
+      <tbody>${filas.map(p => `<tr><td>${esc(p.nombre)}<span class="d">${pctPeso(p.pct)} del parecido</span></td><td>${esc(H[p.id])}</td></tr>`).join('')}</tbody></table>
+      <p class="d">El porcentaje es lo que pesa cada grupo para todos los proveedores del país, no para este en particular.</p></details>`;
+  }
+  // Cómo se calculó el puesto: las cuatro cosas que LLIKA mira, con el valor de este proveedor y cuál decidió
+  function calculo(c) {
+    const vinSube = c.vin && (c.vin.tipo === 'autoridad' || c.vin.tipo === 'pariente');
+    const alto = c.motivo === 'antecedentes' || c.motivo === 'perfil';
+    const fra = c.ev.find(x => x.g === 'fra');
+    const pasos = [
+      { t: '¿Tiene un vínculo con una autoridad de esta entidad?', v: !c.vin ? 'No' : c.vin.tipo === 'autoridad' ? 'Sí: es una autoridad o su empresa' : c.vin.tipo === 'pariente' ? `Puede ser pariente: ${c.vin.prob}% de probabilidad` : 'Declarado: se muestra, pero no lo sube en la lista', d: vinSube },
+      { t: '¿Se parece a proveedores que después fueron sancionados?', v: vinSube ? 'No hizo falta mirarlo: el vínculo va primero' : alto ? 'Mucho: está entre los 2 de cada 100 que más se parecen en todo el país' : 'No está entre los que más se parecen', d: !vinSube && alto, extra: enQueSeFija(c, !vinSube && alto) },
+      { t: '¿Cuánto depende de esta entidad?', v: `Le vendió ${soles(c.total)}: el ${parteVentas(c)} de todo lo que le vende al Estado`, d: c.motivo === 'peso' },
+      { t: '¿Tiene compras que parecen partidas?', v: fra ? `Sí: ${fra.corto}` : c.motivo === 'mayor' ? 'No. Ninguna otra lo parecía, y entra la compra más grande' : 'No', d: c.motivo === 'bandera' || c.motivo === 'mayor' }
+    ];
+    return `<ol class="calculo">${pasos.map(p => `<li${p.d ? ' class="decide"' : ''}><span class="c-t">${p.t}</span><span class="c-v">${esc(p.v)}${p.d ? '<span class="decide-tag">Por esto está aquí</span>' : ''}</span>${p.extra ? `<div class="c-extra">${p.extra}</div>` : ''}</li>`).join('')}</ol>`;
+  }
+  let casoAbierto = null, focoPrevio = null;
+  const panel = document.getElementById('panel'), velo = document.getElementById('velo'), cuerpo = document.getElementById('panel-cuerpo');
+  function dibujarGrafico() { const g = document.getElementById('g-ords'); if (g && casoAbierto && !panel.hidden) g.innerHTML = graficoOrdenes(casoAbierto, g.clientWidth || 472); }
+
+  function renderPanel(c) {
+    const e = c.ent, i = e.casos.indexOf(c);
+    const ant = e.casos[i - 1], sig = e.casos[i + 1];
+    document.getElementById('p-pos').innerHTML = `<b>Puesto ${c.rk}</b> de ${e.casos.length}${c.rk <= 5 ? ' · para empezar' : ''}`;
+    const pa = document.getElementById('p-ant'), ps = document.getElementById('p-sig');
+    pa.href = ant ? `#caso-${e.id}-${ant.rk}` : '#'; pa.setAttribute('aria-disabled', String(!ant));
+    ps.href = sig ? `#caso-${e.id}-${sig.rk}` : '#'; ps.setAttribute('aria-disabled', String(!sig));
+    document.getElementById('p-cerrar').href = `#entidad-${e.id}`;
+    const presentes = new Set(c.ev.map(x => x.g === 'otra' ? x.etq : { vin: 'Vínculo', ant: 'Antecedentes', fra: 'Compras partidas' }[x.g]));
+    const ausentes = CATALOGO.filter(x => !presentes.has(x));
+    const v = c.visible;
+    cuerpo.innerHTML = `
+      <header class="p-cab">
+        <h2 id="p-nombre" tabindex="-1">${nombre(c)}</h2>
+        <p class="ids"><span>RUC <span class="mono">${esc(c.prov.ruc)}</span> <button type="button" class="copiar" data-copiar="${esc(c.prov.ruc)}">Copiar</button></span>${c.prov.dni ? `<span>DNI <span class="mono">${esc(c.prov.dni)}</span></span>` : ''}<span>${tipoProv(c)}</span><span>${esc(c.rubro || '')}</span></p>
+      </header>
+      <dl class="p-cifras">
+        <div><dt>le vendió a esta entidad en ${D.anio}</dt><dd>${soles(c.total)}</dd></div>
+        <div><dt>${c.n === 1 ? 'compra' : 'compras'}</dt><dd>${miles(c.n)}</dd></div>
+        <div><dt>de todo lo que le vende al Estado</dt><dd>${parteVentas(c)}</dd></div>
+      </dl>
+      <section class="por" aria-labelledby="p-por">
+        <h3 id="p-por">Por qué está en el puesto ${c.rk}</h3>
+        <p class="frase">${esc(c.por)}</p>
+        ${TASA[c.motivo] != null ? `<p class="tasa">De cada 100 proveedores que aparecen por este motivo, ${dec(TASA[c.motivo])} tuvieron después una sanción, una penalidad o una observación de la Contraloría. Elegidos al azar, ${dec(D.azar)}.</p>` : ''}
+      </section>
+      <section class="bloque-p" aria-labelledby="p-calc">
+        <h3 id="p-calc">Cómo llegó a este puesto</h3>
+        ${calculo(c)}
+        <p class="chico suave">Primero van los vínculos. Después, quienes más se parecen a proveedores sancionados y más dependen de esta entidad. <a href="#como-funciona">Cómo funciona</a></p>
+      </section>
+      <section class="bloque-p" aria-labelledby="p-sen">
+        <h3 id="p-sen">Señales <span class="n">${c.ev.length ? `${c.ev.length} de ${CATALOGO.length}` : `ninguna de ${CATALOGO.length}`}</span></h3>
+        ${c.ev.length ? `<ul class="senales">${c.ev.map(x => `<li class="senal">${ICO[x.g]}<span><b>${esc(x.etq)}.</b> ${esc(x.x)}</span>
+            ${x.prob != null ? `<span class="prob"><b>${x.prob}%</b><i aria-hidden="true"><span style="--p:${Number(x.prob)}%"></span></i>de probabilidad de ser pariente</span><small>Es una coincidencia de apellidos, no un hecho comprobado. De 29 coincidencias muy probables, 14 eran parientes de verdad.</small>` : ''}
+            ${x.det && x.det.length ? `<ul>${x.det.map(d => `<li>${esc(d)}</li>`).join('')}</ul>` : ''}
+            ${x.extra ? `<small>${esc(x.extra)}</small>` : ''}
+            <small>Fuente: ${esc(x.f)}</small></li>`).join('')}</ul>` : `<p class="chico suave">No tiene ninguna de las señales que LLIKA busca.</p>`}
+        ${ausentes.length && c.ev.length ? `<details class="sin"><summary>Lo que no tiene: ${ausentes.length} de ${CATALOGO.length} señales</summary><p>${esc(ausentes.join(', '))}.</p></details>` : ''}
+      </section>
+      <section class="bloque-p" aria-labelledby="p-ord">
+        <h3 id="p-ord">Sus compras de ${D.anio}</h3>
+        ${c.n ? `<div class="g-caja" id="g-ords"></div>
+        <p class="leyenda"><span><i class="l-gris"></i>Compra</span>${v && !(v.b30 || v.cerca || v.enVentana) ? '<span><i class="l-acento"></i>La más grande</span>' : ''}${c.ev.some(x => x.g === 'fra') ? '<span><i class="l-flag"></i>Parece partida</span>' : ''}</p>
+        <details class="ords"><summary>Ver ${c.n === 1 ? 'la compra' : `las ${c.n} compras`}</summary>
+          <table class="t-ords"><thead><tr><th scope="col">Fecha</th><th scope="col">Compra</th><th scope="col" class="der">Monto</th></tr></thead>
+          <tbody>${c.os.map(o => `<tr><td class="f">${fecha(o.f)}</td><td><span class="mono">${esc(o.num)}</span>${o.enVentana ? '<span class="mini">en 30 días</span>' : ''}${o.cerca ? '<span class="mini">cerca del tope</span>' : ''}<div class="d">${esc(o.desc)}</div></td><td class="der">${soles(o.m)}</td></tr>`).join('')}</tbody></table>
+        </details>` : '<p class="chico suave">No encontramos sus compras en la fuente.</p>'}
+      </section>
+      <section class="bloque-p" aria-labelledby="p-mas">
+        <h3 id="p-mas">Otros datos</h3>
+        <dl class="datos">
+          <dt>A quiénes se parece más</dt><dd>${c.riesgo === 'sancion' ? 'A proveedores sancionados por el Tribunal de Contrataciones' : c.riesgo === 'penalidad' ? 'A proveedores con penalidades' : 'Sin dato'}</dd>
+          <dt>Desde cuándo le vende</dt><dd>${c.previa === undefined ? 'Sin dato' : c.previa === null ? `${D.anio} es su primer año vendiéndole a esta entidad` : `Desde ${c.previa.desde}. Antes de ${D.anio} le había vendido ${soles(c.previa.monto)}`}</dd>
+          <dt>Su compra más grande</dt><dd>${v ? `${soles(v.m)}, el ${fecha(v.f)}` : 'Sin dato'}</dd>
+        </dl>
+      </section>
+      <footer class="p-pie">
+        <p>Una señal no es una acusación: solo dice por dónde conviene empezar a revisar. LLIKA no revisó los documentos de cada compra.</p>
+        <button type="button" class="boton boton-sec" id="abrir-cor" aria-expanded="false" aria-controls="cor">Reportar un error</button>
+        <form class="correccion" id="cor" hidden novalidate>
+          <div class="campo"><label for="c-tipo">¿Qué dato está mal?</label><select id="c-tipo" name="tipo" aria-describedby="e-tipo"><option value="">Elige una opción</option><option>Nombre, RUC o DNI</option><option>Compras o montos</option><option>Antecedentes</option><option>Vínculo o parentesco</option><option>Otra señal</option></select><span class="error" id="e-tipo"></span></div>
+          <div class="campo"><label for="c-det">¿Qué hay que corregir?</label><textarea id="c-det" name="det" aria-describedby="e-det"></textarea><span class="error" id="e-det"></span></div>
+          <div class="campo"><label for="c-mail">Correo para responderte (opcional)</label><input id="c-mail" name="mail" type="email" autocomplete="email" aria-describedby="e-mail"><span class="error" id="e-mail"></span></div>
+          <button class="boton" type="submit">Enviar corrección</button>
+          <p class="ok" id="c-ok" role="status" hidden></p>
+        </form>
+      </footer>`;
+    casoAbierto = c;
+  }
+  function abrirPanel(c) {
+    const estabaCerrado = panel.hidden;
+    if (estabaCerrado) focoPrevio = document.activeElement;
+    renderPanel(c);
+    panel.hidden = false; velo.hidden = false; document.body.classList.add('con-panel');
+    cuerpo.scrollTop = 0;
+    dibujarGrafico();
+    document.getElementById('p-nombre').focus({ preventScroll: true });
+    document.title = `${c.prov.nombre} · llika.pe`;
+  }
+  function cerrarPanel() {
+    if (panel.hidden) return;
+    panel.hidden = true; velo.hidden = true; document.body.classList.remove('con-panel'); casoAbierto = null;
+    const rk = focoPrevio && focoPrevio.isConnected ? focoPrevio : null;
+    if (rk) rk.focus({ preventScroll: true });
+    if (ES.e) document.title = `${ES.e.corto} · llika.pe`;
+  }
+  const volverALista = () => { if (ES.e) location.hash = `entidad-${ES.e.id}`; };
+  velo.addEventListener('click', volverALista);
+  document.addEventListener('keydown', ev => {
+    if (panel.hidden) return;
+    if (ev.key === 'Escape') { volverALista(); return; }
+    if (ev.key !== 'Tab') return;
+    // El foco no sale del panel mientras está abierto
+    const fs = [...panel.querySelectorAll('a[href], button, input, select, textarea, summary, [tabindex="0"]')].filter(el => !el.closest('[hidden]') && el.getAttribute('aria-disabled') !== 'true');
+    if (!fs.length) return;
+    const pri = fs[0], ult = fs[fs.length - 1];
+    if (ev.shiftKey && (document.activeElement === pri || !panel.contains(document.activeElement))) { ev.preventDefault(); ult.focus(); }
+    else if (!ev.shiftKey && document.activeElement === ult) { ev.preventDefault(); pri.focus(); }
+  });
+  panel.addEventListener('click', ev => {
+    if (ev.target.closest('[aria-disabled="true"]')) { ev.preventDefault(); return; }
+    const cp = ev.target.closest('[data-copiar]');
+    if (cp) {
+      const t = cp.dataset.copiar, ok = () => { cp.textContent = 'Copiado'; anunciar('RUC copiado'); setTimeout(() => { cp.textContent = 'Copiar'; }, 1500); };
+      const sel = () => { const r = document.createRange(); r.selectNodeContents(cp.previousElementSibling); const s = getSelection(); s.removeAllRanges(); s.addRange(r); cp.textContent = 'Seleccionado'; anunciar('No se pudo copiar. El RUC quedó seleccionado: cópialo con el teclado.'); };
+      try { navigator.clipboard.writeText(t).then(ok, sel); } catch (err) { sel(); }
+      return;
+    }
+    const b = ev.target.closest('#abrir-cor');
+    if (b) { const f = document.getElementById('cor'); f.hidden = !f.hidden; b.setAttribute('aria-expanded', String(!f.hidden)); if (!f.hidden) document.getElementById('c-tipo').focus(); }
+  });
+  panel.addEventListener('submit', ev => {
+    const f = ev.target.closest('#cor'); if (!f) return;
+    ev.preventDefault();
+    let ok = true;
+    const marcar = (id, msg) => { const el = document.getElementById('c-' + id), er = document.getElementById('e-' + id); el.setAttribute('aria-invalid', msg ? 'true' : 'false'); er.textContent = msg || ''; if (msg && ok) { ok = false; el.focus(); } };
+    const det = f.det.value.trim(), mail = f.mail.value.trim();
+    marcar('tipo', f.tipo.value ? '' : 'Elige qué dato está mal.');
+    marcar('det', det.length >= 15 ? '' : det ? 'Cuéntanos un poco más: al menos 15 letras.' : 'Escribe qué hay que corregir.');
+    marcar('mail', !mail || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail) ? '' : 'Al correo le falta la @ o el dominio. Revísalo.');
+    const m = document.getElementById('c-ok');
+    if (!ok) { m.hidden = true; return; }
+    m.textContent = 'Recibido. En la versión pública llegaría al equipo de LLIKA; en esta demo no se envía nada.'; m.hidden = false; f.reset();
+  });
+
+  // ---------- Rutas ----------
+  const vistas = [...document.querySelectorAll('[data-vista]')], navs = [...document.querySelectorAll('[data-nav]')];
+  const TITULOS = { inicio: 'llika.pe', 'como-funciona': 'Cómo funciona · llika.pe', datos: 'Datos y fuentes · llika.pe', 'no-encontrada': 'No encontrada · llika.pe' };
+  let vistaActual = null, primera = true;
+  function mostrar(v) {
+    const cambia = v !== vistaActual;
+    vistas.forEach(s => { s.hidden = s.dataset.vista !== v; });
+    document.body.dataset.vista = v;
+    const n = v === 'entidad' ? 'inicio' : v;
+    navs.forEach(a => { if (a.dataset.nav === n) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    if (TITULOS[v]) document.title = TITULOS[v];
+    vistaActual = v;
+    if (cambia && !primera) { window.scrollTo(0, 0); const h = document.querySelector(`[data-vista="${v}"] h1`); if (h) h.focus({ preventScroll: true }); }
+    primera = false;
+  }
+  function ruta() {
+    let h = decodeURIComponent(location.hash.replace(/^#/, '')) || 'inicio';
+    if (h === 'acerca') h = 'datos';
+    let m;
+    if ((m = h.match(/^caso-([a-z0-9-]+)-(\d+)$/)) && ENT[m[1]]) {
+      const e = ENT[m[1]], c = e.casos.find(x => x.rk === Number(m[2]));
+      if (c) { if (ES.e !== e || vistaActual !== 'entidad') { mostrar('entidad'); renderEntidad(e); } abrirPanel(c); return; }
+    }
+    cerrarPanel();
+    if ((m = h.match(/^entidad-([a-z0-9-]+)$/)) && ENT[m[1]]) { const e = ENT[m[1]]; const otra = ES.e !== e || vistaActual !== 'entidad'; mostrar('entidad'); if (otra) renderEntidad(e); return; }
+    if (['inicio', 'como-funciona', 'datos'].includes(h)) { mostrar(h); return; }
+    mostrar('no-encontrada');
+  }
+  // El enlace para saltar al contenido no debe cambiar la ruta
+  document.querySelector('.salto').addEventListener('click', ev => { ev.preventDefault(); const p = document.getElementById('principal'); p.tabIndex = -1; p.focus(); });
+
+  // ---------- Tema ----------
+  const bTema = document.getElementById('tema'), NOM = { light: 'claro', dark: 'oscuro' };
+  const etiquetaTema = () => { const t = document.documentElement.getAttribute('data-theme'); bTema.setAttribute('aria-label', 'Tema de color: ' + (NOM[t] || 'sistema')); };
+  bTema.addEventListener('click', () => {
+    const r = document.documentElement, t = r.getAttribute('data-theme'), sig = !t ? 'light' : t === 'light' ? 'dark' : null;
+    if (sig) r.setAttribute('data-theme', sig); else r.removeAttribute('data-theme');
+    try { localStorage.setItem('llika-tema', sig || 'sistema'); } catch (err) { /* sin almacenamiento */ }
+    etiquetaTema();
+  });
+  try { const g = localStorage.getItem('llika-tema'); if (g === 'light' || g === 'dark') document.documentElement.setAttribute('data-theme', g); } catch (err) { /* sin almacenamiento */ }
+  etiquetaTema();
+
+  // ---------- Qué pesa más en el parecido (Cómo funciona) ----------
+  (() => {
+    const caja = document.getElementById('pesos');
+    const max = Math.max(...PESOS.map(p => p.pct));
+    caja.innerHTML = PESOS.map((p, i) => `<div class="peso-fila${i < ACENTO_PESOS ? ' acento' : ''}" role="listitem"><div class="peso-t"><span class="peso-n">${esc(p.nombre)}</span><span class="peso-q">${esc(p.que)}</span></div>
+      <span class="barra-pista"><span class="barra" style="--v:${(100 * p.pct / max).toFixed(1)}%"></span><span class="barra-num">${pctPeso(p.pct)}</span></span></div>`).join('');
+  })();
+
+  // ---------- Arranque ----------
+  // La mascota va una sola vez en el archivo; las demás vistas copian su imagen
+  const mascota = document.querySelector('.mascota img');
+  if (mascota) document.querySelectorAll('img[data-mascota]').forEach(i => { i.src = mascota.src; });
+  let espera = null;
+  const alCambiar = () => { clearTimeout(espera); espera = setTimeout(dibujarGrafico, 120); };
+  if ('ResizeObserver' in window) new ResizeObserver(alCambiar).observe(cuerpo); else window.addEventListener('resize', alCambiar);
+  window.addEventListener('hashchange', ruta);
+  ruta();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(dibujarGrafico);
+})();
+</script>
+</body>
+</html>

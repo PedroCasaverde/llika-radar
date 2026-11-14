@@ -8,6 +8,11 @@ Contraloría y SUNAT. Marca las contrataciones con personas o empresas impedidas
 para cada entidad y año, entrega los casos ordenados por puntaje y monto, con la evidencia y la norma de cada alerta. Es
 una herramienta para que el órgano de control institucional (OCI) decida qué revisar primero: no acusa a nadie.
 
+## La demo de llika.pe
+
+La pantalla del prototipo está en [`demo/`](demo/): un solo archivo HTML que se abre en el navegador, con datos
+inventados, y su fuente para rearmarlo y probarlo.
+
 ## Taller del 31/10/2026: el experimento mínimo
 
 Para repetir la evaluación del E5 sin bajar los datos completos, la entrada es la carpeta [`taller/`](taller/). Su
