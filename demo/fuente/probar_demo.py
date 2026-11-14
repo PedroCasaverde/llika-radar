@@ -91,6 +91,67 @@ with sync_playwright() as pw:
                 cerrado = p.locator("#panel").is_hidden()
                 res["interaccion"] = {"filas_con_vinculo": n_vin, "primero_por_monto": primero, "vacio": vacio.replace("\n", " | "), "filas_sin_filtros": n_todo, "sugerencia": sug.replace("\n", " | "), "ficha": titulo,
                                       "calculo": calculo.replace("\n", " | ")[:600], "escape_cierra": cerrado}
+            if nombre == "pc" and tema == "light":
+                # Los cambios de la prueba de uso (HALLAZGOS 160, sección 92): cada uno con lo que debe cumplir
+                cp = {}
+                casos = p.evaluate("JSON.parse(document.getElementById('datos-llika').textContent).entidades.flatMap(e => e.casos.map(c => [e.id, c.rk, (c.vin || {}).tipo || '']))")
+                con_porcentaje, sin_aviso, declarados, con_quien = [], [], 0, 0
+                for eid, rk, vin in casos:
+                    p.goto(U + f"#caso-{eid}-{rk}")
+                    p.wait_for_timeout(20)
+                    fija = p.locator("#panel details.fija")
+                    if fija.count() and "%" in fija.inner_text():
+                        con_porcentaje.append(f"{eid}-{rk}")
+                    av = p.locator("#panel .p-aviso")
+                    if not (av.count() and av.is_visible() and av.bounding_box()["y"] < h and "No constituye sanción" in av.inner_text()):
+                        sin_aviso.append(f"{eid}-{rk}")
+                    if vin == "declarado":
+                        declarados += 1
+                        con_quien += "Lo declaró:" in p.locator("#panel .senales").inner_text()
+                cp["1_parecido_sin_porcentajes"] = (not con_porcentaje, f"{len(casos)} fichas; con % en el bloque: {con_porcentaje[:5]}")
+                p.goto(U + "#caso-wayrapampa-3")
+                p.wait_for_timeout(200)
+                cp["1_parecido_en_orden"] = ("de más a menos importante" in p.locator("#panel details.fija").inner_text(), "encabezado de la tabla")
+                p.goto(U + "#caso-wayrapampa-5")
+                p.wait_for_timeout(300)
+                t, g = p.locator("#panel .t-ords"), p.locator("#g-ords")
+                cp["3_compras_abiertas_y_arriba"] = (t.is_visible() and t.bounding_box()["y"] < g.bounding_box()["y"] and not p.locator("#panel details.ords").count(),
+                                                     f"{t.locator('tbody tr').count()} compras a la vista sin hacer clic")
+                cp["4_aviso_sin_bajar"] = (not sin_aviso, f"en {len(casos) - len(sin_aviso)} de {len(casos)} fichas")
+                p.goto(U + "#caso-wayrapampa-2")
+                p.wait_for_timeout(200)
+                co = p.locator("#panel .coincide")
+                tam = co.evaluate("e => getComputedStyle(e).fontSize") if co.count() else "no está"
+                cp["4_coincidencia_16px"] = (tam == "16px" and "sin confirmar" in co.inner_text(), f"{tam}; lista: {p.locator('#filas tr.fila[data-rk=\"2\"] td.ev').first.inner_text()}")
+                cp["6_quien_declaro"] = (declarados == con_quien == 9, f"{con_quien} de {declarados} fichas con vínculo declarado")
+                # Excel: se baja desde la lista y se abre
+                import openpyxl
+                p.goto(U + "#entidad-wayrapampa")
+                p.wait_for_timeout(300)
+                with p.expect_download() as bajada:
+                    p.click("[data-excel]")
+                xlsx = CAP / bajada.value.suggested_filename
+                bajada.value.save_as(str(xlsx))
+                lb = openpyxl.load_workbook(xlsx)
+                hp, hc = lb["Proveedores"], lb["Compras"]
+                filas_p = [r for r in hp.iter_rows(min_row=4, values_only=True) if r[0] is not None]
+                filas_c = [r for r in hc.iter_rows(min_row=4, values_only=True) if r[0] is not None]
+                total_p = round(sum(r[6] for r in filas_p), 2)
+                total_c = round(sum(r[6] for r in filas_c), 2)
+                rucs_ok = all(isinstance(r[3], str) and len(r[3]) == 11 for r in filas_p)
+                cp["2_excel"] = (lb.sheetnames == ["Proveedores", "Compras"] and len(filas_p) == 100 and [r[0] for r in filas_p] == list(range(1, 101)) and rucs_ok and total_p == total_c
+                                 and "no constituye sanción" in hp["A2"].value,
+                                 f"{xlsx.name}: {len(filas_p)} proveedores, {len(filas_c)} compras, total S/ {total_p:,.2f} en las dos hojas; RUC como texto: {rucs_ok}")
+                # con un filtro, baja solo lo que se ve
+                p.click('[data-f="vin"]')
+                with p.expect_download() as bajada2:
+                    p.click("[data-excel]")
+                x2 = CAP / ("filtrado_" + bajada2.value.suggested_filename)
+                bajada2.value.save_as(str(x2))
+                n_vis = p.locator("#filas tr.fila").count()
+                n_xl = sum(1 for r in openpyxl.load_workbook(x2)["Proveedores"].iter_rows(min_row=4, values_only=True) if r[0] is not None)
+                cp["2_excel_respeta_filtros"] = (n_vis == n_xl, f"{n_xl} filas en el Excel, {n_vis} en pantalla con el filtro de vínculo")
+                res["prueba_de_uso"] = {k: {"ok": v[0], "detalle": v[1]} for k, v in cp.items()}
             if nombre == "cel" and tema == "light":
                 # en el celular: tocar una tarjeta de entidad y una de proveedor abre lo que corresponde
                 p.goto(U + "#inicio", wait_until="networkidle")
@@ -105,6 +166,11 @@ with sync_playwright() as pw:
 
 (CAP / "medidas.json").write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
 for k, v in res.items():
+    if k == "prueba_de_uso":
+        print("CAMBIOS DE LA PRUEBA DE USO")
+        for c, r in v.items():
+            print(f"  {'OK   ' if r['ok'] else 'FALLA'} {c}: {r['detalle']}")
+        continue
     if k in ("interaccion", "toque_cel"):
         print(k.upper(), json.dumps(v, ensure_ascii=False))
         continue

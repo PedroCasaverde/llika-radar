@@ -1086,7 +1086,13 @@
      "vin": {
       "tipo": "declarado",
       "x": "Figura como familiar en la declaración jurada de intereses de un funcionario de esta entidad.",
-      "fuente": "Declaraciones juradas de intereses (Contraloría)"
+      "fuente": "Declaraciones juradas de intereses (Contraloría)",
+      "decl": {
+       "nombre": "Rosa Villafuerte Quispe",
+       "cargo": "subgerenta de Rentas",
+       "area": "Gerencia de Administración Tributaria",
+       "anio": 2025
+      }
      },
      "ant": {},
      "previa": {
@@ -3570,7 +3576,13 @@
      "vin": {
       "tipo": "declarado",
       "x": "Figura como familiar en la declaración jurada de intereses de un funcionario de esta entidad.",
-      "fuente": "Declaraciones juradas de intereses (Contraloría)"
+      "fuente": "Declaraciones juradas de intereses (Contraloría)",
+      "decl": {
+       "nombre": "Jorge Palomino Rojas",
+       "cargo": "jefe de la División de Maquinaria y Equipo",
+       "area": "Gerencia de Desarrollo Urbano y Rural",
+       "anio": 2025
+      }
      },
      "ant": {},
      "previa": null,
@@ -3849,7 +3861,13 @@
      "vin": {
       "tipo": "declarado",
       "x": "Figura como familiar en la declaración jurada de intereses de un funcionario de esta entidad.",
-      "fuente": "Declaraciones juradas de intereses (Contraloría)"
+      "fuente": "Declaraciones juradas de intereses (Contraloría)",
+      "decl": {
+       "nombre": "Edwin Paucar Mendoza",
+       "cargo": "asistente administrativo",
+       "area": "Unidad de Abastecimiento",
+       "anio": 2025
+      }
      },
      "ant": {},
      "previa": {
@@ -7370,7 +7388,13 @@
      "vin": {
       "tipo": "declarado",
       "x": "Figura como familiar en la declaración jurada de intereses de un funcionario de esta entidad.",
-      "fuente": "Declaraciones juradas de intereses (Contraloría)"
+      "fuente": "Declaraciones juradas de intereses (Contraloría)",
+      "decl": {
+       "nombre": "Gladys Ccopa Huamán",
+       "cargo": "jefa de enfermería del servicio de emergencia",
+       "area": "Departamento de Enfermería",
+       "anio": 2025
+      }
      },
      "ant": {},
      "previa": {
@@ -11214,7 +11238,13 @@
      "vin": {
       "tipo": "declarado",
       "x": "Figura como familiar en la declaración jurada de intereses de un funcionario de esta entidad.",
-      "fuente": "Declaraciones juradas de intereses (Contraloría)"
+      "fuente": "Declaraciones juradas de intereses (Contraloría)",
+      "decl": {
+       "nombre": "Néstor Chambi Mamani",
+       "cargo": "especialista de abastecimiento",
+       "area": "Área de Gestión Administrativa",
+       "anio": 2025
+      }
      },
      "ant": {},
      "previa": {
@@ -13030,7 +13060,13 @@
      "vin": {
       "tipo": "declarado",
       "x": "Figura como familiar en la declaración jurada de intereses de un funcionario de esta entidad.",
-      "fuente": "Declaraciones juradas de intereses (Contraloría)"
+      "fuente": "Declaraciones juradas de intereses (Contraloría)",
+      "decl": {
+       "nombre": "Carmen Sánchez Rivera",
+       "cargo": "especialista de infraestructura",
+       "area": "Área de Gestión Institucional",
+       "anio": 2025
+      }
      },
      "ant": {},
      "previa": {
@@ -13087,7 +13123,13 @@
      "vin": {
       "tipo": "declarado",
       "x": "Figura como familiar en la declaración jurada de intereses de un funcionario de esta entidad.",
-      "fuente": "Declaraciones juradas de intereses (Contraloría)"
+      "fuente": "Declaraciones juradas de intereses (Contraloría)",
+      "decl": {
+       "nombre": "Julio Mamani Condori",
+       "cargo": "jefe del Área de Gestión Pedagógica",
+       "area": "Dirección de la UGEL",
+       "anio": 2025
+      }
      },
      "ant": {},
      "previa": {
@@ -14169,7 +14211,13 @@
      "vin": {
       "tipo": "declarado",
       "x": "Figura como familiar en la declaración jurada de intereses de un funcionario de esta entidad.",
-      "fuente": "Declaraciones juradas de intereses (Contraloría)"
+      "fuente": "Declaraciones juradas de intereses (Contraloría)",
+      "decl": {
+       "nombre": "Teresa Huaraca Torres",
+       "cargo": "secretaria de dirección",
+       "area": "Dirección de la UGEL",
+       "anio": 2025
+      }
      },
      "ant": {},
      "previa": {
@@ -14664,7 +14712,13 @@
      "vin": {
       "tipo": "declarado",
       "x": "Figura como familiar en la declaración jurada de intereses de un funcionario de esta entidad.",
-      "fuente": "Declaraciones juradas de intereses (Contraloría)"
+      "fuente": "Declaraciones juradas de intereses (Contraloría)",
+      "decl": {
+       "nombre": "Ruth Apaza Coaquira",
+       "cargo": "especialista en finanzas",
+       "area": "Área de Gestión Administrativa",
+       "anio": 2025
+      }
      },
      "ant": {},
      "previa": null,

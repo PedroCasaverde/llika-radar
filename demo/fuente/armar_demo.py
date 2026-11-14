@@ -28,6 +28,11 @@ for e in datos["entidades"]:
         de_datos += [x["x"] for x in c.get("exp") or []]
         if c.get("vin"):
             de_datos.append(c["vin"]["x"])
+            # prueba de uso, punto 6: el vínculo declarado dice quién lo declaró
+            if c["vin"]["tipo"] == "declarado":
+                dj = c["vin"].get("decl") or {}
+                assert all(dj.get(k) for k in ("nombre", "cargo", "area", "anio")), f"vínculo declarado sin quién lo declaró: {c['prov']['nombre']}"
+                de_datos += [dj["nombre"], dj["cargo"], dj["area"]]
         for xs in (c.get("ant") or {}).values():
             de_datos += xs
         r = c["prov"]["ruc"]
@@ -47,6 +52,8 @@ for texto in [cuerpo] + de_datos:
     assert not m or "CLORURO" in texto, f"número fuera del formato es-PE: …{texto[max(0, m.start() - 30):m.end() + 10]}…"
 assert "${NB}%" not in t and ".replace('.', ',')" not in t, "el JavaScript arma números fuera del formato es-PE"
 assert not any("S/ " in x for x in de_datos) and "NB = ' '" in t, "entre S/ y el monto va un espacio que no corta la línea"
+# prueba de uso, punto 1: en la ficha, lo que mira el programa va en orden y sin porcentajes
+assert "del parecido</span>" not in t and "de más a menos importante" in t, "la ficha volvió a mostrar porcentajes del parecido"
 estilo = re.sub(r":root.*?\n}\n", "", visible.split("</style>")[0], flags=re.S).split("/* Base */")[1]
 assert not re.search(r"#[0-9A-Fa-f]{6}\b", estilo), "hay un color suelto fuera de los tokens"
 

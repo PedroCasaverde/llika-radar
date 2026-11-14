@@ -370,6 +370,21 @@ details.ords[open] summary { margin-bottom: var(--s-2); }
 .datos dt, .datos dd { padding: var(--s-2) 0; border-bottom: 1px solid var(--border); }
 .datos dt { color: var(--text-muted); padding-right: var(--s-3); }
 .p-pie { display: grid; gap: var(--s-3); font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text-muted); }
+/* Cambios de la prueba de uso (HALLAZGOS 160, sección 92) */
+.p-aviso { display: flex; align-items: flex-start; gap: var(--s-2); padding: var(--s-2) var(--s-3); border: 1px solid var(--border-strong); border-radius: var(--r-md); background: var(--surface); font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text); }
+.p-aviso .ico { margin-top: 2px; color: var(--text-muted); }
+.p-aviso b { font-weight: var(--w-semibold); }
+.coincide { grid-column: 2; display: flex; align-items: center; gap: var(--s-2); font-size: var(--t-md); line-height: var(--l-md); font-weight: var(--w-semibold); color: var(--signal); }
+.quien { grid-column: 2; font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text); }
+.quien b { font-weight: var(--w-medium); }
+.fija-lead { margin-top: var(--s-2); font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text); }
+.t-fija .fam { display: flex; gap: var(--s-2); }
+.t-fija .orden { flex: none; min-width: 12px; color: var(--text-subtle); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; }
+.t-ords tfoot td { padding-top: var(--s-2); border-bottom: 0; font-weight: var(--w-medium); }
+.lista-cab .descarga .ico { color: var(--text-muted); }
+@media (max-width: 767px) {
+  .lista-cab .descarga { width: 100%; }
+}
 .correccion { display: grid; gap: var(--s-4); padding: var(--s-4); border: 1px solid var(--border); border-radius: var(--r-md); color: var(--text); }
 @media (max-width: 767px) {
   .panel { border-left: 0; }
@@ -750,7 +765,9 @@ __MASCOTA__
     ant: svg('<circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/>'),
     fra: svg('<rect x="3" y="9" width="5" height="6" rx="1"/><rect x="9.5" y="9" width="5" height="6" rx="1"/><rect x="16" y="9" width="5" height="6" rx="1"/>'),
     otra: svg('<path d="M6 21V4"/><path d="M6 5h11l-2.5 4 2.5 4H6"/>'),
-    marca: svg('<path d="m5 12.5 4.5 4.5L19 7.5"/>')
+    marca: svg('<path d="m5 12.5 4.5 4.5L19 7.5"/>'),
+    info: svg('<circle cx="12" cy="12" r="8"/><path d="M12 11v5"/><path d="M12 8h.01"/>'),
+    baja: svg('<path d="M12 4v11"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M5 19.5h14"/>')
   };
   // Catálogo de señales: etiqueta corta (tabla) y fuente (ficha)
   const SEN = {
@@ -817,8 +834,11 @@ __MASCOTA__
   function evidencia(c) {
     const ev = [];
     if (c.vin) {
-      const corto = c.vin.tipo === 'autoridad' ? 'Autoridad' : c.vin.tipo === 'pariente' ? `Posible pariente, ${c.vin.prob}%` : 'Declarado';
-      ev.push({ g: 'vin', etq: VIN[c.vin.tipo] || 'Vínculo', corto, x: c.vin.x, f: c.vin.fuente, prob: c.vin.prob, extra: c.vin.tipo === 'declarado' ? 'No sube en la lista: este tipo de vínculo no acertó en 2022 y 2024 (0 de 106).' : '' });
+      const corto = c.vin.tipo === 'autoridad' ? 'Autoridad' : c.vin.tipo === 'pariente' ? `Coincidencia de apellidos, ${c.vin.prob}%` : 'Declarado';
+      // Quién declaró al familiar: nombre, cargo y área, para saber a quién pedirle el legajo
+      const dj = c.vin.decl, quien = dj ? `${dj.nombre}, ${dj.cargo} (${dj.area}), en su declaración jurada de intereses de ${dj.anio}.` : '';
+      ev.push({ g: 'vin', etq: VIN[c.vin.tipo] || 'Vínculo', corto, x: c.vin.x, f: c.vin.fuente, prob: c.vin.prob, quien, dj,
+        extra: c.vin.tipo === 'declarado' ? 'No sube en la lista: este tipo de vínculo no acertó en 2022 y 2024 (0 de 106).' : '' });
     }
     const a = antecedentesTexto(c.ant);
     if (a) {
@@ -943,6 +963,7 @@ __MASCOTA__
         <div class="segmento" role="group" aria-label="Ordenar por"><span aria-hidden="true">Ordenar por</span>
           <span class="opc"><button type="button" data-orden="rk" aria-pressed="true">Orden sugerido</button><button type="button" data-orden="monto" aria-pressed="false">Monto</button></span>
         </div>
+        <button type="button" class="boton boton-sec descarga" data-excel>${ICO.baja}Descargar en Excel</button>
       </div>
       <div class="caja scroll-x tabla-caja">
         <table class="tabla lista">
@@ -955,10 +976,15 @@ __MASCOTA__
     pintarFilas();
     document.title = `${e.corto} · llika.pe`;
   }
+  // Las filas que se ven: con la búsqueda, los filtros y el orden elegidos (la descarga baja lo mismo)
+  function filasVisibles() {
+    const e = ES.e, q = norm(ES.q).trim();
+    const filas = e.casos.filter(c => (!q || q.split(/\s+/).every(x => c.busca.includes(x))) && [...ES.f].every(g => tiene(c, g)));
+    return ES.orden === 'monto' ? [...filas].sort((a, b) => b.total - a.total) : filas;
+  }
   function pintarFilas() {
     const e = ES.e, q = norm(ES.q).trim();
-    let filas = e.casos.filter(c => (!q || q.split(/\s+/).every(x => c.busca.includes(x))) && [...ES.f].every(g => tiene(c, g)));
-    if (ES.orden === 'monto') filas = [...filas].sort((a, b) => b.total - a.total);
+    const filas = filasVisibles();
     const tb = document.getElementById('filas');
     if (!filas.length) {
       tb.innerHTML = `<tr><td colspan="7"><div class="vacio">${ICO.busca}<p class="v-t">Ningún proveedor coincide</p><p>Prueba con otro nombre o número, o quita los filtros.</p><button type="button" class="boton boton-sec" data-limpiar>Quitar filtros</button></div></td></tr>`;
@@ -978,10 +1004,86 @@ __MASCOTA__
     if (f) { const g = f.dataset.f; if (ES.f.has(g)) ES.f.delete(g); else ES.f.add(g); f.setAttribute('aria-pressed', String(ES.f.has(g))); pintarFilas(); return; }
     const o = ev.target.closest('[data-orden]');
     if (o) { ES.orden = o.dataset.orden; cajaEnt.querySelectorAll('[data-orden]').forEach(b => b.setAttribute('aria-pressed', String(b === o))); pintarFilas(); return; }
+    if (ev.target.closest('[data-excel]')) { descargarExcel(); return; }
     if (ev.target.closest('[data-limpiar]')) { ES.f.clear(); ES.q = ''; cajaEnt.querySelectorAll('[data-f]').forEach(b => b.setAttribute('aria-pressed', 'false')); document.getElementById('fq').value = ''; pintarFilas(); document.getElementById('fq').focus(); return; }
     const tr = ev.target.closest('tr.fila');
     if (tr && !ev.target.closest('a')) location.hash = `caso-${ES.e.id}-${tr.dataset.rk}`;
   });
+
+  // ---------- Descarga en Excel: un .xlsx armado aquí mismo, sin librerías ni conexión ----------
+  // Un .xlsx es un zip de archivos XML; se guarda sin comprimir, que Excel abre igual.
+  const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  const crc32 = b => { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+  function zipSinComprimir(archivos) {
+    const enc = new TextEncoder(), locales = [], centrales = [], FECHA = ((D.anio - 1980) << 9) | (12 << 5) | 31;
+    let pos = 0;
+    archivos.forEach(([ruta, texto]) => {
+      const n = enc.encode(ruta), d = enc.encode(texto), crc = crc32(d);
+      const l = new DataView(new ArrayBuffer(30 + n.length));
+      [[0, 0x04034b50, 4], [4, 20, 2], [6, 0x0800, 2], [8, 0, 2], [10, 0, 2], [12, FECHA, 2], [14, crc, 4], [18, d.length, 4], [22, d.length, 4], [26, n.length, 2], [28, 0, 2]]
+        .forEach(([o, v, t]) => (t === 4 ? l.setUint32(o, v, true) : l.setUint16(o, v, true)));
+      n.forEach((b, i) => l.setUint8(30 + i, b));
+      const c = new DataView(new ArrayBuffer(46 + n.length));
+      [[0, 0x02014b50, 4], [4, 20, 2], [6, 20, 2], [8, 0x0800, 2], [10, 0, 2], [12, 0, 2], [14, FECHA, 2], [16, crc, 4], [20, d.length, 4], [24, d.length, 4], [28, n.length, 2],
+        [30, 0, 2], [32, 0, 2], [34, 0, 2], [36, 0, 2], [38, 0, 4], [42, pos, 4]].forEach(([o, v, t]) => (t === 4 ? c.setUint32(o, v, true) : c.setUint16(o, v, true)));
+      n.forEach((b, i) => c.setUint8(46 + i, b));
+      locales.push(l, d); centrales.push(c); pos += 30 + n.length + d.length;
+    });
+    const tam = centrales.reduce((a, c) => a + c.byteLength, 0), fin = new DataView(new ArrayBuffer(22));
+    [[0, 0x06054b50, 4], [4, 0, 2], [6, 0, 2], [8, archivos.length, 2], [10, archivos.length, 2], [12, tam, 4], [16, pos, 4], [20, 0, 2]]
+      .forEach(([o, v, t]) => (t === 4 ? fin.setUint32(o, v, true) : fin.setUint16(o, v, true)));
+    return new Blob([...locales, ...centrales, fin], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  }
+  const xml = s => String(s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const COL = i => String.fromCharCode(65 + i);
+  // Estilos: 0 normal, 1 negrita, 2 soles, 3 fecha, 4 nota en cursiva, 5 texto que se ajusta
+  const S = { b: 1, sol: 2, fecha: 3, nota: 4, txt: 5 };
+  function hoja(titulo, nota, cab, filas, anchos, estilos) {
+    const fila = (r, vals, est) => `<row r="${r}">${vals.map((v, i) => {
+      if (v === '' || v == null) return '';
+      const s = est[i] || 0, ref = COL(i) + r;
+      return typeof v === 'number' ? `<c r="${ref}" s="${s}"><v>${v}</v></c>` : `<c r="${ref}" s="${s}" t="inlineStr"><is><t xml:space="preserve">${xml(v)}</t></is></c>`;
+    }).join('')}</row>`;
+    const ult = COL(cab.length - 1) + (3 + filas.length);
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+      + '<sheetViews><sheetView workbookViewId="0"><pane ySplit="3" topLeftCell="A4" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'
+      + `<cols>${anchos.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join('')}</cols><sheetData>`
+      + fila(1, [titulo], [S.b]) + fila(2, [nota], [S.nota]) + fila(3, cab, cab.map(() => S.b))
+      + filas.map((f, k) => fila(4 + k, f, estilos)).join('') + `</sheetData><autoFilter ref="A3:${ult}"/></worksheet>`;
+  }
+  const serialFecha = iso => (tiempo(iso) - Date.UTC(1899, 11, 30)) / DIA;
+  function descargarExcel() {
+    const e = ES.e, filas = filasVisibles();
+    const nota = `Orden sugerido para revisar: aparecer en esta lista no constituye sanción, falta ni delito. Demo con datos inventados.`;
+    const titulo = `${e.nombre}. Lista de ${D.anio}, con lo que se sabía al 31 dic ${D.anio}.`;
+    const senal = (c, g) => c.ev.filter(x => x.g === g).map(x => g === 'otra' ? `${x.etq}: ${x.x}` : g === 'vin'
+      ? [x.x, x.prob != null ? `Coincidencia de apellidos, sin confirmar con RENIEC: ${x.prob}% de probabilidad de ser pariente.` : '', x.quien ? `Lo declaró: ${x.quien}` : ''].filter(Boolean).join(' ')
+      : g === 'ant' ? (x.det || [x.x]).join('; ') : x.x).join(' | ');
+    const prov = filas.map(c => [c.rk, c.prov.nombre || '', tipoProv(c), c.prov.ruc, c.prov.dni || '', c.rubro || '', c.total, c.n, c.clocal == null ? '' : Math.min(Number(c.clocal), 100),
+      c.por, senal(c, 'vin'), senal(c, 'ant'), senal(c, 'fra'), senal(c, 'otra'), [...new Set(c.ev.map(x => x.f))].join('; ')]);
+    const compras = [];
+    filas.forEach(c => c.os.forEach(o => compras.push([c.rk, c.prov.nombre || '', c.prov.ruc, serialFecha(o.f), o.num, o.desc, o.m,
+      [o.enVentana ? 'Con otras compras en 30 días que pasan el tope' : '', o.cerca ? 'Cerca del tope' : ''].filter(Boolean).join('; ')])));
+    const h1 = hoja(titulo, nota, ['Puesto', 'Proveedor', 'Tipo', 'RUC', 'DNI', 'Rubro', `Le vendió en ${D.anio} (S/)`, 'Compras', 'De lo que le vende al Estado (%)',
+      'Por qué está en este puesto', 'Vínculo', 'Antecedentes', 'Compras que parecen partidas', 'Otras señales', 'Fuentes'],
+      prov, [7, 34, 14, 13, 10, 24, 14, 9, 14, 48, 48, 40, 40, 48, 48], [0, S.txt, 0, 0, 0, S.txt, S.sol, 0, 0, S.txt, S.txt, S.txt, S.txt, S.txt, S.txt]);
+    const h2 = hoja(titulo, nota, ['Puesto', 'Proveedor', 'RUC', 'Fecha', 'Compra', 'Descripción', 'Monto (S/)', 'Nota'],
+      compras, [7, 34, 13, 11, 11, 60, 13, 30], [0, S.txt, 0, S.fecha, 0, S.txt, S.sol, S.txt]);
+    const X = 'http://schemas.openxmlformats.org/', T = 'application/vnd.openxmlformats-officedocument.spreadsheetml.';
+    const archivos = [
+      ['[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="${X}package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="${T}sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="${T}styles+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="${T}worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="${T}worksheet+xml"/></Types>`],
+      ['_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="${X}package/2006/relationships"><Relationship Id="rId1" Type="${X}officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`],
+      ['xl/workbook.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="${X}spreadsheetml/2006/main" xmlns:r="${X}officeDocument/2006/relationships"><sheets><sheet name="Proveedores" sheetId="1" r:id="rId1"/><sheet name="Compras" sheetId="2" r:id="rId2"/></sheets><definedNames><definedName name="_xlnm._FilterDatabase" localSheetId="0" hidden="1">Proveedores!$A$3:$O$${3 + prov.length}</definedName><definedName name="_xlnm._FilterDatabase" localSheetId="1" hidden="1">Compras!$A$3:$H$${3 + compras.length}</definedName></definedNames></workbook>`],
+      ['xl/_rels/workbook.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="${X}package/2006/relationships"><Relationship Id="rId1" Type="${X}officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="${X}officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/><Relationship Id="rId3" Type="${X}officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`],
+      ['xl/styles.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<styleSheet xmlns="${X}spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="#,##0.00"/></numFmts><fonts count="3"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><name val="Calibri"/><family val="2"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="6"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="14" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`],
+      ['xl/worksheets/sheet1.xml', h1],
+      ['xl/worksheets/sheet2.xml', h2]
+    ];
+    const url = URL.createObjectURL(zipSinComprimir(archivos)), a = document.createElement('a');
+    a.href = url; a.download = `llika_${e.id}_${D.anio}.xlsx`; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    anunciar(`Descargando ${plural(filas.length, 'proveedor', 'proveedores')} y ${plural(compras.length, 'compra', 'compras')} en Excel`);
+  }
 
   // ---------- Panel del proveedor ----------
   function graficoOrdenes(c, ancho) {
@@ -1007,7 +1109,8 @@ __MASCOTA__
     for (let m = 0; m < 12; m++) { if (W < 520 && m % 2) continue; s.push(`<text class="g-t" x="${f(X(Date.UTC(D.anio, m, 15)))}" y="${H - 7}" text-anchor="middle">${MES_CORTO[m]}</text>`); }
     return s.join('') + '</svg>';
   }
-  // Lo que más pesa en el parecido (para todos) junto a lo de este proveedor; solo los grupos de los que la demo tiene datos
+  // Lo que mira el programa, en orden de importancia (el mismo para todos), junto a lo de este proveedor; solo los grupos
+  // de los que la demo tiene datos. Sin porcentajes: en la prueba de uso se leían como si fueran de esta empresa.
   function enQueSeFija(c, abierto) {
     const a = antecedentesTexto(c.ant), e = t => c.exp.find(x => x.t === t);
     const cl = Math.min(Number(c.clocal) || 0, 100);
@@ -1022,10 +1125,11 @@ __MASCOTA__
       anti: e('nuevo') ? 'Es su primer año vendiéndole al Estado' : c.previa ? `Le vende a esta entidad desde ${c.previa.desde}` : c.previa === null ? `${D.anio} es su primer año con esta entidad` : ''
     };
     const filas = PESOS.filter(p => H[p.id]);
-    return `<details class="fija"${abierto ? ' open' : ''}><summary>En qué se fija el programa</summary>
-      <table class="t-fija"><thead><tr><th scope="col">Lo que más pesa, para todos</th><th scope="col">Este proveedor</th></tr></thead>
-      <tbody>${filas.map(p => `<tr><td>${esc(p.nombre)}<span class="d">${pctPeso(p.pct)} del parecido</span></td><td>${esc(H[p.id])}</td></tr>`).join('')}</tbody></table>
-      <p class="d">El porcentaje es lo que pesa cada grupo para todos los proveedores del país, no para este en particular.</p></details>`;
+    return `<details class="fija"${abierto ? ' open' : ''}><summary>Qué datos de este proveedor mira el programa</summary>
+      <p class="fija-lead">El parecido mide, sobre todo, cuánto trabaja el proveedor con el Estado: sus concursos, sus contratos y lo que vende. No dice que haya cometido una falta.</p>
+      <table class="t-fija"><thead><tr><th scope="col">Lo que mira, de más a menos importante</th><th scope="col">Lo que tiene este proveedor</th></tr></thead>
+      <tbody>${filas.map((p, i) => `<tr><td><div class="fam"><span class="orden">${i + 1}</span><span>${esc(p.nombre)}</span></div></td><td>${esc(H[p.id])}</td></tr>`).join('')}</tbody></table>
+      <p class="d">El orden es el mismo para todos los proveedores del país. <a href="#como-funciona">Cuánto pesa cada cosa</a></p></details>`;
   }
   // Cómo se calculó el puesto: las cuatro cosas que LLIKA mira, con el valor de este proveedor y cuál decidió
   function calculo(c) {
@@ -1033,7 +1137,7 @@ __MASCOTA__
     const alto = c.motivo === 'antecedentes' || c.motivo === 'perfil';
     const fra = c.ev.find(x => x.g === 'fra');
     const pasos = [
-      { t: '¿Tiene un vínculo con una autoridad de esta entidad?', v: !c.vin ? 'No' : c.vin.tipo === 'autoridad' ? 'Sí: es una autoridad o su empresa' : c.vin.tipo === 'pariente' ? `Puede ser pariente: ${c.vin.prob}% de probabilidad` : 'Declarado: se muestra, pero no lo sube en la lista', d: vinSube },
+      { t: '¿Tiene un vínculo con una autoridad de esta entidad?', v: !c.vin ? 'No' : c.vin.tipo === 'autoridad' ? 'Sí: es una autoridad o su empresa' : c.vin.tipo === 'pariente' ? `Coincidencia de apellidos, sin confirmar: ${c.vin.prob}% de probabilidad de ser pariente` : 'Declarado: se muestra, pero no lo sube en la lista', d: vinSube },
       { t: '¿Se parece a proveedores que después fueron sancionados?', v: vinSube ? 'No hizo falta mirarlo: el vínculo va primero' : alto ? 'Mucho: está entre los 2 de cada 100 que más se parecen en todo el país' : 'No está entre los que más se parecen', d: !vinSube && alto, extra: enQueSeFija(c, !vinSube && alto) },
       { t: '¿Cuánto depende de esta entidad?', v: `Le vendió ${soles(c.total)}: el ${parteVentas(c)} de todo lo que le vende al Estado`, d: c.motivo === 'peso' },
       { t: '¿Tiene compras que parecen partidas?', v: fra ? `Sí: ${fra.corto}` : c.motivo === 'mayor' ? 'No. Ninguna otra lo parecía, y entra la compra más grande' : 'No', d: c.motivo === 'bandera' || c.motivo === 'mayor' }
@@ -1056,6 +1160,7 @@ __MASCOTA__
     const ausentes = CATALOGO.filter(x => !presentes.has(x));
     const v = c.visible;
     cuerpo.innerHTML = `
+      <p class="p-aviso" role="note">${ICO.info}<span><b>Ficha para orientar una revisión.</b> No constituye sanción, falta ni delito.</span></p>
       <header class="p-cab">
         <h2 id="p-nombre" tabindex="-1">${nombre(c)}</h2>
         <p class="ids"><span>RUC <span class="mono">${esc(c.prov.ruc)}</span> <button type="button" class="copiar" data-copiar="${esc(c.prov.ruc)}">Copiar</button></span>${c.prov.dni ? `<span>DNI <span class="mono">${esc(c.prov.dni)}</span></span>` : ''}<span>${tipoProv(c)}</span><span>${esc(c.rubro || '')}</span></p>
@@ -1078,20 +1183,20 @@ __MASCOTA__
       <section class="bloque-p" aria-labelledby="p-sen">
         <h3 id="p-sen">Señales <span class="n">${c.ev.length ? `${c.ev.length} de ${CATALOGO.length}` : `ninguna de ${CATALOGO.length}`}</span></h3>
         ${c.ev.length ? `<ul class="senales">${c.ev.map(x => `<li class="senal">${ICO[x.g]}<span><b>${esc(x.etq)}.</b> ${esc(x.x)}</span>
-            ${x.prob != null ? `<span class="prob"><b>${x.prob}%</b><i aria-hidden="true"><span style="--p:${Number(x.prob)}%"></span></i>de probabilidad de ser pariente</span><small>Es una coincidencia de apellidos, no un hecho comprobado. De 29 coincidencias muy probables, 14 eran parientes de verdad.</small>` : ''}
+            ${x.prob != null ? `<span class="coincide">Coincidencia de apellidos, sin confirmar con RENIEC</span><span class="prob"><b>${x.prob}%</b><i aria-hidden="true"><span style="--p:${Number(x.prob)}%"></span></i>de probabilidad de ser pariente</span><small>No es un parentesco comprobado: puede ser un homónimo. De 29 coincidencias muy probables, 14 eran parientes de verdad.</small>` : ''}
+            ${x.dj ? `<span class="quien">Lo declaró: <b>${esc(x.dj.nombre)}</b>, ${esc(x.dj.cargo)} (${esc(x.dj.area)}), en su declaración jurada de intereses de ${esc(x.dj.anio)}.</span>` : ''}
             ${x.det && x.det.length ? `<ul>${x.det.map(d => `<li>${esc(d)}</li>`).join('')}</ul>` : ''}
             ${x.extra ? `<small>${esc(x.extra)}</small>` : ''}
             <small>Fuente: ${esc(x.f)}</small></li>`).join('')}</ul>` : `<p class="chico suave">No tiene ninguna de las señales que LLIKA busca.</p>`}
         ${ausentes.length && c.ev.length ? `<details class="sin"><summary>Lo que no tiene: ${ausentes.length} de ${CATALOGO.length} señales</summary><p>${esc(ausentes.join(', '))}.</p></details>` : ''}
       </section>
       <section class="bloque-p" aria-labelledby="p-ord">
-        <h3 id="p-ord">Sus compras de ${D.anio}</h3>
-        ${c.n ? `<div class="g-caja" id="g-ords"></div>
-        <p class="leyenda"><span><i class="l-gris"></i>Compra</span>${v && !(v.b30 || v.cerca || v.enVentana) ? '<span><i class="l-acento"></i>La más grande</span>' : ''}${c.ev.some(x => x.g === 'fra') ? '<span><i class="l-flag"></i>Parece partida</span>' : ''}</p>
-        <details class="ords"><summary>Ver ${c.n === 1 ? 'la compra' : `las ${c.n} compras`}</summary>
-          <table class="t-ords"><thead><tr><th scope="col">Fecha</th><th scope="col">Compra</th><th scope="col" class="der">Monto</th></tr></thead>
-          <tbody>${c.os.map(o => `<tr><td class="f">${fecha(o.f)}</td><td><span class="mono">${esc(o.num)}</span>${o.enVentana ? '<span class="mini">en 30 días</span>' : ''}${o.cerca ? '<span class="mini">cerca del tope</span>' : ''}<div class="d">${esc(o.desc)}</div></td><td class="der">${soles(o.m)}</td></tr>`).join('')}</tbody></table>
-        </details>` : '<p class="chico suave">No encontramos sus compras en la fuente.</p>'}
+        <h3 id="p-ord">Sus compras de ${D.anio} <span class="n">${plural(c.n, 'compra', 'compras')}</span></h3>
+        ${c.n ? `<table class="t-ords"><thead><tr><th scope="col">Fecha</th><th scope="col">Compra</th><th scope="col" class="der">Monto</th></tr></thead>
+          <tbody>${c.os.map(o => `<tr><td class="f">${fecha(o.f)}</td><td><span class="mono">${esc(o.num)}</span>${o.enVentana ? '<span class="mini">en 30 días</span>' : ''}${o.cerca ? '<span class="mini">cerca del tope</span>' : ''}<div class="d">${esc(o.desc)}</div></td><td class="der">${soles(o.m)}</td></tr>`).join('')}</tbody>
+          ${c.n > 1 ? `<tfoot><tr><td></td><td>Total</td><td class="der">${soles(c.total)}</td></tr></tfoot>` : ''}</table>
+        <div class="g-caja" id="g-ords"></div>
+        <p class="leyenda"><span><i class="l-gris"></i>Compra</span>${v && !(v.b30 || v.cerca || v.enVentana) ? '<span><i class="l-acento"></i>La más grande</span>' : ''}${c.ev.some(x => x.g === 'fra') ? '<span><i class="l-flag"></i>Parece partida</span>' : ''}</p>` : '<p class="chico suave">No encontramos sus compras en la fuente.</p>'}
       </section>
       <section class="bloque-p" aria-labelledby="p-mas">
         <h3 id="p-mas">Otros datos</h3>
@@ -1102,7 +1207,7 @@ __MASCOTA__
         </dl>
       </section>
       <footer class="p-pie">
-        <p>Una señal no es una acusación: solo dice por dónde conviene empezar a revisar. LLIKA no revisó los documentos de cada compra.</p>
+        <p>LLIKA no revisó los documentos de cada compra. Si un dato de esta ficha está mal, cualquiera puede pedir que se corrija.</p>
         <button type="button" class="boton boton-sec" id="abrir-cor" aria-expanded="false" aria-controls="cor">Reportar un error</button>
         <form class="correccion" id="cor" hidden novalidate>
           <div class="campo"><label for="c-tipo">¿Qué dato está mal?</label><select id="c-tipo" name="tipo" aria-describedby="e-tipo"><option value="">Elige una opción</option><option>Nombre, RUC o DNI</option><option>Compras o montos</option><option>Antecedentes</option><option>Vínculo o parentesco</option><option>Otra señal</option></select><span class="error" id="e-tipo"></span></div>
