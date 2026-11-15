@@ -19,6 +19,7 @@ académica y pública: aparecer en la lista no es una acusación.
 | `radar/v4/` | La cadena vigente: de las tablas a la lista, los puntajes de 2025 y los datos de una entidad para la pantalla |
 | `radar/` | Las alertas de vínculo e impedimento y las tablas que usa la cadena |
 | `datos/_scripts/`, `datos/crudos/acc8_informes_cgr/`, `ocr_informes/` | Descarga de las fuentes, lectura de documentos (OCR y modelos de lenguaje) y su validación |
+| `docs/` | Model Card v0, datasheet de los datos y la lista de archivos del paquete de datos |
 
 Los datos no están en el repositorio: pesan varios GB y traen nombres, RUC y DNI. La pantalla con datos reales se arma en
 `privado/`, que tampoco va a git.
@@ -56,18 +57,20 @@ python llika.py demo
 Arma `demo/llika_pe_demo.html` con tres entidades inventadas (ningún RUC tiene un dígito verificador válido) y la prueba en
 Chromium. Se abre con cualquier navegador, sin servidor. El detalle está en `demo/README.md`.
 
-### 2. El caso real, con las tablas procesadas (unos 12 minutos y 48 GB de RAM)
-
-Hoy este paso necesita una máquina con 48 GB de RAM: el pico medido es de 34 GB. Con 16 GB no alcanza.
+### 2. El caso real, con las tablas procesadas (unos 2 minutos y 8 GB de RAM)
 
 Las tablas procesadas no se publican en ningún enlace porque traen nombres y DNI: el equipo las entrega en persona a quien
-las pida. Van en `datos/`, con la misma estructura de carpetas. Luego:
+las pida. Son 39 archivos, unos 4 GB, y van en `datos/` con la misma estructura de carpetas; la lista está en
+`docs/paquete_de_datos.md`. Luego:
 
 ```
 python llika.py revisar          comprueba que estén y que la lista tenga su huella
-python llika.py puntajes         rehace la lista de 2025 y el puesto de todos los casos (unos 9 minutos)
-python llika.py caso-real        Ripán, con Pachas y Marías para comparar: datos, pantalla y prueba (unos 3 minutos)
+python llika.py caso-real        Ripán, con Pachas y Marías para comparar: datos, pantalla y prueba
 ```
+
+Para comprobar además que la lista de 2025 se reproduce, `python llika.py puntajes` la rehace con los mismos modelos y
+se detiene si no sale idéntica byte por byte. Ese paso es opcional: pide unos 7 minutos, 24 GB de RAM y los archivos de
+ajuste que también lista `docs/paquete_de_datos.md`.
 
 La pantalla queda en `privado/llika_caso_real_2025.html`. Para otra entidad:
 
@@ -119,8 +122,8 @@ Las cifras son de la PC del equipo (12 núcleos, 48 GB de RAM), medidas el 14/11
 
 | Paso | Tiempo | Memoria pico |
 |---|---|---|
-| Puntajes de 2025 (`llika.py puntajes`) | 6,5 a 8,9 min | 21,1 GB |
-| Datos de tres entidades (`exportar_entidad.py`) | 2,4 a 3,7 min | 34,2 GB |
+| Datos de tres entidades (`exportar_entidad.py`) | 1,1 min | 4,4 GB |
+| Puntajes de 2025, opcional (`llika.py puntajes`) | 6,5 a 8,9 min | 21,1 GB |
 | Armar la pantalla | 0,5 s | 0,01 GB |
 | Abrir la pantalla en el navegador | 0,44 s | archivo de 0,65 MB |
 | Abrir una ficha | 9 ms (mediana); 32 ms el peor caso | |

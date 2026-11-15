@@ -2,7 +2,7 @@
 
     python llika.py revisar                     entorno, memoria, disco, datos y huellas: qué falta y qué paso lo arma
     python llika.py demo                        arma y prueba la pantalla con datos inventados (no necesita datos)
-    python llika.py puntajes                    el puntaje de todos los casos de 2025, comprobando la lista congelada
+    python llika.py puntajes                    opcional: rehace el puntaje de todos los casos de 2025 y comprueba la lista congelada
     python llika.py entidad RUC [RUC ...]       los datos reales de esas entidades para la pantalla (en privado/)
     python llika.py pantalla privado/datos_X.json         la pantalla con esos datos (en privado/)
     python llika.py probar privado/llika_X.html privado/datos_X.json [--sin-red]
@@ -74,7 +74,7 @@ def revisar():
     try:
         import psutil
         ram = psutil.virtual_memory().total / 1e9
-        print(f"  {'✓' if ram >= 40 else '!'} memoria: {ram:.0f} GB (los puntajes y una entidad real llegan a 34 GB; la demo casi no usa)")
+        print(f"  {'✓' if ram >= 7 else '!'} memoria: {ram:.0f} GB (una entidad real pide 4,4 GB; rehacer los puntajes, opcional, 21 GB)")
     except ImportError:
         pass
     libre = shutil.disk_usage(RAIZ).free / 1e9

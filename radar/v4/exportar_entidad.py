@@ -258,12 +258,53 @@ def antecedentes(rucs, idx_res):
     return out
 
 
+def sigue_funcionario_de(entidades, a=ANIO):
+    """La señal «sigue a un funcionario» de expediente.py, línea por línea, pero solo con los traslados que llegan a las
+    entidades pedidas, antes de leer órdenes. Cada traslado se calcula por separado, así que para esas entidades el
+    resultado es el mismo; la versión de todo el país pide unos 33 GB de memoria y esta, menos de 2."""
+    e = pd.read_parquet(PROC / "radar" / "empleos_previos.parquet", columns=["persona", "ruc_entidad", "cargo", "decide", "inicio", "ruc_empleador", "nombre_empleador",
+                                                                            "empleador_publico", "ruc_valido", "inicio_previo", "cese_previo"])
+    e = e[e["decide"] & e["empleador_publico"] & e["ruc_valido"] & e["ruc_entidad"].notna() & e["inicio_previo"].notna()].astype({"ruc_entidad": str, "ruc_empleador": str})
+    e = e[e["ruc_entidad"].isin(set(entidades))]                     # lo único distinto: solo los traslados a estas entidades
+    for c in ("inicio", "inicio_previo", "cese_previo"):
+        e[c] = e[c].astype("datetime64[ns]")
+    e = e[(e["ruc_entidad"] != e["ruc_empleador"]) & e["inicio"].between(pd.Timestamp(f"{a - 2}-01-01"), pd.Timestamp(f"{a}-12-31"))]
+    fin = e["cese_previo"].fillna(e["inicio"])
+    e["fin_a"] = fin.where(fin <= e["inicio"], e["inicio"])
+    e = e[e["fin_a"] > e["inicio_previo"]].drop_duplicates(["persona", "ruc_entidad", "ruc_empleador", "inicio"]).reset_index(drop=True)
+    vacio = pd.DataFrame({"ruc_entidad": pd.Series(dtype=str), "ruc": pd.Series(dtype=str), "sf_texto": pd.Series(dtype=object),
+                          "anio": pd.Series(dtype="int64"), "sf_sigue_funcionario": pd.Series(dtype=bool)})
+    if e.empty:
+        return vacio
+    e["par"] = np.arange(len(e))
+    ents = sorted(set(e["ruc_entidad"]) | set(e["ruc_empleador"]))
+    desde = max(pd.Timestamp("2018-01-01"), e["inicio_previo"].min())
+    o = pd.read_parquet(BASE / "ordenes.parquet", columns=["ruc_entidad", "ruc", "fecha"], filters=[("ruc_entidad", "in", ents), ("fecha", ">=", desde), ("fecha", "<=", pd.Timestamp(f"{a}-12-31"))])
+    o = o.astype({"ruc_entidad": str, "ruc": str}).drop_duplicates()
+    o["fecha"] = o["fecha"].astype("datetime64[ns]")
+    pa = o.merge(e[["par", "ruc_empleador", "inicio_previo", "fin_a"]], left_on="ruc_entidad", right_on="ruc_empleador")
+    pa = pa[(pa["fecha"] >= pa["inicio_previo"]) & (pa["fecha"] <= pa["fin_a"])][["par", "ruc"]].drop_duplicates()
+    ob = o.merge(e[["par", "ruc_entidad", "inicio"]], on="ruc_entidad")
+    antes = ob[(ob["fecha"] < ob["inicio"]) & (ob["fecha"] >= ob["inicio"] - pd.Timedelta(days=730))][["par", "ruc"]].drop_duplicates()
+    despues = ob[(ob["fecha"] >= ob["inicio"]) & (ob["fecha"].dt.year == a)][["par", "ruc", "ruc_entidad"]].drop_duplicates()
+    s = despues.merge(pa, on=["par", "ruc"]).merge(antes, on=["par", "ruc"], how="left", indicator=True)
+    s = s[s["_merge"] == "left_only"].merge(e[["par", "persona", "ruc_empleador", "cargo", "inicio", "nombre_empleador"]], on="par")
+    # Si dos traslados llegan el mismo día, expediente.py se queda con cualquiera (orden inestable); aquí, siempre con el mismo
+    s = s.sort_values(["inicio", "persona", "ruc_empleador"], kind="mergesort").drop_duplicates(["ruc_entidad", "ruc"])
+    if s.empty:
+        return vacio
+    s["sf_texto"] = ("Le vende a esta entidad desde que llegó, en " + s["inicio"].dt.strftime("%m/%Y") + ", una persona con cargo de decisión ("
+                     + s["cargo"].fillna("cargo no indicado").str.capitalize() + ") que antes trabajaba en " + s["nombre_empleador"].fillna("otra entidad pública").str.title()
+                     + "; en ese tiempo, este proveedor le vendía a esa entidad.")
+    return s[["ruc_entidad", "ruc", "sf_texto"]].assign(anio=a, sf_sigue_funcionario=True)
+
+
 def senales_expediente(keys):
     """Las diez señales del expediente (expediente.py) para los casos pedidos, no solo los cinco de la lista."""
     K3 = ["ruc_entidad", "ruc", "anio"]
     x = keys[K3].copy()
     md = X.mismo_dueno(ANIO)
-    sf, _ = X.sigue_funcionario(ANIO)
+    sf = sigue_funcionario_de(sorted(set(keys["ruc_entidad"])))
     x = x.merge(md, on=K3, how="left").merge(sf, on=K3, how="left")
     for f in (X.vende_inhabilitado, X.empresa_espejo, X.doble_percepcion, X.puerta_giratoria):
         x = x.merge(f(ANIO), on=K3, how="left")
