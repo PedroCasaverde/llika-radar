@@ -16,7 +16,8 @@ datos de cada fuente.
 | 13/11/2026 | `417c1381a1e64d50ad66800ad2df6f52193579baa71c67d9552d3e9e7bf5764f` | La que se usó en la prueba de uso con tres participantes (primer commit de esta carpeta) |
 | 14/11/2026, prueba de uso | `81ab358bdd54b28cded3a5fa9c57b15cfa1562f4bfa94927ce04086b50cef8a8` | Los cinco cambios que salieron de esa prueba (segundo commit) |
 | 14/11/2026, contrato de alcance | `bb261637ea9b1ada78f0f31db3c86b4bfcb266c135e763d329385e521321b464` | La marca de UTEC Posgrado y lo que faltaba del contrato de alcance |
-| 14/11/2026, datos reales | `eeee4d24dea90ce835db87233952092709e5883f8cb2ec345e19f69ddf66c486` | La plantilla también sirve para datos reales: enlaces a la resolución o al informe de cada señal y avisos según el modo. En el inicio, una sola tabla de entidades con sus cifras y sus índices (antes eran dos tablas con las mismas entidades) (esta versión) |
+| 14/11/2026, datos reales | `eeee4d24dea90ce835db87233952092709e5883f8cb2ec345e19f69ddf66c486` | La plantilla también sirve para datos reales: enlaces a la resolución o al informe de cada señal y avisos según el modo. En el inicio, una sola tabla de entidades con sus cifras y sus índices (antes eran dos tablas con las mismas entidades) |
+| 15/11/2026, cifras del Tribunal | `f373b9e9966a0205afc91a4bf75b1496578a7e9cf1053d537778596bcd97e143` | «Cuánto cuesta equivocarse» con las cifras medidas de nuevo: S/ 613 millones a 2,477 proveedores hasta que rige su sanción, unos 30 meses del cierre del año a la sanción y la denuncia a los seis meses de los hechos (esta versión) |
 
 ### Con datos reales
 
