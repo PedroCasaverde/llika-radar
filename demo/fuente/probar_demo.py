@@ -3,6 +3,7 @@
 #   python probar_demo.py [archivo.html] [carpeta_de_capturas]
 # Sin argumentos prueba ../llika_pe_demo.html y deja las capturas en la carpeta temporal del sistema.
 import json
+import re
 import sys
 import tempfile
 from pathlib import Path
@@ -35,6 +36,35 @@ MEDIR = """() => {
   return { pesos: [...pesos].sort(), familias: [...familias].sort(), tamanos: [...tamanos].sort((a, b) => parseFloat(a) - parseFloat(b)), radios: [...radios].sort((a, b) => parseFloat(a) - parseFloat(b)),
     desborde: document.documentElement.scrollWidth - document.documentElement.clientWidth, toca };
 }"""
+
+# Etapa 2: cada señal de la ficha trae su norma y su fuente con fecha; también la tabla de compras
+FECHA = r"\d{1,2} (ene|feb|mar|abr|may|jun|jul|ago|set|oct|nov|dic) \d{4}"
+REFS = """() => { const f = /""" + FECHA + """/, bien = r => !!r && /Norma/.test(r.textContent) && /Ley \\d{5}|Ninguna norma/.test(r.textContent) && f.test(r.textContent);
+  const ss = [...document.querySelectorAll('#panel .senal')], c = document.querySelector('#p-ord ~ .ref, section[aria-labelledby="p-ord"] > .ref');
+  return { senales: ss.length, malas: ss.filter(s => !bien(s.querySelector('.ref'))).length, compras: !document.querySelector('#panel .t-ords') || bien(c) }; }"""
+
+
+def indices_python(D):
+    """Los seis índices por entidad, recalculados aquí con la misma regla de la demo (compras partidas: dos o más en 30 días sobre el tope, o una de 90% del tope)."""
+    from datetime import date
+    tope, out = D["tope"], {}
+    for e in D["entidades"]:
+        cs, n = e["casos"], len(e["casos"])
+        def partidas(c):
+            os_ = sorted((date.fromisoformat(o[0]), float(o[3] or 0)) for o in c["ord"])
+            cerca = any(m >= 0.9 * tope for _, m in os_)
+            b30 = any(sum(m2 for t2, m2 in os_ if 0 <= (t - t2).days < 30) > tope and sum(1 for t2, _ in os_ if 0 <= (t - t2).days < 30) >= 2 for t, _ in os_)
+            return cerca or b30
+        totales = sorted((sum(float(o[3] or 0) for o in c["ord"]) for c in cs), reverse=True)
+        compras = [float(o[3] or 0) for c in cs for o in c["ord"]]
+        out[e["id"]] = {"vin": 100 * sum(1 for c in cs if c.get("vin")) / n,
+                        "ant": 100 * sum(1 for c in cs if any((c.get("ant") or {}).get(k) for k in ("pen", "inh", "mul"))) / n,
+                        "fra": 100 * sum(1 for c in cs if partidas(c)) / n,
+                        "tope": 100 * sum(1 for m in compras if m >= 0.9 * tope) / len(compras),
+                        "conc": 100 * sum(totales[:5]) / sum(totales),
+                        "dep": 100 * sum(1 for c in cs if (c.get("clocal") or 0) >= 80) / n}
+    return out
+
 
 res, errores = {}, []
 with sync_playwright() as pw:
@@ -96,9 +126,14 @@ with sync_playwright() as pw:
                 cp = {}
                 casos = p.evaluate("JSON.parse(document.getElementById('datos-llika').textContent).entidades.flatMap(e => e.casos.map(c => [e.id, c.rk, (c.vin || {}).tipo || '']))")
                 con_porcentaje, sin_aviso, declarados, con_quien = [], [], 0, 0
+                sin_norma, n_senales = [], 0  # etapa 2: norma y fecha de la fuente en cada señal y en las compras
                 for eid, rk, vin in casos:
                     p.goto(U + f"#caso-{eid}-{rk}")
                     p.wait_for_timeout(20)
+                    refs = p.evaluate(REFS)
+                    n_senales += refs["senales"]
+                    if refs["malas"] or not refs["compras"]:
+                        sin_norma.append(f"{eid}-{rk}")
                     fija = p.locator("#panel details.fija")
                     if fija.count() and "%" in fija.inner_text():
                         con_porcentaje.append(f"{eid}-{rk}")
@@ -152,6 +187,101 @@ with sync_playwright() as pw:
                 n_xl = sum(1 for r in openpyxl.load_workbook(x2)["Proveedores"].iter_rows(min_row=4, values_only=True) if r[0] is not None)
                 cp["2_excel_respeta_filtros"] = (n_vis == n_xl, f"{n_xl} filas en el Excel, {n_vis} en pantalla con el filtro de vínculo")
                 res["prueba_de_uso"] = {k: {"ok": v[0], "detalle": v[1]} for k, v in cp.items()}
+
+                # Etapa 2 del cierre (HALLAZGOS 160, sección 93): lo que faltaba del contrato de alcance, y la marca
+                ct = {}
+                ct["norma_y_fecha_en_cada_senal"] = (not sin_norma and n_senales > 0, f"{n_senales} señales en {len(casos)} fichas, todas con norma y fecha de su fuente; también las compras. Sin: {sin_norma[:5]}")
+                # Índices: los de la página contra los que se recalculan aquí, desde los mismos datos
+                D = json.loads(p.evaluate("document.getElementById('datos-llika').textContent"))
+                p.goto(U + "#inicio")
+                p.wait_for_timeout(300)
+                en_pagina = p.evaluate("""() => Object.fromEntries([...document.querySelectorAll('#t-indices tr')].map(tr => [tr.dataset.href.replace('#entidad-', ''),
+                  Object.fromEntries([...tr.querySelectorAll('.ind')].map(d => [d.dataset.k, parseFloat(d.querySelector('b').textContent)]))]))""")
+                calc = indices_python(D)
+                dif = [(e, k, en_pagina[e][k], round(v, 1)) for e, vs in calc.items() for k, v in vs.items() if abs(en_pagina[e][k] - v) > 0.051]
+                ct["indices_iguales_a_python"] = (not dif and len(en_pagina) == 3 and all(len(v) == 6 for v in en_pagina.values()), f"3 entidades x 6 índices; diferencias: {dif[:4]}; Wayrapampa {en_pagina['wayrapampa']}")
+                p.click('[data-ind="fra"]')
+                p.wait_for_timeout(100)
+                primera = p.locator("#t-indices tr").first.get_attribute("data-href")
+                mayor = max(calc, key=lambda e: calc[e]["fra"])
+                ct["indices_se_ordenan"] = (primera == f"#entidad-{mayor}", f"al ordenar por compras partidas, primero {primera}")
+                p.goto(U + "#entidad-ccori-llacta")
+                p.wait_for_timeout(300)
+                ct["indices_en_cada_entidad"] = (p.locator(".compara > div").count() == 6 and p.locator(".compara circle.esta").count() == 6, f"{p.locator('.compara > div').count()} índices con su punto")
+                # Confirmar o descartar con su motivo
+                p.goto(U + "#caso-wayrapampa-1")
+                p.wait_for_timeout(300)
+                p.click('#panel-pie [data-dec="confirmar"]')
+                p.click('#form-dec button[type="submit"]')
+                sin_motivo = p.locator("#e-motivo").inner_text()
+                p.click('[data-motivo="El vínculo se confirma"]')
+                p.click('#form-dec button[type="submit"]')
+                p.wait_for_timeout(150)
+                guardado1 = p.locator("#panel-pie").inner_text()
+                p.goto(U + "#caso-wayrapampa-2")
+                p.wait_for_timeout(300)
+                p.click('#panel-pie [data-dec="descartar"]')
+                p.click('[data-motivo="Otro motivo"]')
+                p.click('#form-dec button[type="submit"]')
+                sin_nota = p.locator("#e-nota").inner_text()
+                p.fill("#dec-nota", "Lo revisó el área usuaria en octubre")
+                p.click('#form-dec button[type="submit"]')
+                p.wait_for_timeout(150)
+                guardado2 = p.locator("#panel-pie").inner_text()
+                ct["decidir_pide_motivo"] = (sin_motivo == "Elige un motivo." and bool(sin_nota) and "Confirmado para revisar" in guardado1 and "El vínculo se confirma" in guardado1
+                                             and "Descartado" in guardado2 and "Lo revisó el área usuaria" in guardado2, f"sin motivo: «{sin_motivo}»; «Otro motivo» sin nota: «{sin_nota}»")
+                p.goto(U + "#caso-wayrapampa-3")
+                p.wait_for_timeout(300)
+                p.click('#panel-pie [data-dec="confirmar"]')
+                p.keyboard.press("Escape")
+                p.wait_for_timeout(150)
+                esc1 = p.locator("#panel").is_visible() and not p.locator("#form-dec").count()
+                p.keyboard.press("Escape")
+                p.wait_for_timeout(300)
+                ct["escape_cierra_primero_el_formulario"] = (esc1 and p.locator("#panel").is_hidden(), "el primer Escape cierra el formulario y el segundo, la ficha")
+                p.reload()
+                p.wait_for_timeout(400)
+                etq = {rk: p.locator(f'#filas tr.fila[data-rk="{rk}"] .dec').inner_text() if p.locator(f'#filas tr.fila[data-rk="{rk}"] .dec').count() else "" for rk in (1, 2, 3)}
+                cuenta_dec = {}
+                for v in ("confirmar", "descartar", "sin", "todas"):
+                    p.select_option("#fdec", v)
+                    p.wait_for_timeout(80)
+                    cuenta_dec[v] = p.locator("#filas tr.fila").count()
+                ct["decision_sigue_al_recargar_y_se_filtra"] = (etq == {1: "Para revisar", 2: "Descartado", 3: ""} and cuenta_dec == {"confirmar": 1, "descartar": 1, "sin": 98, "todas": 100},
+                                                                 f"en la lista: {etq}; filtro: {cuenta_dec}")
+                with p.expect_download() as bajada3:
+                    p.click("[data-excel]")
+                x3 = CAP / ("decisiones_" + bajada3.value.suggested_filename)
+                bajada3.value.save_as(str(x3))
+                hp3 = openpyxl.load_workbook(x3)["Proveedores"]
+                cab = [c.value for c in hp3[3]]
+                filas3 = {r[0]: r for r in hp3.iter_rows(min_row=4, values_only=True) if r[0] is not None}
+                i_dec, i_mot, i_nota, i_norma, i_fte = cab.index("Tu decisión"), cab.index("Motivo"), cab.index("Nota"), cab.index("Normas"), cab.index("Fuentes y fecha de sus datos")
+                con_senal = [r for r in filas3.values() if r[i_fte]]
+                ct["excel_trae_decision_norma_y_fecha"] = (filas3[1][i_dec] == "Confirmado para revisar" and filas3[1][i_mot] == "El vínculo se confirma" and filas3[2][i_dec] == "Descartado"
+                                                         and filas3[2][i_nota] == "Lo revisó el área usuaria en octubre" and not filas3[3][i_dec] and len(filas3) == 100
+                                                         and all(r[i_norma] and re.search(FECHA, r[i_fte]) for r in con_senal),
+                                                         f"{len(cab)} columnas; decisión en las filas 1 y 2; {len(con_senal)} filas con señal, todas con norma y fecha")
+                p.goto(U + "#caso-wayrapampa-2")
+                p.wait_for_timeout(300)
+                p.click("#panel-pie [data-dec-cambiar]")
+                p.click("#panel-pie [data-dec-quitar]")
+                p.wait_for_timeout(150)
+                guardadas = p.evaluate("Object.keys(JSON.parse(localStorage.getItem('llika-decisiones') || '{}'))")
+                ct["decision_se_puede_quitar"] = (guardadas == ["wayrapampa-1"] and p.locator('#panel-pie [data-dec="confirmar"]').count() == 1, f"quedan guardadas: {guardadas}")
+                p.evaluate("localStorage.removeItem('llika-decisiones')")
+                # Imágenes: todas cargan y tienen texto alternativo (vacío si son decorativas)
+                malas_img, n_img = [], 0
+                for vista, ruta in RUTAS:
+                    p.goto(U + ruta)
+                    p.wait_for_timeout(250)
+                    r = p.evaluate("() => { const v = [...document.images].filter(i => i.getBoundingClientRect().width > 0); return { n: v.length, malas: v.filter(i => !(i.complete && i.naturalWidth > 0 && i.hasAttribute('alt'))).map(i => i.dataset.img || i.src.slice(0, 30)) }; }")
+                    n_img += r["n"]
+                    malas_img += [f"{vista}: {x}" for x in r["malas"]]
+                ct["imagenes_cargan_con_alt"] = (not malas_img and n_img > 0, f"{n_img} imágenes visibles en {len(RUTAS)} vistas; con problemas: {malas_img[:5]}")
+                ct["logo_y_marca"] = (p.locator(".cabecera .logo-red .centro").count() == 1 and p.evaluate("getComputedStyle(document.querySelector('.cabecera')).backgroundColor") == "rgb(77, 75, 76)",
+                                      "logo con la telaraña y cabecera en el carbón de UTEC (#4D4B4C)")
+                res["etapa_2"] = {k: {"ok": v[0], "detalle": v[1]} for k, v in ct.items()}
             if nombre == "cel" and tema == "light":
                 # en el celular: tocar una tarjeta de entidad y una de proveedor abre lo que corresponde
                 p.goto(U + "#inicio", wait_until="networkidle")
@@ -166,8 +296,8 @@ with sync_playwright() as pw:
 
 (CAP / "medidas.json").write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
 for k, v in res.items():
-    if k == "prueba_de_uso":
-        print("CAMBIOS DE LA PRUEBA DE USO")
+    if k in ("prueba_de_uso", "etapa_2"):
+        print("CAMBIOS DE LA PRUEBA DE USO" if k == "prueba_de_uso" else "ETAPA 2: CONTRATO DE ALCANCE Y MARCA")
         for c, r in v.items():
             print(f"  {'OK   ' if r['ok'] else 'FALLA'} {c}: {r['detalle']}")
         continue
