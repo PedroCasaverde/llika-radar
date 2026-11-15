@@ -9,7 +9,7 @@
     python llika.py caso-real                   entidad, pantalla y prueba del caso del video: Ripán, con Pachas y Marías
 
 Cada corrida deja una fila en resultados/corridas.jsonl (paso, segundos, memoria pico, código de salida), sin datos de
-personas. El detalle de cada paso está en el README.
+personas; ese registro es local y no va a git. El detalle de cada paso está en el README.
 """
 import json
 import os
@@ -35,7 +35,7 @@ def correr(paso, script, args=(), cwd=None):
     except ImportError:
         psutil = None
     cmd = [sys.executable, "-I", "-X", "utf8", str(script), *map(str, args)]
-    print(f"\n== {paso}: {' '.join(cmd[3:])}", flush=True)
+    print(f"\n== {paso}: {' '.join(cmd[4:])}", flush=True)
     t0, pico = time.time(), 0.0
     p = subprocess.Popen(cmd, cwd=cwd or Path(script).parent)
     while p.poll() is None:

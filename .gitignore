@@ -11,6 +11,9 @@ datos/crudos/acc8_informes_cgr/*
 # Lo que se arma con datos reales (el JSON y la pantalla de una entidad) tampoco
 privado/
 
+# El registro local de corridas de llika.py (tiempo y memoria de cada paso)
+resultados/
+
 # Salidas del OCR en Kaggle y en la PC
 ocr_informes/*
 !ocr_informes/*.py

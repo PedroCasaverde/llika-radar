@@ -80,6 +80,16 @@ python llika.py pantalla privado/datos_ripan_2025.json
 python llika.py probar privado/llika_ripan_2025.html privado/datos_ripan_2025.json
 ```
 
+### Probado desde un clon limpio
+
+El 14/11/2026 se clonó el repositorio desde GitHub en otra carpeta (en la misma PC del equipo), se creó un entorno nuevo
+solo con `requirements.txt` y se siguieron los pasos de arriba:
+- `python llika.py demo` armó la misma demo y pasó sus pruebas;
+- con el paquete de datos, `python llika.py caso-real` dio el mismo JSON (huella `e9de3840bf7a252d`) y la misma pantalla,
+  y `probar_real.py` pasó entero;
+- `python llika.py puntajes` rehízo la lista de 2025 idéntica byte por byte y el mismo archivo de puntajes
+  (`79d655736b29bd46`).
+
 ### 3. Desde las fuentes (horas, 48 GB de RAM y unos 30 GB de disco)
 
 Todas las fuentes son públicas. Este es el orden en que se armó la data; esta ruta todavía no se repitió completa desde un
@@ -123,7 +133,7 @@ Las cifras son de la PC del equipo (12 núcleos, 48 GB de RAM), medidas el 14/11
 | Paso | Tiempo | Memoria pico |
 |---|---|---|
 | Datos de tres entidades (`exportar_entidad.py`) | 1,1 min | 4,4 GB |
-| Puntajes de 2025, opcional (`llika.py puntajes`) | 6,5 a 8,9 min | 21,1 GB |
+| Puntajes de 2025, opcional (`llika.py puntajes`) | 6,5 a 8,9 min | 21 a 23 GB |
 | Armar la pantalla | 0,5 s | 0,01 GB |
 | Abrir la pantalla en el navegador | 0,44 s | archivo de 0,65 MB |
 | Abrir una ficha | 9 ms (mediana); 32 ms el peor caso | |
