@@ -60,11 +60,26 @@ Los datos procesados no van a git ni a ningún enlace: traen nombres, RUC y DNI.
 | `datos/procesados/v4/x_territorial.parquet` | 1 | 0,2 |
 | `datos/procesados/v4/x_territorial_proveedor.parquet` | 1 | 0,1 |
 
+## Además, para el notebook de la evaluación (`notebooks/evaluacion_v0.ipynb`, opcional)
+
+6 archivos más, unos 18 MB, en `datos/procesados/v4/resultados/lista_unica_limpia/`. Las dos tablas de evaluación las
+arma `radar/v4/tabla_evaluacion.py` (7,6 minutos y 20 GB de memoria pico, con los datos de la ruta 3; no se rastreó si
+alcanza con el paquete de los puntajes): rehace el universo
+limpio de 2022 y 2024 y se detiene si la lista no es idéntica a la guardada o si no repite la segunda medición.
+
+| Archivo | Archivos | MB |
+|---|---|---|
+| `evaluacion_2022.parquet` y `evaluacion_2024.parquet` | 2 | 14,9 |
+| `evaluacion_manifiesto.json` y `segunda_medicion.json` | 2 | 0,0 |
+| `lista_2022.parquet` y `lista_2024.parquet` | 2 | 1,8 |
+
 ## Huellas para comprobar
 
 | Archivo | SHA-256 (primeros 16) |
 |---|---|
 | `datos/procesados/v4/resultados/lista_unica_limpia/lista_2025_unica.parquet` | `189af867041d1270` |
 | `datos/procesados/v4/resultados/lista_unica_limpia/puntajes_2025.parquet` | `79d655736b29bd46` |
+| `datos/procesados/v4/resultados/lista_unica_limpia/evaluacion_2022.parquet` | `96d6e4936f1e8dc9` |
+| `datos/procesados/v4/resultados/lista_unica_limpia/evaluacion_2024.parquet` | `0c52002e1bf62336` |
 
 Con estos datos, `python llika.py caso-real` deja `privado/datos_caso_real_2025.json` con la huella `e9de3840bf7a252d`.

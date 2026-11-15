@@ -20,6 +20,7 @@ académica y pública: aparecer en la lista no es una acusación.
 | `radar/` | Las alertas de vínculo e impedimento y las tablas que usa la cadena |
 | `datos/_scripts/`, `datos/crudos/acc8_informes_cgr/`, `ocr_informes/` | Descarga de las fuentes, lectura de documentos (OCR y modelos de lenguaje) y su validación |
 | `docs/` | Model Card v0, datasheet de los datos y la lista de archivos del paquete de datos |
+| `notebooks/` | La evaluación del modelo v0 en 2022 y 2024, ejecutada y sin RUC: línea de base, intervalos y error por segmento |
 
 Los datos no están en el repositorio: pesan varios GB y traen nombres, RUC y DNI. La pantalla con datos reales se arma en
 `privado/`, que tampoco va a git.
@@ -101,7 +102,7 @@ clon limpio.
 | 2. Lectura de documentos | OCR de los informes con `ocr_informes/` (en Kaggle con GPU, o `ocr_local.py`) y de las resoluciones escaneadas con `ocr_resoluciones.py`; lectura con modelos de lenguaje: `lector_claude.py` (resoluciones), `clasificar_hechos.py` y `extraer_deepseek.py` (informes); `validar_extracciones.py` | Piden claves de API en un `.env` local. Costó unos 31 dólares (16 por las resoluciones y 15 por los informes). Repetirlo da resultados parecidos, no idénticos: las salidas quedan guardadas y la cadena las lee |
 | 3. Tablas y alertas | `procesar_conosce.py`, `limpiar_conformacion.py`, `procesar_ocds.py`, `perucompras_ordenes.py`, `entidad_declarante.py`; `radar/00_padron.py`, `14_antecedentes.py`, `19_empleos_previos.py`, `20_alerta_puerta_giratoria.py`, `01b_sumar_otras.py`, `01_base.py`; `padron_ubicacion.py`, `ocds_exposicion.py`; `radar/02_funcionarios.py`, `03_vinculos.py`, `25_tarjeta_territorial.py`, `26_senales_ocds.py`, `06_puntaje.py`, `23_panel_etiqueta.py`, `29_estructura_benchmark.py` | `capa2_padre_hijo_jne.py` corre solo y con el navegador cerrado, porque pide mucha memoria |
 | 4. Capas de la v4 | `radar/v4/capa1_base.py`, `capa2_x.py`, `capa2_territorial.py`, `capa2_familia.py`, `capa2_padre_hijo_jne.py`, `capa2_padre_hijo_jne_prob.py`, `capa2_impedidos.py`, `estadisticos_simples.py` | |
-| 5. Modelos y evaluación | Los modelos y las corridas de examen de 2022 y 2024 (`corrida_sellada.py`), la lista de 2025 (`lista_unica.py` y `lista_unica_limpia.py`, en sus modos `exploracion`, `segunda`, `congelar` y `expediente`) y lo que pesa en el parecido (`importancia_parecido.py`) | Los exámenes y la lista de 2025 se corren una sola vez: cada script se detiene si su salida ya existe |
+| 5. Modelos y evaluación | Los modelos y las corridas de examen de 2022 y 2024 (`corrida_sellada.py`), la lista de 2025 (`lista_unica.py` y `lista_unica_limpia.py`, en sus modos `exploracion`, `segunda`, `congelar` y `expediente`) y lo que pesa en el parecido (`importancia_parecido.py`); la tabla del notebook (`tabla_evaluacion.py`), que se detiene si no repite la segunda medición | Los exámenes y la lista de 2025 se corren una sola vez: cada script se detiene si su salida ya existe |
 
 ## Manejo de errores
 
@@ -148,6 +149,13 @@ adversas documentadas después: sanciones del Tribunal, penalidades y observacio
 primeros de cada entidad hay 412 proveedores distintos con señal, frente a 150 si se ordena por monto (2,75 veces, con un
 intervalo al 90 % de 2,43 a 3,14) y 160 si se ordena por el tamaño del proveedor. La lista de 2025 está congelada (huella
 `189af867041d1270`) y se armó sin mirar ninguna señal de 2025: su resultado se medirá cuando se publiquen.
+
+`notebooks/evaluacion_v0.ipynb` rehace esa evaluación sin reentrenar: los conteos frente al monto, al tamaño y al azar,
+sus intervalos, el indicador de revisiones en vano por acierto, las observaciones de control como contrapeso y el error
+por año, tamaño y tipo de entidad, tipo de proveedor y motivo. Está guardado ejecutado, con cifras agregadas. Para
+volver a correrlo hacen falta los archivos de la evaluación del paquete de datos (`docs/paquete_de_datos.md`) y
+`pip install -r requirements-notebook.txt`; luego `jupyter execute --inplace notebooks/evaluacion_v0.ipynb`. Si los
+datos están en otra carpeta, se indica con la variable de entorno `LLIKA_DATOS`.
 
 ## Datos públicos y privacidad
 

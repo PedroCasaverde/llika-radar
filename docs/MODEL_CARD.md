@@ -27,7 +27,7 @@ traen datos de personas.
 - **Cambio frente al contrato de alcance.** El Informe Preliminar pactó como modelo v0 una regresión logística L1. Se
   reemplazó por estos dos modelos durante la mejora del modelo (noviembre de 2026): con la unidad caso y la etiqueta de
   señal adversa, los modelos simples, la logística entre ellos, no superaron al orden por tamaño en los cortes de
-  validación. Falta declararlo en la hoja Cambios del E4.
+  validación. Está declarado en la hoja Cambios del E4 (fila del 5/11/2026).
 
 ## Uso previsto
 
