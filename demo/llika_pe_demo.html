@@ -221,11 +221,7 @@ body[data-vista="inicio"] main { padding-top: 0; }
 .tabla td { padding: calc((var(--row-h) - var(--l-base)) / 2) var(--s-3); border-bottom: 1px solid var(--border); vertical-align: top; }
 .tabla tbody tr:last-child td { border-bottom: 0; }
 .tabla .der { text-align: right; }
-.tabla-entidades tbody tr { cursor: pointer; transition: background var(--d-hover); }
-.tabla-entidades td, .indices td { vertical-align: middle; }
-.tabla-entidades tbody tr:hover { background: var(--surface); }
-.tabla-entidades a { display: inline-block; padding-block: var(--s-1); margin-block: calc(-1 * var(--s-1)); color: var(--text); font-weight: var(--w-medium); text-decoration: none; }
-.tabla-entidades a:hover { text-decoration: underline; }
+.indices td { vertical-align: middle; }
 .conteo { font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text-muted); }
 .nota-pie { font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text-muted); max-width: 80ch; }
 .vacio { padding: var(--s-8) var(--s-4); display: grid; gap: var(--s-2); justify-items: center; text-align: center; color: var(--text-muted); }
@@ -233,14 +229,6 @@ body[data-vista="inicio"] main { padding-top: 0; }
 .vacio .v-t { color: var(--text); font-weight: var(--w-medium); }
 .vacio .boton { margin-top: var(--s-2); justify-self: center; }
 @media (max-width: 767px) {
-  .tabla-entidades thead { display: none; }
-  .tabla-entidades, .tabla-entidades tbody { display: block; }
-  .tabla-entidades tr { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-1) var(--s-4); padding: var(--s-3) var(--s-4); border-bottom: 1px solid var(--border); }
-  .tabla-entidades td:first-child a::after { content: ""; position: absolute; inset: 0; }
-  .tabla-entidades tr:last-child { border-bottom: 0; }
-  .tabla-entidades td { display: block; padding: 0; border: 0; text-align: left !important; }
-  .tabla-entidades td:first-child, .tabla-entidades td:nth-child(2) { grid-column: 1 / -1; }
-  .tabla-entidades td[data-et]::before { content: attr(data-et); display: block; font-size: var(--t-xs); line-height: var(--l-xs); color: var(--text-muted); }
   .tabla-apilada thead { display: none; }
   .tabla-apilada, .tabla-apilada tbody { display: block; }
   .tabla-apilada tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--s-1) var(--s-3); padding: var(--s-3) var(--s-4); border-bottom: 1px solid var(--border); }
@@ -400,6 +388,8 @@ details.fija summary { font-size: var(--t-sm); line-height: var(--l-sm); font-we
 .senal b { font-weight: var(--w-medium); }
 .senal small { grid-column: 2; font-size: var(--t-xs); line-height: var(--l-xs); color: var(--text-subtle); }
 .senal ul { grid-column: 2; padding-left: var(--s-4); font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text-muted); }
+.senal .doc { grid-column: 2; display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-3); font-size: var(--t-sm); line-height: var(--l-sm); }
+.senal .doc a, .senal ul a { color: var(--action); font-weight: var(--w-medium); }
 .prob { grid-column: 2; display: flex; align-items: center; gap: var(--s-2); font-size: var(--t-sm); line-height: var(--l-sm); color: var(--text-muted); }
 .prob b { color: var(--text); font-weight: var(--w-semibold); font-variant-numeric: tabular-nums; }
 .prob i { flex: 0 1 120px; height: 4px; border-radius: var(--r-full); background: var(--surface-2); overflow: hidden; }
@@ -487,7 +477,8 @@ details.ords[open] summary { margin-bottom: var(--s-2); }
 .filtro-dec select { height: var(--control-h); border: 1px solid var(--border-strong); border-radius: var(--r-sm); background: var(--bg); color: var(--text); padding: 0 var(--s-3); font-size: var(--t-sm); }
 /* Índices por entidad */
 .indices th { white-space: normal; vertical-align: bottom; min-width: 104px; }
-.indices th:first-child { min-width: 200px; }
+.indices th:first-child { min-width: 280px; }
+.ent-sub { display: block; font-size: var(--t-xs); line-height: var(--l-xs); color: var(--text-muted); }
 .indices th button { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 0; border: 0; background: none; padding: 0; color: inherit; font: inherit; cursor: pointer; text-align: left; min-height: 24px; }
 .indices th button[aria-pressed="true"] { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
 .indices th button { color: var(--text); }
@@ -696,18 +687,7 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
     <p class="conteo" id="conteo-ini"></p>
   </div>
   <div class="caja scroll-x">
-    <table class="tabla tabla-entidades" aria-labelledby="t-ents">
-      <thead><tr><th scope="col">Entidad</th><th scope="col">Tipo</th><th scope="col" class="der">Proveedores</th><th scope="col" class="der">Compró en 2025</th><th scope="col" class="der">Con alguna señal</th></tr></thead>
-      <tbody id="t-entidades"></tbody>
-    </table>
-  </div>
-
-  <div class="seccion-cab">
-    <h2 id="t-ind">Compara las entidades</h2>
-    <p class="conteo">Toca un índice para ordenar</p>
-  </div>
-  <div class="caja scroll-x">
-    <table class="tabla indices" aria-labelledby="t-ind">
+    <table class="tabla indices" aria-labelledby="t-ents">
       <thead><tr id="ind-cab"></tr></thead>
       <tbody id="t-indices"></tbody>
     </table>
@@ -976,6 +956,8 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
 (() => {
   'use strict';
   const D = JSON.parse(document.getElementById('datos-llika').textContent);
+  // Con datos reales (radar/v4/exportar_entidad.py) cambian los avisos y cada señal trae el enlace a su documento oficial
+  const REAL = D.modo === 'real';
   const TOPE = D.tope, NB = ' ', DIA = 864e5;
   const MES_CORTO = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'set', 'oct', 'nov', 'dic'];
   const svg = d => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
@@ -1087,11 +1069,11 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
   function evidencia(c) {
     const ev = [];
     if (c.vin) {
-      const corto = c.vin.tipo === 'autoridad' ? 'Autoridad' : c.vin.tipo === 'pariente' ? `Coincidencia de apellidos, ${c.vin.prob}%` : 'Declarado';
+      const corto = c.vin.tipo === 'autoridad' ? 'Autoridad' : c.vin.tipo === 'pariente' ? (c.vin.prob != null ? `Coincidencia de apellidos, ${c.vin.prob}%` : 'Coincidencia de apellidos') : 'Declarado';
       // Quién declaró al familiar: nombre, cargo y área, para saber a quién pedirle el legajo
       const dj = c.vin.decl, quien = dj ? `${dj.nombre}, ${dj.cargo} (${dj.area}), en su declaración jurada de intereses de ${dj.anio}.` : '';
       const vr = VIN_REF[c.vin.tipo] || VIN_REF.autoridad;
-      ev.push({ g: 'vin', etq: VIN[c.vin.tipo] || 'Vínculo', corto, x: c.vin.x, norma: LEY[vr[0]], fs: vr[1], f: fuentesTxt(vr[1]), prob: c.vin.prob, quien, dj,
+      ev.push({ g: 'vin', etq: VIN[c.vin.tipo] || 'Vínculo', corto, x: c.vin.x, norma: LEY[vr[0]], fs: vr[1], f: fuentesTxt(vr[1]), prob: c.vin.prob, pariente: c.vin.tipo === 'pariente', quien, dj,
         extra: c.vin.tipo === 'declarado' ? 'No sube en la lista: este tipo de vínculo no acertó en 2022 y 2024 (0 de 106).' : '' });
     }
     const a = antecedentesTexto(c.ant);
@@ -1106,7 +1088,7 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
       if (c.cercas.length) cortos.push(`${Math.round(100 * Math.max(...c.cercas.map(o => o.m)) / TOPE)}% del tope`);
       ev.push({ g: 'fra', etq: 'Compras que parecen partidas', corto: cortos.join(' · '), x: partes.join(' '), norma: LEY.fra, fs: ['ordenes'], f: fuentesTxt(['ordenes']) });
     }
-    c.exp.forEach(e => { const s = SEN[e.t] || ['Otra señal', 'ninguna', ['ordenes']]; ev.push({ g: 'otra', etq: s[0], corto: s[0], x: e.x, norma: LEY[s[1]], fs: s[2], f: fuentesTxt(s[2]) }); });
+    c.exp.forEach(e => { const s = SEN[e.t] || ['Otra señal', 'ninguna', ['ordenes']]; ev.push({ g: 'otra', etq: s[0], corto: s[0], x: e.x, norma: LEY[s[1]], fs: s[2], f: fuentesTxt(s[2]), url: e.url, doc: e.doc, nota: e.nota, otros: e.otros }); });
     return ev;
   }
   // Imágenes: van una sola vez en el archivo y se ponen donde se piden (data-img)
@@ -1176,7 +1158,7 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
       if (!inp.value.trim()) { cerrar(); return; }
       ul.innerHTML = r.aviso ? `<li><p>${esc(r.aviso)}</p></li>`
         : r.items.length ? r.items.map((x, i) => `<li role="option" id="${ul.id}-${i}"><a href="${x.href}">${esc(x.t)}<small>${esc(x.s)}</small></a></li>`).join('') + (r.mas ? `<li><p>Hay ${r.mas} proveedores más. Escribe más letras para acotar.</p></li>` : '')
-          : `<li><p>No encontramos «${esc(inp.value.trim())}». Prueba con Wayrapampa, Ccori Llacta o Pukyu, las tres entidades de la demo.</p></li>`;
+          : `<li><p>No encontramos «${esc(inp.value.trim())}». ${REAL ? `Prueba con ${D.entidades.map(e => e.corto).join(', ').replace(/, ([^,]*)$/, ' o $1')}, ${D.entidades.length === 1 ? 'la entidad de esta página' : `las ${D.entidades.length} entidades de esta página`}.` : 'Prueba con Wayrapampa, Ccori Llacta o Pukyu, las tres entidades de la demo.'}</p></li>`;
       ul.hidden = false; inp.setAttribute('aria-expanded', 'true'); activo = -1;
     };
     inp.addEventListener('input', pintar);
@@ -1199,20 +1181,14 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
     document.addEventListener('click', ev => { if (!caja.contains(ev.target)) cerrar(); });
   });
 
-  // ---------- Inicio: la lista de entidades ----------
-  document.getElementById('t-entidades').innerHTML = D.entidades.map(e => `<tr data-href="#entidad-${e.id}">
-    <td><span class="ent-nom"><img class="ent-ico" data-img="${imgEntidad(e)}" alt="" width="40" height="40"><span><a href="#entidad-${e.id}">${esc(e.nombre)}</a> <span class="tag">ficticia</span></span></span></td>
-    <td class="suave">${esc(e.tipo)}</td>
-    <td class="der num" data-et="Proveedores">${miles(e.proveedores)}</td>
-    <td class="der num" data-et="Comprado en ${D.anio}">${millones(e.monto)}</td>
-    <td class="der num" data-et="Con alguna señal">${miles(e.conSenal)} de ${miles(e.casos.length)}</td></tr>`).join('');
-  document.getElementById('t-entidades').addEventListener('click', ev => { const tr = ev.target.closest('tr[data-href]'); if (tr && !ev.target.closest('a')) location.hash = tr.dataset.href.slice(1); });
-  document.getElementById('conteo-ini').textContent = `${plural(D.entidades.length, 'entidad', 'entidades')} en la demo. Listas de ${D.anio}, armadas al cierre del año.`;
+  // ---------- Inicio: una sola tabla de entidades, con sus cifras y sus índices ----------
+  const TAG_DEMO = REAL ? '' : ' <span class="tag">ficticia</span>';
+  document.getElementById('conteo-ini').textContent = `${plural(D.entidades.length, 'entidad', 'entidades')} ${REAL ? 'con datos reales' : 'en la demo'}. Listas de ${D.anio}, armadas al cierre del año. Toca un índice para ordenar.`;
   let ordenInd = null;
   function pintarIndices() {
     document.getElementById('ind-cab').innerHTML = `<th scope="col">Entidad</th>` + IND.map(([k, n, q]) => `<th scope="col"><button type="button" data-ind="${k}" aria-pressed="${ordenInd === k}">${n}<span class="q">${q}</span></button></th>`).join('');
     const ents = ordenInd ? [...D.entidades].sort((a, b) => b.ind[ordenInd] - a.ind[ordenInd]) : D.entidades;
-    document.getElementById('t-indices').innerHTML = ents.map(e => `<tr data-href="#entidad-${e.id}"><td><span class="ent-nom"><img class="ent-ico" data-img="${imgEntidad(e)}" alt="" width="40" height="40"><a href="#entidad-${e.id}">${esc(e.corto)}</a></span></td>`
+    document.getElementById('t-indices').innerHTML = ents.map(e => `<tr data-href="#entidad-${e.id}"><td><span class="ent-nom"><img class="ent-ico" data-img="${imgEntidad(e)}" alt="" width="40" height="40"><span><a href="#entidad-${e.id}">${esc(e.nombre)}</a>${TAG_DEMO}<span class="ent-sub">${esc(e.tipo)} · ${plural(e.proveedores, 'proveedor', 'proveedores')} · ${millones(e.monto)} en ${D.anio} · ${miles(e.conSenal)} de ${miles(e.casos.length)} con alguna señal</span></span></span></td>`
       + IND.map(([k, n]) => { const v = e.ind[k], m = MAX_IND[k]; return `<td data-et="${n}"><div class="ind${v === m && m > 0 ? ' max' : ''}" data-k="${k}"><b>${indTxt(v)}</b><i aria-hidden="true"><span style="--v:${m ? (100 * v / m).toFixed(1) : 0}%"></span></i></div></td>`; }).join('') + '</tr>').join('');
     ponerImagenes(document.getElementById('t-indices'));
   }
@@ -1255,7 +1231,7 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
       <header class="ent-cab">
         <img class="ent-ico" data-img="${imgEntidad(e)}" alt="" width="64" height="64">
         <div class="pag-cab">
-          <h1 tabindex="-1">${esc(e.nombre)} <span class="tag">ficticia</span></h1>
+          <h1 tabindex="-1">${esc(e.nombre)}${TAG_DEMO}</h1>
           <p class="meta"><span>${esc(e.tipo)}</span><span>RUC <span class="mono">${esc(e.ruc)}</span></span><span>Lista de ${D.anio}, con lo que se sabía al 31 dic ${D.anio}</span></p>
         </div>
       </header>
@@ -1268,7 +1244,7 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
       <section class="bloque-p" aria-labelledby="t-compara">
         <div class="seccion-cab"><h2 id="t-compara">Cómo se compara con las otras entidades</h2><a class="conteo ver-todas" href="#inicio">Ver las ${nEnt} entidades</a></div>
         <dl class="compara">${IND.map(([k, n, q]) => `<div data-k="${k}"><dt>${n}</dt><dd>${indTxt(e.ind[k])}</dd>${puntos(k)}<small>${q} · ${puesto(k) === 1 ? `la más alta de las ${nEnt}` : `${puesto(k)}.ª de ${nEnt}`}</small></div>`).join('')}</dl>
-        <p class="chico suave">Un índice alto no es una falta: dice dónde conviene mirar primero. El punto azul es esta entidad; los grises, las otras de la demo.</p>
+        <p class="chico suave">Un índice alto no es una falta: dice dónde conviene mirar primero. El punto azul es esta entidad; los grises, las otras de ${REAL ? 'esta página' : 'la demo'}.</p>
       </section>
       <div class="herramientas" role="search">
         <div class="busca">${ICO.busca}<label class="sr" for="fq">Buscar en esta lista</label><input id="fq" type="search" placeholder="Buscar proveedor, RUC o DNI" autocomplete="off"></div>
@@ -1381,11 +1357,11 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
   const serialFecha = iso => (tiempo(iso) - Date.UTC(1899, 11, 30)) / DIA;
   function descargarExcel() {
     const e = ES.e, filas = filasVisibles();
-    const nota = `Orden sugerido para revisar: aparecer en esta lista no constituye sanción, falta ni delito. Demo con datos inventados.`;
+    const nota = `Orden sugerido para revisar: aparecer en esta lista no constituye sanción, falta ni delito. ${REAL ? `Registros públicos del Estado, con lo que se sabía al 31 dic ${D.anio}.` : 'Demo con datos inventados.'}`;
     const titulo = `${e.nombre}. Lista de ${D.anio}, con lo que se sabía al 31 dic ${D.anio}.`;
-    const senal = (c, g) => c.ev.filter(x => x.g === g).map(x => g === 'otra' ? `${x.etq}: ${x.x}` : g === 'vin'
-      ? [x.x, x.prob != null ? `Coincidencia de apellidos, sin confirmar con RENIEC: ${x.prob}% de probabilidad de ser pariente.` : '', x.quien ? `Lo declaró: ${x.quien}` : ''].filter(Boolean).join(' ')
-      : g === 'ant' ? (x.det || [x.x]).join('; ') : x.x).join(' | ');
+    const senal = (c, g) => c.ev.filter(x => x.g === g).map(x => g === 'otra' ? `${x.etq}: ${x.x}${x.url ? ` (${x.url})` : ''}` : g === 'vin'
+      ? [x.x, x.prob != null ? `Coincidencia de apellidos, sin confirmar con RENIEC: ${x.prob}% de probabilidad de ser pariente.` : x.pariente ? 'Coincidencia de apellidos, sin confirmar con RENIEC.' : '', x.quien ? `Lo declaró: ${x.quien}` : ''].filter(Boolean).join(' ')
+      : g === 'ant' ? (x.det || [x.x]).map(detTxt).join('; ') : x.x).join(' | ');
     const prov = filas.map(c => [c.rk, c.prov.nombre || '', tipoProv(c), c.prov.ruc, c.prov.dni || '', c.rubro || '', c.total, c.n, c.clocal == null ? '' : Math.min(Number(c.clocal), 100),
       c.por, senal(c, 'vin'), senal(c, 'ant'), senal(c, 'fra'), senal(c, 'otra'), [...new Set(c.ev.map(x => x.f))].join('; '), [...new Set(c.ev.map(x => x.norma))].join(' | '),
       ...(d => d ? [DEC_TXT[d.d], d.m, d.n || '', serialFecha(d.f)] : ['', '', '', ''])(decDe(c))]);
@@ -1465,13 +1441,18 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
     const alto = c.motivo === 'antecedentes' || c.motivo === 'perfil';
     const fra = c.ev.find(x => x.g === 'fra');
     const pasos = [
-      { t: '¿Tiene un vínculo con una autoridad de esta entidad?', v: !c.vin ? 'No' : c.vin.tipo === 'autoridad' ? 'Sí: es una autoridad o su empresa' : c.vin.tipo === 'pariente' ? `Coincidencia de apellidos, sin confirmar: ${c.vin.prob}% de probabilidad de ser pariente` : 'Declarado: se muestra, pero no lo sube en la lista', d: vinSube },
+      { t: '¿Tiene un vínculo con una autoridad de esta entidad?', v: !c.vin ? 'No' : c.vin.tipo === 'autoridad' ? 'Sí: es una autoridad o su empresa' : c.vin.tipo === 'pariente' ? (c.vin.prob != null ? `Coincidencia de apellidos, sin confirmar: ${c.vin.prob}% de probabilidad de ser pariente` : 'Coincidencia de apellidos con una autoridad, sin confirmar con RENIEC') : 'Declarado: se muestra, pero no lo sube en la lista', d: vinSube },
       { t: '¿Se parece a proveedores que después fueron sancionados?', v: vinSube ? 'No hizo falta mirarlo: el vínculo va primero' : alto ? 'Mucho: está entre los 2 de cada 100 que más se parecen en todo el país' : 'No está entre los que más se parecen', d: !vinSube && alto, extra: enQueSeFija(c, !vinSube && alto) },
       { t: '¿Cuánto depende de esta entidad?', v: `Le vendió ${soles(c.total)}: el ${parteVentas(c)} de todo lo que le vende al Estado`, d: c.motivo === 'peso' },
       { t: '¿Tiene compras que parecen partidas?', v: fra ? `Sí: ${fra.corto}` : c.motivo === 'mayor' ? 'No. Ninguna otra lo parecía, y entra la compra más grande' : 'No', d: c.motivo === 'bandera' || c.motivo === 'mayor' }
     ];
     return `<ol class="calculo">${pasos.map(p => `<li${p.d ? ' class="decide"' : ''}><span class="c-t">${p.t}</span><span class="c-v">${esc(p.v)}${p.d ? '<span class="decide-tag">Por esto está aquí</span>' : ''}</span>${p.extra ? `<div class="c-extra">${p.extra}</div>` : ''}</li>`).join('')}</ol>`;
   }
+  // Documento oficial de cada señal (con datos reales): la resolución del Tribunal o el informe de control; si no hay, de dónde sale
+  const enlace = (url, txt) => /^https:\/\/[a-z0-9.-]+\.gob\.pe\//i.test(url || '') ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(txt)}</a>` : '';
+  const detHTML = d => typeof d === 'string' ? esc(d) : `${esc(d.x)}${d.url ? ` ${enlace(d.url, d.doc || 'Ver documento')}` : d.nota ? ` <span class="suave">${esc(d.nota)}</span>` : ''}`;
+  const docHTML = x => x.url ? `<span class="doc">${enlace(x.url, x.doc || 'Ver documento')}${(x.otros || []).map(o => enlace(o.url, `Informe ${o.n}`)).join('')}</span>` : x.nota ? `<small>${esc(x.nota)}</small>` : '';
+  const detTxt = d => typeof d === 'string' ? d : d.x + (d.url ? ` (${d.url})` : '');
   const refHTML = (norma, fs) => `<dl class="ref"><dt>Norma</dt><dd>${esc(norma)}</dd><dt>${fs.length > 1 ? 'Fuentes' : 'Fuente'}</dt><dd>${fs.map(k => `<span class="f1">${esc(FUENTE[k][0])}, <span class="fecha">${esc(FUENTE[k][1])}</span></span>`).join('')}</dd></dl>`;
   let casoAbierto = null, focoPrevio = null, formDec = null;
   // Barra de decisión: preguntar, elegir el motivo o mostrar lo decidido
@@ -1486,7 +1467,7 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
         <span class="error" id="e-motivo"></span>
         <div class="campo"><label for="dec-nota">Nota <span class="suave">(opcional; obligatoria si el motivo es «Otro motivo»)</span></label><textarea id="dec-nota" aria-describedby="e-nota">${esc(formDec.nota || '')}</textarea><span class="error" id="e-nota"></span></div>
         <div class="botones"><button type="submit" class="boton">Guardar</button><button type="button" class="boton boton-sec" data-dec-cancelar>Cancelar</button>${d ? '<button type="button" class="boton boton-sec" data-dec-quitar>Quitar la decisión</button>' : ''}</div>
-        <p class="dec-nota">La decisión es tuya: LLIKA solo sugiere el orden. En esta demo se guarda solo en este navegador.</p>
+        <p class="dec-nota">La decisión es tuya: LLIKA solo sugiere el orden. ${REAL ? 'Por ahora' : 'En esta demo'} se guarda solo en este navegador.</p>
       </form>`;
     } else if (d) {
       pie.innerHTML = `<div class="decidido"><img data-img="mascota_listo" alt="" width="40" height="49"><p class="d-t"><b id="t-dec">${DEC_TXT[d.d]}</b><span>${esc(d.m)}${d.n ? `: ${esc(d.n)}` : ''}</span><span>${fecha(d.f)}</span></p><button type="button" class="boton boton-sec" data-dec-cambiar>Cambiar</button></div>`;
@@ -1533,9 +1514,10 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
       <section class="bloque-p" aria-labelledby="p-sen">
         <h3 id="p-sen">Señales <span class="n">${c.ev.length ? `${c.ev.length} de ${CATALOGO.length}` : `ninguna de ${CATALOGO.length}`}</span></h3>
         ${c.ev.length ? `<ul class="senales">${c.ev.map(x => `<li class="senal">${ICO[x.g]}<span><b>${esc(x.etq)}.</b> ${esc(x.x)}</span>
-            ${x.prob != null ? `<span class="coincide">Coincidencia de apellidos, sin confirmar con RENIEC</span><span class="prob"><b>${x.prob}%</b><i aria-hidden="true"><span style="--p:${Number(x.prob)}%"></span></i>de probabilidad de ser pariente</span><small>No es un parentesco comprobado: puede ser un homónimo. De 29 coincidencias muy probables, 14 eran parientes de verdad.</small>` : ''}
+            ${x.prob != null || x.pariente ? `<span class="coincide">Coincidencia de apellidos, sin confirmar con RENIEC</span>${x.prob != null ? `<span class="prob"><b>${x.prob}%</b><i aria-hidden="true"><span style="--p:${Number(x.prob)}%"></span></i>de probabilidad de ser pariente</span>` : ''}<small>No es un parentesco comprobado: puede ser un homónimo. De 29 coincidencias muy probables, 14 eran parientes de verdad.</small>` : ''}
             ${x.dj ? `<span class="quien">Lo declaró: <b>${esc(x.dj.nombre)}</b>, ${esc(x.dj.cargo)} (${esc(x.dj.area)}), en su declaración jurada de intereses de ${esc(x.dj.anio)}.</span>` : ''}
-            ${x.det && x.det.length ? `<ul>${x.det.map(d => `<li>${esc(d)}</li>`).join('')}</ul>` : ''}
+            ${x.det && x.det.length ? `<ul>${x.det.map(d => `<li>${detHTML(d)}</li>`).join('')}</ul>` : ''}
+            ${docHTML(x)}
             ${x.extra ? `<small>${esc(x.extra)}</small>` : ''}
             ${refHTML(x.norma, x.fs)}</li>`).join('')}</ul>` : `<p class="chico suave">No tiene ninguna de las señales que LLIKA busca.</p>`}
         ${ausentes.length && c.ev.length ? `<details class="sin"><summary>Lo que no tiene: ${ausentes.length} de ${CATALOGO.length} señales</summary><p>${esc(ausentes.join(', '))}.</p></details>` : ''}
@@ -1655,7 +1637,7 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
     marcar('mail', !mail || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail) ? '' : 'Al correo le falta la @ o el dominio. Revísalo.');
     const m = document.getElementById('c-ok');
     if (!ok) { m.hidden = true; return; }
-    m.textContent = 'Recibido. En la versión pública llegaría al equipo de LLIKA; en esta demo no se envía nada.'; m.hidden = false; f.reset();
+    m.textContent = `Recibido. En la versión pública llegaría al equipo de LLIKA; en ${REAL ? 'este prototipo' : 'esta demo'} no se envía nada.`; m.hidden = false; f.reset();
   });
 
   // ---------- Rutas ----------

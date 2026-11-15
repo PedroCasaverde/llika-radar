@@ -285,7 +285,7 @@ with sync_playwright() as pw:
             if nombre == "cel" and tema == "light":
                 # en el celular: tocar una tarjeta de entidad y una de proveedor abre lo que corresponde
                 p.goto(U + "#inicio", wait_until="networkidle")
-                p.locator("#t-entidades tr").nth(1).tap(position={"x": 300, "y": 60})
+                p.locator("#t-indices tr").nth(1).tap(position={"x": 300, "y": 60})
                 p.wait_for_timeout(300)
                 abre_entidad = p.evaluate("location.hash")
                 p.locator("#filas tr.fila").nth(2).tap(position={"x": 200, "y": 10})

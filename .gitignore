@@ -1,12 +1,23 @@
-# Los datos no se versionan: son pesados y las salidas traen datos de personas
+# Los datos no se versionan: son pesados y las salidas traen nombres y DNI
 datos/*
 !datos/_scripts/
+# Los scripts de los informes de la Contraloría viven junto a sus descargas
+!datos/crudos/
+datos/crudos/*
+!datos/crudos/acc8_informes_cgr/
+datos/crudos/acc8_informes_cgr/*
+!datos/crudos/acc8_informes_cgr/*.py
+
+# Lo que se arma con datos reales (el JSON y la pantalla de una entidad) tampoco
+privado/
+
+# Salidas del OCR en Kaggle y en la PC
+ocr_informes/*
+!ocr_informes/*.py
+
 __pycache__/
 .venv/
+.env
 *.parquet
 *.xlsx
 *.csv
-
-# Tablas livianas del taller (sin RUC): sí se versionan
-!taller/datos/
-!taller/datos/*.parquet

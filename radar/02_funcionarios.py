@@ -4,8 +4,9 @@
   que declaran no son alerta: es la planilla paralela, que se cuenta aparte.
 - Doble percepción (Ley 28175, art. 3): funcionario con cargo en una entidad que cobra órdenes de otra durante su cargo,
   con nombre completo único en el país según el padrón de SUNAT.
-- Posible familiar: persona con los mismos dos apellidos que un funcionario de la entidad que le compra, mientras el
-  funcionario tiene el cargo. Cada caso lleva una probabilidad de parentesco (Bayes empírico):
+- Posible familiar: persona con los mismos dos apellidos que un funcionario **con cargo de decisión o de intervención en la
+  contratación** de la entidad que le compra, mientras el funcionario tiene el cargo (HALLAZGOS 63, aprobado el 30/10 y
+  aplicado el 1/11: antes contaba a todos los declarantes, y el 95 % de la alerta eran locadores o colaboradores). Cada caso lleva una probabilidad de parentesco (Bayes empírico):
     * azar esperado del par: lambda = funcionarios de la entidad en el año x frecuencia del par de apellidos en el
       departamento (proveedores del departamento, encogida hacia la frecuencia nacional del padrón);
     * probabilidad = r / (r + lambda), y r se calibra para que la suma de probabilidades iguale el exceso sobre el azar
@@ -95,7 +96,7 @@ n_local = loc.groupby("depto").size()
 alertas, filas_anio = [], []
 for y in ANIOS:
     ini, fin = pd.Timestamp(f"{y}-01-01"), pd.Timestamp(f"{y}-12-31")
-    s = f[(f["inicio"] <= fin) & (f["cese"] >= ini)].reset_index(drop=True)
+    s = f[f["decide"] & (f["inicio"] <= fin) & (f["cese"] >= ini)].reset_index(drop=True)
     pv = cand[cand["anio"] == y][["ruc_entidad", "depto", "ruc", "nombre"]].drop_duplicates(["ruc_entidad", "ruc"]).reset_index(drop=True)
     t = pv["nombre"].str.split()
     pref = pd.concat([pd.DataFrame({"i": pv.index[t.str.len() > k], "par": t[t.str.len() > k].str[:k].str.join(" ")})

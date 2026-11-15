@@ -1,9 +1,13 @@
-# Arma la demo de llika.pe en un solo archivo: plantilla.html + datos_demo.json + imagenes/*.webp.
-#   python armar_demo.py            escribe ../llika_pe_demo.html
-#   python armar_demo.py otro.html  escribe en otra ruta
-# Los datos de la demo son inventados. Antes de escribir se comprueba que ningún RUC tenga dígito verificador válido,
-# que ningún número de compra se repita en una entidad, que el texto no use palabras que acusan, que el estilo no tenga
-# colores fuera de los tokens y que cada par de colores de texto cumpla el contraste (4.5:1; 3:1 en bordes y marcas).
+# Arma la pantalla de llika.pe en un solo archivo: plantilla.html + datos + imagenes/*.webp.
+#   python armar_demo.py                         la demo con datos inventados: escribe ../llika_pe_demo.html
+#   python armar_demo.py otro.html               la demo, en otra ruta
+#   python armar_demo.py --real datos.json [salida.html]
+#                                                con datos reales (radar/v4/exportar_entidad.py); por defecto escribe
+#                                                llika_<nombre>.html junto al JSON, en privado/, fuera de git
+# Antes de escribir se comprueba que ningún número de compra se repita en una entidad, que el texto no use palabras que
+# acusan, que el estilo no tenga colores fuera de los tokens y que cada par de colores de texto cumpla el contraste (4.5:1;
+# 3:1 en bordes y marcas). En la demo, ningún RUC puede tener dígito verificador válido; con datos reales, todos deben
+# tenerlo, y cada enlace a un documento debe ser de un sitio del Estado (gob.pe).
 import base64
 import json
 import re
@@ -11,11 +15,42 @@ import sys
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-DESTINO = Path(sys.argv[1]) if len(sys.argv) > 1 else AQUI.parent / "llika_pe_demo.html"
+REAL = len(sys.argv) > 2 and sys.argv[1] == "--real"
+if len(sys.argv) > 1 and sys.argv[1] == "--real" and not REAL:
+    sys.exit("ERROR: falta el JSON. Uso: python armar_demo.py --real datos.json [salida.html]")
+if REAL:
+    ORIGEN = Path(sys.argv[2])
+    if not ORIGEN.exists():
+        sys.exit(f"ERROR: no existe {ORIGEN}. Se arma con radar/v4/exportar_entidad.py (python llika.py entidad).")
+    DESTINO = Path(sys.argv[3]) if len(sys.argv) > 3 else ORIGEN.with_name(ORIGEN.stem.replace("datos_", "llika_") + ".html")
+else:
+    ORIGEN = AQUI / "datos_demo.json"
+    DESTINO = Path(sys.argv[1]) if len(sys.argv) > 1 else AQUI.parent / "llika_pe_demo.html"
 
-datos = json.loads((AQUI / "datos_demo.json").read_text(encoding="utf-8"))
+try:
+    datos = json.loads(ORIGEN.read_text(encoding="utf-8"))
+except json.JSONDecodeError as err:
+    sys.exit(f"ERROR: {ORIGEN.name} no es un JSON válido ({err}).")
+assert (datos.get("modo") == "real") == REAL, "con --real van datos reales (modo «real»), y sin él, los de la demo"
 t = (AQUI / "plantilla.html").read_text(encoding="utf-8")
 assert t.count("__DATOS__") == 1 and t.count("__IMAGENES__") == 1
+
+# Con datos reales, los textos fijos de la página dejan de decir que todo es inventado
+if REAL:
+    n = len(datos["entidades"])
+    for viejo, nuevo in (
+        ("<meta name=\"description\" content=\"Demo de llika.pe:", "<meta name=\"description\" content=\"llika.pe:"),
+        ("Los casos son inventados.\">", "Con registros públicos del Estado.\">"),
+        ("<b>Demo.</b> Las entidades, los proveedores, los RUC, los DNI y los montos son inventados. Las cifras del método, las normas y las fechas de las fuentes son las reales de LLIKA.",
+         f"<b>Datos reales.</b> Registros públicos del Estado, con lo que se sabía al 31 dic {datos['anio']}, cruzados por LLIKA. Es un orden sugerido para revisar: aparecer aquí no constituye sanción, falta ni delito."),
+        ("<noscript><p>Esta demo necesita JavaScript.</p></noscript>", "<noscript><p>Esta página necesita JavaScript.</p></noscript>"),
+        ("en la demo, con tres entidades inventadas, van sin ajustar.", f"aquí, con {n} {'entidad' if n == 1 else 'entidades'}, van sin ajustar."),
+        ("<p class=\"chico\">En esta demo, las entidades, los proveedores, los RUC, los DNI y los montos son inventados; los RUC llevan un dígito verificador inválido para que no coincidan con ninguno real.</p>",
+         "<p class=\"chico\">Esta página muestra datos reales: nombres, RUC, DNI y montos tal como los publica el Estado. El posible parentesco es una coincidencia de apellidos, no un hecho comprobado, y cualquier persona puede pedir que se corrija un dato.</p>"),
+        ("El enlace puede estar incompleto, o esa entidad no está en la demo. En la demo hay tres entidades.", "El enlace puede estar incompleto, o esa entidad no está en esta página."),
+    ):
+        assert t.count(viejo) == 1, f"no se encontró una sola vez el texto de la demo: {viejo[:60]}…"
+        t = t.replace(viejo, nuevo)
 
 # Imágenes: una sola vez en el archivo, como data URI; deben estar todas las que pide la plantilla
 imagenes = {p.stem: "data:image/webp;base64," + base64.b64encode(p.read_bytes()).decode("ascii") for p in sorted((AQUI / "imagenes").glob("*.webp"))}
@@ -34,6 +69,11 @@ for e in datos["entidades"]:
     for c in e["casos"]:
         de_datos.append(c["por"])
         de_datos += [x["x"] for x in c.get("exp") or []]
+        de_datos += [x["nota"] for x in c.get("exp") or [] if x.get("nota")]
+        enlaces = [x.get("url") for x in c.get("exp") or []] + [o["url"] for x in c.get("exp") or [] for o in x.get("otros") or []] \
+            + [x.get("url") for xs in (c.get("ant") or {}).values() for x in xs if isinstance(x, dict)]
+        for u in filter(None, enlaces):
+            assert re.match(r"^https://[a-z0-9.-]+\.gob\.pe/", u), f"enlace que no es de un sitio del Estado: {u}"
         if c.get("vin"):
             de_datos.append(c["vin"]["x"])
             # prueba de uso, punto 6: el vínculo declarado dice quién lo declaró
@@ -42,11 +82,14 @@ for e in datos["entidades"]:
                 assert all(dj.get(k) for k in ("nombre", "cargo", "area", "anio")), f"vínculo declarado sin quién lo declaró: {c['prov']['nombre']}"
                 de_datos += [dj["nombre"], dj["cargo"], dj["area"]]
         for xs in (c.get("ant") or {}).values():
-            de_datos += xs
+            de_datos += [x if isinstance(x, str) else x["x"] for x in xs] + [x["nota"] for x in xs if isinstance(x, dict) and x.get("nota")]
         r = c["prov"]["ruc"]
         dv = 11 - sum(int(a) * b for a, b in zip(r[:10], [5, 4, 3, 2, 7, 6, 5, 4, 3, 2])) % 11
         dv = 0 if dv == 10 else 1 if dv == 11 else dv
-        assert int(r[10]) != dv, f"RUC con dígito verificador válido: {r}"
+        if REAL:
+            assert int(r[10]) == dv, f"RUC real con dígito verificador inválido: {r}"
+        else:
+            assert int(r[10]) != dv, f"RUC con dígito verificador válido: {r}"
 for m in datos["motivos"].values():
     de_datos += [m.get("nombre", ""), m.get("explica", "")]
 todo = (visible + "\n" + "\n".join(de_datos)).lower()

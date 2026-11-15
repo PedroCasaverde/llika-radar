@@ -15,7 +15,32 @@ datos de cada fuente.
 |---|---|---|
 | 13/11/2026 | `417c1381a1e64d50ad66800ad2df6f52193579baa71c67d9552d3e9e7bf5764f` | La que se usó en la prueba de uso con tres participantes (primer commit de esta carpeta) |
 | 14/11/2026, prueba de uso | `81ab358bdd54b28cded3a5fa9c57b15cfa1562f4bfa94927ce04086b50cef8a8` | Los cinco cambios que salieron de esa prueba (segundo commit) |
-| 14/11/2026, contrato de alcance | `bb261637ea9b1ada78f0f31db3c86b4bfcb266c135e763d329385e521321b464` | La marca de UTEC Posgrado y lo que faltaba del contrato de alcance (esta versión) |
+| 14/11/2026, contrato de alcance | `bb261637ea9b1ada78f0f31db3c86b4bfcb266c135e763d329385e521321b464` | La marca de UTEC Posgrado y lo que faltaba del contrato de alcance |
+| 14/11/2026, datos reales | `eeee4d24dea90ce835db87233952092709e5883f8cb2ec345e19f69ddf66c486` | La plantilla también sirve para datos reales: enlaces a la resolución o al informe de cada señal y avisos según el modo. En el inicio, una sola tabla de entidades con sus cifras y sus índices (antes eran dos tablas con las mismas entidades) (esta versión) |
+
+### Con datos reales
+
+La misma plantilla arma la pantalla de entidades reales, con el JSON que deja `radar/v4/exportar_entidad.py`:
+
+```
+python armar_demo.py --real ../../privado/datos_caso_real_2025.json
+python probar_real.py ../../privado/llika_caso_real_2025.html ../../privado/datos_caso_real_2025.json ../../privado/capturas
+```
+
+Con `--real`, `armar_demo.py` exige lo contrario que en la demo: que todo RUC tenga dígito verificador válido. Además
+exige que cada enlace a un documento sea de un sitio del Estado (gob.pe), y cambia los avisos de «datos inventados» por
+los de datos reales. Las demás reglas (palabras que no pasan, números es-PE, colores y contraste) son las mismas. La
+pantalla y su JSON traen nombres, RUC y DNI: se escriben en `privado/`, que no va a git.
+
+`probar_real.py` abre la pantalla en Chromium a 1440 y 375 px, en claro y oscuro, y comprueba lo siguiente:
+
+- que no haya errores de consola ni desborde;
+- que el aviso diga «Datos reales» y que no quede ningún «inventado»;
+- que, en todas las fichas, cada señal tenga su norma y su fuente con fecha, y cada documento del JSON tenga su enlace;
+- los errores básicos: un enlace a una entidad que no está, un número que no es RUC y una búsqueda sin resultados;
+- que el Excel baje.
+
+Con red, también pide cada enlace a gob.pe y anota su respuesta.
 
 ### Cambios de la prueba de uso
 
@@ -53,8 +78,9 @@ numera en orden de fecha, con una serie para órdenes de compra y otra para órd
 | `fuente/plantilla.html` | La página: estructura, estilos y código |
 | `fuente/datos_demo.json` | Los datos inventados de las tres entidades |
 | `fuente/imagenes/` | Las imágenes en WebP: mascota, ilustraciones y logos |
-| `fuente/armar_demo.py` | Junta la plantilla, los datos y las imágenes en `llika_pe_demo.html` |
+| `fuente/armar_demo.py` | Junta la plantilla, los datos y las imágenes en `llika_pe_demo.html` (o, con `--real`, en la pantalla de datos reales) |
 | `fuente/probar_demo.py` | Abre la demo en Chromium, la mide y comprueba cada cambio |
+| `fuente/probar_real.py` | Lo mismo para la pantalla con datos reales, y los enlaces a los documentos |
 | `fuente/capturas_prueba.py` y `fuente/capturas_etapa2.py` | Capturas para comparar dos versiones |
 | `fuente/preparar_imagenes.py` | Rehace las WebP desde las imágenes originales del curso (solo si cambia una) |
 | `fuente/renumerar_compras.py` | La renumeración de las compras, ya aplicada a `datos_demo.json` |

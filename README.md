@@ -3,136 +3,141 @@
 Proyecto del curso Proyecto Integrador I de la Maestría en Ciencia de Datos e Inteligencia Artificial de UTEC Posgrado.
 Equipo 05: Pedro Casaverde, Gian Carlo Quiroz y Sherly Salazar.
 
-El radar cruza las órdenes de compras menores (hasta 8 UIT) de todo el país con registros públicos del OECE, la
-Contraloría y SUNAT. Marca las contrataciones con personas o empresas impedidas o vinculadas con la entidad que compra y,
-para cada entidad y año, entrega los casos ordenados por puntaje y monto, con la evidencia y la norma de cada alerta. Es
-una herramienta para que el órgano de control institucional (OCI) decida qué revisar primero: no acusa a nadie.
+LLIKA cruza las compras menores del Estado (hasta 8 UIT, sin concurso) con registros públicos del OECE, la Contraloría,
+el JNE y SUNAT. Para cada entidad y año sugiere por qué proveedores conviene empezar a revisar: primero los que tienen un
+vínculo con una autoridad de la entidad, después los que más se parecen a proveedores que luego fueron sancionados y más
+dependen de esa entidad, y al final la compra más grande que parece partida. Cada ficha muestra de dónde sale cada dato,
+la norma que aplica y, cuando existe, el enlace a la resolución del Tribunal o al informe de control. Es una propuesta
+académica y pública: aparecer en la lista no es una acusación.
 
-## La demo de llika.pe
+## Qué hay aquí
 
-La pantalla del prototipo está en [`demo/`](demo/): un solo archivo HTML que se abre en el navegador, con datos
-inventados, y su fuente para rearmarlo y probarlo.
+| Carpeta o archivo | Qué es |
+|---|---|
+| `llika.py` | La entrada: revisa el entorno y corre cada paso, con su tiempo y su memoria |
+| `demo/` | La pantalla (`fuente/plantilla.html`), cómo se arma y se prueba, y la demo con datos inventados |
+| `radar/v4/` | La cadena vigente: de las tablas a la lista, los puntajes de 2025 y los datos de una entidad para la pantalla |
+| `radar/` | Las alertas de vínculo e impedimento y las tablas que usa la cadena |
+| `datos/_scripts/`, `datos/crudos/acc8_informes_cgr/`, `ocr_informes/` | Descarga de las fuentes, lectura de documentos (OCR y modelos de lenguaje) y su validación |
 
-## Taller del 31/10/2026: el experimento mínimo
+Los datos no están en el repositorio: pesan varios GB y traen nombres, RUC y DNI. La pantalla con datos reales se arma en
+`privado/`, que tampoco va a git.
 
-Para repetir la evaluación del E5 sin bajar los datos completos, la entrada es la carpeta [`taller/`](taller/). Su
-notebook corre en Colab o en una laptop
-([abrir en Colab](https://colab.research.google.com/github/PedroCasaverde/llika-radar/blob/main/taller/taller_experimento_minimo.ipynb))
-y registra cada corrida en `taller/bitacora/`. Las tablas que usa salen de este mismo código: `radar/` produce la
-evaluación completa, `taller/exportar_datos_taller.py` la resume sin RUC y guarda su huella, y el notebook la repite.
+## Entorno
 
-## Las seis alertas
+Probado con Python 3.13.12 en Windows 11 (12 núcleos, 48 GB de RAM).
 
-| Alerta | Qué detecta | Gravedad |
+```
+python -m venv .venv
+.venv\Scripts\activate            (en Linux o Mac: source .venv/bin/activate)
+pip install -r requirements.txt
+python -m playwright install chromium
+python llika.py revisar
+```
+
+`revisar` dice qué versión de Python y qué librerías hay, cuánta memoria y disco, qué datos faltan, qué paso los arma y si
+la lista congelada tiene su huella. `requirements.txt` fija las versiones con las que la lista de 2025 se rehízo idéntica;
+`requirements-fuentes.txt` suma lo necesario para leer los documentos desde cero (ruta 3).
+
+**Semillas.** Los dos modelos del parecido promedian 10 árboles de LightGBM con las semillas 0 a 9 y 12 hilos
+(`radar/v4/m6_proveedor.py`); la lista al azar y los intervalos por remuestreo usan `numpy.random.default_rng(0)`
+(`radar/v4/lista_unica.py`). Con eso, `python llika.py puntajes` rehace la lista de 2025 idéntica byte por byte en la PC
+del equipo. En otra máquina no está probado: los árboles con varios hilos podrían mover algún empate. Si pasa, el paso se
+detiene y lo dice.
+
+## Tres formas de correrlo
+
+### 1. La demo, sin datos (un minuto)
+
+```
+python llika.py demo
+```
+
+Arma `demo/llika_pe_demo.html` con tres entidades inventadas (ningún RUC tiene un dígito verificador válido) y la prueba en
+Chromium. Se abre con cualquier navegador, sin servidor. El detalle está en `demo/README.md`.
+
+### 2. El caso real, con las tablas procesadas (unos 12 minutos y 48 GB de RAM)
+
+Hoy este paso necesita una máquina con 48 GB de RAM: el pico medido es de 34 GB. Con 16 GB no alcanza.
+
+Las tablas procesadas no se publican en ningún enlace porque traen nombres y DNI: el equipo las entrega en persona a quien
+las pida. Van en `datos/`, con la misma estructura de carpetas. Luego:
+
+```
+python llika.py revisar          comprueba que estén y que la lista tenga su huella
+python llika.py puntajes         rehace la lista de 2025 y el puesto de todos los casos (unos 9 minutos)
+python llika.py caso-real        Ripán, con Pachas y Marías para comparar: datos, pantalla y prueba (unos 3 minutos)
+```
+
+La pantalla queda en `privado/llika_caso_real_2025.html`. Para otra entidad:
+
+```
+python llika.py entidad 20144801459 [más RUC]
+python llika.py pantalla privado/datos_ripan_2025.json
+python llika.py probar privado/llika_ripan_2025.html privado/datos_ripan_2025.json
+```
+
+### 3. Desde las fuentes (horas, 48 GB de RAM y unos 30 GB de disco)
+
+Todas las fuentes son públicas. Este es el orden en que se armó la data; esta ruta todavía no se repitió completa desde un
+clon limpio.
+
+| Etapa | Scripts, en orden | Paso manual o con costo |
 |---|---|---|
-| Sancionado que vende | Proveedor inhabilitado por el Tribunal que vende durante su sanción | 3 (1 si es servicio público) |
-| Empresa espejo | Empresa con un socio o representante que está sancionado o integra una empresa sancionada | 3 (1 si el vínculo pasa por un gremio) |
-| Fraccionamiento entre RUC del mismo dueño | Una persona y sus empresas que, en una entidad y un año, quedan cada una bajo el tope y juntas lo pasan | 2 |
-| Funcionario que se contrata | Funcionario con cargo de decisión que le vende a su propia entidad | 3 |
-| Doble percepción | Funcionario con cargo en una entidad que cobra órdenes de otra en las mismas fechas | 2 (1 si paga una entidad educativa) |
-| Posible familiar | Persona con los dos apellidos de un funcionario de la entidad que le compra | 2 (3 si el funcionario tiene cargo de decisión) |
+| 1. Descargas | `datos/_scripts/bajar_fuentes.py`; `bajar_historia_wiki.py` (sanciones, multas, penalidades e inhabilitaciones judiciales, una versión por mes); `bajar_historia_conformacion.py` (socios, un corte por mes); `radar/v4/u1_portal.py bajar` y `parquet`; `perucompras_ocds.py`; `tce_resoluciones.py indice`, `bajar` y `texto`, y `tce_faltantes.py`; en `datos/crudos/acc8_informes_cgr/`, `bajar_fichas.py`, `agregar_informes_E1.py` y `bajar_todos_informes.py` | Las autoridades del JNE (`Autoridades_Electas_20251113.xls`) se bajan a mano de la Plataforma Nacional de Datos Abiertos, a `datos/crudos/jne_autoridades/`. El buscador de informes de la Contraloría pide una sesión del navegador (`cookies.txt`) |
+| 2. Lectura de documentos | OCR de los informes con `ocr_informes/` (en Kaggle con GPU, o `ocr_local.py`) y de las resoluciones escaneadas con `ocr_resoluciones.py`; lectura con modelos de lenguaje: `lector_claude.py` (resoluciones), `clasificar_hechos.py` y `extraer_deepseek.py` (informes); `validar_extracciones.py` | Piden claves de API en un `.env` local. Costó unos 31 dólares (16 por las resoluciones y 15 por los informes). Repetirlo da resultados parecidos, no idénticos: las salidas quedan guardadas y la cadena las lee |
+| 3. Tablas y alertas | `procesar_conosce.py`, `limpiar_conformacion.py`, `procesar_ocds.py`, `perucompras_ordenes.py`, `entidad_declarante.py`; `radar/00_padron.py`, `14_antecedentes.py`, `19_empleos_previos.py`, `20_alerta_puerta_giratoria.py`, `01b_sumar_otras.py`, `01_base.py`; `padron_ubicacion.py`, `ocds_exposicion.py`; `radar/02_funcionarios.py`, `03_vinculos.py`, `25_tarjeta_territorial.py`, `26_senales_ocds.py`, `06_puntaje.py`, `23_panel_etiqueta.py`, `29_estructura_benchmark.py` | `capa2_padre_hijo_jne.py` corre solo y con el navegador cerrado, porque pide mucha memoria |
+| 4. Capas de la v4 | `radar/v4/capa1_base.py`, `capa2_x.py`, `capa2_territorial.py`, `capa2_familia.py`, `capa2_padre_hijo_jne.py`, `capa2_padre_hijo_jne_prob.py`, `capa2_impedidos.py`, `estadisticos_simples.py` | |
+| 5. Modelos y evaluación | Los modelos y las corridas de examen de 2022 y 2024 (`corrida_sellada.py`), la lista de 2025 (`lista_unica.py` y `lista_unica_limpia.py`, en sus modos `exploracion`, `segunda`, `congelar` y `expediente`) y lo que pesa en el parecido (`importancia_parecido.py`) | Los exámenes y la lista de 2025 se corren una sola vez: cada script se detiene si su salida ya existe |
 
-El puntaje de un caso (proveedor, entidad y año) suma, por cada tipo, la alerta más alta: gravedad legal por
-probabilidad. La probabilidad es 1 en los cruces exactos y la de parentesco en los apellidos. Si dos casos empatan, va
-primero el de mayor monto.
+## Manejo de errores
 
-## Datos
+- **Entrada inválida.** `exportar_entidad.py` rechaza, con un mensaje y el código 2, un RUC de menos dígitos o con dígito
+  verificador inválido, un RUC repetido, un año que no es 2025, más de 100 proveedores y una entidad que no compra o no
+  está en el catálogo del OECE. `llika.py` avisa si falta un argumento o si el paso no existe.
+- **Dato faltante.** Si falta un archivo, el paso dice cuál y qué script lo arma. Si la lista no tiene su huella, no arma
+  la pantalla. Una orden sin descripción muestra «Sin descripción en CONOSCE». Una señal sin documento publicado lo dice
+  («El OECE publica la penalidad en su registro, sin el documento»), y si la resolución no está en gob.pe, se da su número
+  para buscarla.
+- **Antes de escribir la pantalla,** `armar_demo.py` comprueba los RUC, los enlaces (solo de gob.pe), las palabras que no
+  deben aparecer, el formato de los números y el contraste de los colores.
+- **En el navegador,** un enlace a una entidad que no está muestra «No encontramos esa página»; un número de más de 11
+  dígitos, que un RUC tiene 11 y un DNI 8; y una búsqueda sin resultados sugiere las entidades que sí hay. `probar_real.py`
+  comprueba todo esto.
 
-Todas las fuentes son públicas. No se versionan: pesan varios GB y las salidas del radar traen datos de personas.
+## Arquitectura y límites
 
-| Fuente | Quién la publica | Para qué se usa |
+```
+fuentes públicas ──► descargas y lectura de documentos ──► tablas y alertas ──► capas v4 ──► modelos
+                                                                                         │
+           navegador ◄── HTML estático ◄── armar_demo.py ◄── JSON de la entidad ◄── lista congelada de 2025
+                         (sin servidor)                   (exportar_entidad.py)     y puntajes de todos los casos
+```
+
+La pantalla es un solo archivo HTML: no tiene servidor ni base de datos, y se puede publicar en cualquier hosting estático.
+Las cifras son de la PC del equipo (12 núcleos, 48 GB de RAM), medidas el 14/11/2026:
+
+| Paso | Tiempo | Memoria pico |
 |---|---|---|
-| Órdenes de compras menores (CONOSCE), 2018-2026 | OECE | Base de todas las alertas |
-| Sanciones del Tribunal, una versión por mes desde 2021 | OECE | Sancionado que vende, empresa espejo y validación |
-| Socios y representantes de proveedores (RNP), un corte por mes desde 11/2021 | OECE | Empresa espejo y mismo dueño |
-| Declaraciones juradas de intereses | Contraloría | Funcionario que se contrata, doble percepción y posible familiar |
-| Padrón reducido de RUC | SUNAT | Frecuencia de nombres y apellidos, y control de identidades |
-| Entidades | OECE | Nombre, tipo y departamento de cada entidad |
+| Puntajes de 2025 (`llika.py puntajes`) | 6,5 a 8,9 min | 21,1 GB |
+| Datos de tres entidades (`exportar_entidad.py`) | 2,4 a 3,7 min | 34,2 GB |
+| Armar la pantalla | 0,5 s | 0,01 GB |
+| Abrir la pantalla en el navegador | 0,44 s | archivo de 0,65 MB |
+| Abrir una ficha | 9 ms (mediana); 32 ms el peor caso | |
 
-## Requisitos
+**Costo.** Publicar la pantalla no cuesta nada. Leer las resoluciones y los informes con modelos de lenguaje costó unos
+31 dólares, una sola vez. Actualizar cada año solo pide leer los documentos nuevos.
 
-- Python 3.13 y `pip install -r requirements.txt`.
-- 16 GB de RAM: la base de órdenes tiene unos 20 millones de filas.
-- Unos 30 GB libres para los datos crudos y procesados.
+## Qué tan bien funciona
 
-## Cómo correrlo
+Se midió con las listas de 2022 y 2024, armadas solo con lo que se sabía al cierre de cada año, frente a las señales
+adversas documentadas después: sanciones del Tribunal, penalidades y observaciones de la Contraloría. Entre los cinco
+primeros de cada entidad hay 412 proveedores distintos con señal, frente a 150 si se ordena por monto (2,75 veces, con un
+intervalo al 90 % de 2,43 a 3,14) y 160 si se ordena por el tamaño del proveedor. La lista de 2025 está congelada (huella
+`189af867041d1270`) y se armó sin mirar ninguna señal de 2025: su resultado se medirá cuando se publiquen.
 
-Todo se corre desde la raíz del repositorio. Los scripts solo imprimen cifras agregadas.
+## Datos públicos y privacidad
 
-1. Bajar las fuentes a `datos/crudos/`:
-
-   ```
-   python datos/_scripts/bajar_fuentes.py
-   python datos/_scripts/bajar_historia_wiki.py sancionados
-   python datos/_scripts/bajar_historia_conformacion.py <primera versión> <última versión>
-   ```
-
-   La conformación de proveedores se baja por rango de versiones de la wiki de datos abiertos del OECE, una por mes desde
-   noviembre de 2021.
-
-2. Procesar las órdenes y limpiar la conformación:
-
-   ```
-   python datos/_scripts/procesar_conosce.py
-   python datos/_scripts/limpiar_conformacion.py
-   ```
-
-3. Correr el radar en orden:
-
-   | Script | Qué hace |
-   |---|---|
-   | `radar/00_padron.py` | Cuenta, con el padrón de SUNAT, cuántas personas tienen cada nombre completo y cada par de apellidos |
-   | `radar/01_base.py --rehacer` | Arma la base de órdenes y de sanciones con su historia, y la alerta de sancionado que vende |
-   | `radar/02_funcionarios.py` | Alertas de funcionario que se contrata, doble percepción y posible familiar, con la probabilidad de parentesco |
-   | `radar/03_vinculos.py` | Alertas de empresa espejo y de fraccionamiento entre RUC del mismo dueño, con los socios vigentes el día de cada orden |
-   | `radar/04_indices.py` | Índices por entidad, encogidos con Beta-Binomial |
-   | `radar/05_control.py` | Control de confiabilidad: cifras, muestra al azar y sanciones posteriores |
-   | `radar/06_puntaje.py` | Puntaje por puntos y tabla de casos |
-   | `radar/08_lasso.py` | Prueba de los pesos con Lasso, en años separados |
-   | `radar/09_confirmacion_2026.py` | Confirmación con las órdenes y sanciones de 2026, con criterios fijados antes |
-   | `radar/10_ficha_entidad.py --ejemplo` | Prototipo v0: el Excel de casos y fichas de una entidad y un año |
-   | `radar/11_muestra_parentesco.py` | Muestra de alertas de familiar para verificar a mano en las declaraciones juradas |
-   | `radar/12_evaluacion_e5.py` | Evaluación del E5: baselines contra el modelo v0, con rangos y error por segmento |
-   | `radar/13_mejoras_v0.py` | Variantes del modelo v0 probadas en validación, con una regla de selección fijada antes |
-   | `radar/14_antecedentes.py` | Antecedentes de cada proveedor: multas del Tribunal y penalidades de contratos |
-   | `radar/15_mejoras_ronda2.py` | Variantes con antecedentes, evasión y recencia, con la misma regla de selección |
-   | `radar/16_mejoras_ronda3.py` | Las variantes aprendidas aplicadas solo a los casos del radar |
-   | `radar/17_mejoras_ronda4.py` | Bayesiana con la ley como previa, riesgo de entidad, fusión de rangos y boosting |
-   | `radar/18_costo_de_no_usar.py` | Costo del error en revisiones, horas y soles, y lo que paga el Estado en órdenes con alerta; corre con las tablas del taller y sus agregados sin RUC |
-
-Una corrida completa sobre ocho años toma menos de una hora en una computadora personal, sin contar la limpieza inicial
-de los cortes de socios. La ficha de una entidad sale en unos cuatro segundos.
-
-## Qué produce
-
-- `datos/procesados/radar/`: alertas, casos, índices y fichas por entidad. No se versiona porque trae datos de personas.
-- `resultados/evaluacion_e5.json`: los agregados de la evaluación del E5, sin datos de personas.
-
-## Evaluación (E5)
-
-Prueba con las alertas de 2022-2023 frente a las sanciones del Tribunal que empiezan desde 2024 (942 164 proveedores,
-1 996 con sanción posterior). Métrica: de los 1 000 primeros proveedores de cada lista, el porcentaje con sanción
-posterior, con intervalo del 95 % por bootstrap. Confirmación con las alertas de 2024-2025 frente a sanciones de 2026.
-
-| Opción | Prueba | 2026 | Proveedores por entidad (mediana) |
-|---|---|---|---|
-| Al azar | 0,21 % (0,00 a 0,50) | 0,07 % | 1 |
-| Lo que se hace hoy: lo más caro primero | 3,7 % (2,5 a 4,9) | 1,0 % | 7 |
-| Modelo simple: regresión logística de tamaño | 4,9 % (3,7 a 6,5) | 1,3 % | 7 |
-| Regla del radar: puntaje legal por puntos | 7,1 % (5,5 a 8,6) | 1,3 % | 4 |
-| **Modelo v0: alertas y antecedentes (regresión L1)** | **14,3 % (12,2 a 16,5)** | **4,3 %** | **3** |
-
-El modelo v0 salió de cuatro rondas de variantes (pasos 13, 15, 16 y 17). Cada una se eligió en validación, con alertas
-de 2020-2021 frente a sanciones de 2022-2023, con una regla fijada antes de correr. Los modelos se entrenan con alertas
-de 2018-2021 y sanciones que empiezan en 2022-2023, para que esas etiquetas no se crucen con las de la prueba.
-
-La ganancia viene de los antecedentes: 616 de sus 1 000 primeros entran solo por multas o penalidades previas, y
-predice sobre todo sanciones por falsedad e incumplimiento. Para impedimentos, la regla del radar encuentra más: 7
-frente a 3.
-
-## Datos públicos y uso
-
-LLIKA será una plataforma web pública y académica. Todo lo que muestra son registros que el Estado ya publica,
-replicados y cruzados con su fuente y su fecha. La única inferencia propia es el posible parentesco: se presenta como
-coincidencia de apellidos con su probabilidad, nunca como un hecho, y cualquier persona puede pedir que se corrija un
-dato. Los scripts imprimen solo cifras agregadas, y los archivos intermedios no se versionan porque pesan varios GB.
+Todo lo que muestra LLIKA son registros que el Estado ya publica, cruzados y con su fuente y su fecha. La única inferencia
+propia es el posible parentesco: se muestra como coincidencia de apellidos, sin confirmar con RENIEC, nunca como un hecho.
+Los nombres, RUC y DNI no están en este repositorio, y los scripts solo imprimen cifras agregadas.

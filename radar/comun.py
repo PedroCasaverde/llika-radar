@@ -67,7 +67,15 @@ def funcionarios():
     r1["inicio"] = fecha_dji(r1["FECHA_INICIO_CARGO"], pres)
     r1["cese"] = fecha_dji(r1["FECHA_CESE_CARGO"], pres).fillna(CORTE_DJI)
     ent = entidades()
-    r1["ruc_entidad"] = ruc_por_nombre(r1["ENTIDAD"], ent)
+    # Desde el 1/11 (HALLAZGOS 73, aprobado por Pedro): la tabla de datos/_scripts/entidad_declarante.py, que suma a la
+    # regla del 15/10 el nombre con todas sus palabras y el parecido de Jaccard (64,9 % de las declaraciones, antes 54,8 %).
+    # Si la tabla no está, se usa la regla del 15/10 sola.
+    tabla = SALIDA / "entidad_declarante.csv"
+    if tabla.exists():
+        mapa = pd.read_csv(tabla, dtype={"ruc": str}, keep_default_na=False, na_values=[""])
+        r1["ruc_entidad"] = r1["ENTIDAD"].fillna("").map(mapa.dropna(subset=["ruc"]).set_index("nombre")["ruc"])
+    else:
+        r1["ruc_entidad"] = ruc_por_nombre(r1["ENTIDAD"], ent)
     r1["ap"], r1["am"] = norm_serie(r1["APELLIDO_PATERNO"].fillna("")), norm_serie(r1["APELLIDO_MATERNO"].fillna(""))
     r1["persona"] = (r1["ap"] + " " + r1["am"] + " " + norm_serie(r1["NOMBRES"].fillna(""))).str.strip()
     r1["par"] = r1["ap"] + " " + r1["am"]
@@ -92,3 +100,17 @@ def wilson(k, n, z=1.96):
     c = (p + z * z / (2 * n)) / (1 + z * z / n)
     m = z * np.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / (1 + z * z / n)
     return c - m, c + m
+
+
+# Periodo de prueba sellado (HALLAZGOS 93, aprobado por Pedro el 1/11): hechos de 2022 y todo lo conocido desde 2026.
+# Ningún script de exploración puede leerlo; solo la corrida final pre-registrada lo abre con abrir_sellado=True.
+SELLADO_ANIO_HECHOS = 2022
+SELLADO_CONOCIDO_DESDE = pd.Timestamp("2026-01-01")
+
+
+def sellado(ev, abrir_sellado=False):
+    """Quita de una tabla de eventos (anio_hechos, fecha_conocido) lo que pertenece al periodo sellado."""
+    if abrir_sellado:
+        return ev
+    fuera = (ev["anio_hechos"] == SELLADO_ANIO_HECHOS) | (ev["fecha_conocido"] >= SELLADO_CONOCIDO_DESDE)
+    return ev[~fuera]

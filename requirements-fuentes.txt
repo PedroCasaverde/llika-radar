@@ -1,0 +1,9 @@
+# Solo para bajar y leer los documentos desde cero (ruta 3 del README): OCR, PDF y modelos de lenguaje.
+-r requirements.txt
+PyMuPDF==1.28.0
+pypdfium2==5.6.0
+onnxruntime==1.26.0
+rapidocr
+anthropic==0.86.0
+nbformat==5.11.1
+Pillow==12.2.0

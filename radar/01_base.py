@@ -42,6 +42,9 @@ cols = ["ruc_entidad", "departamento_entidad", "orden", "objetocontractual", "es
         "monto_total_orden_original", "moneda", "ruc_contratista", "nombre_razon_contratista", "fecha_registro",
         "fecha_de_emision"]
 partes, filas = [], 0
+if "--rehacer" in sys.argv and (SALIDA / "ordenes_base.parquet").exists():
+    raise SystemExit("La parte vieja de las órdenes está congelada (HALLAZGOS 160, lote 2): 15 tablas se cruzan por sus id. "
+                     "No usar --rehacer; las «otras» se suman con 01b_sumar_otras.py.")
 archivos = [] if (SALIDA / "ordenes.parquet").exists() and "--rehacer" not in sys.argv else \
     sorted(glob.glob(str(PROC / "acc1_conosce" / "ordenes_20??-??.parquet")))
 for f in archivos:
