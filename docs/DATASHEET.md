@@ -8,8 +8,10 @@ repositorio a partir de fuentes públicas del Estado peruano.
 - **Para qué se armó:** para ordenar, en cada entidad y año, a los proveedores de compras menores (hasta 8 UIT, sin
   concurso) según por cuáles conviene empezar una revisión, y para medir si ese orden encuentra más proveedores con señales
   adversas posteriores que las reglas que se usan hoy.
-- **Quién la armó:** el Equipo 05 de Proyecto Integrador I (UTEC Posgrado), sin financiamiento externo. El costo de API
-  para leer documentos fue de unos 31 dólares.
+- **Quién la armó:** el Equipo 05 de Proyecto Integrador I (UTEC Posgrado), sin financiamiento externo. Leer los
+  documentos con modelos de lenguaje costó unos 31 dólares en la lectura final, que es lo que costaría repetirla, y 244
+  de gasto total del equipo, con pilotos, repeticiones y otras pruebas (unos 158 en Claude y 86 en DeepSeek, repartidos
+  en la proporción de lo registrado). El OCR no tuvo costo.
 
 ## Composición
 
@@ -26,7 +28,7 @@ repositorio a partir de fuentes públicas del Estado peruano.
 | Concursos y contratos (OCDS) | Experiencia del proveedor en concursos | OECE | 31/10/2026 |
 | Sancionados, multas, penalidades e inhabilitaciones judiciales | Antecedentes y etiquetas | OECE (una versión por mes desde 09/2021) | Lo publicado hasta el 31/12/2025 |
 | Socios y representantes (RNP) | Mismo dueño y empresa espejo | OECE (un corte por mes desde 11/2021) | 1/12/2025 |
-| Resoluciones del Tribunal de Contrataciones | Hechos, entidad y orden de cada sanción | gob.pe | 10 905 resoluciones de 2018 a 2026 |
+| Resoluciones del Tribunal de Contrataciones | Hechos, entidad y orden de cada sanción | gob.pe | 11 065 resoluciones con PDF, de 2018 a 2026 |
 | Informes de control | Observaciones de la Contraloría | Buscador de la Contraloría | 14 915 informes, consultado el 31/10/2026 |
 | Declaraciones juradas de intereses y empleos previos | Funcionarios y sus empleos anteriores | Contraloría | 15/07/2026 |
 | Autoridades electas | Vínculo con una autoridad | JNE | 13/11/2025 |
@@ -42,16 +44,23 @@ repositorio a partir de fuentes públicas del Estado peruano.
 
 - **Descargas:** con los scripts de `datos/_scripts/`, que dejan cada archivo con su URL, tamaño y fecha en un registro de
   descargas.
-- **Lectura de documentos:** de los informes y de las resoluciones escaneadas con OCR (en Kaggle con GPU y en la PC).
-  Texto para 14 889 de 14 895 informes y para todas las resoluciones distintas.
+- **Lectura de documentos:** con el texto del PDF y, donde venía escaneado, con OCR (en Kaggle con GPU y en la PC).
 - **Extracción con modelos de lenguaje:**
   - las resoluciones, con Claude Haiku 5.5 en lotes;
   - los informes de fondo, con DeepSeek;
   - las dos con un esquema JSON fijo.
-- **Validación contra fuentes oficiales:**
-  - en las resoluciones, RUC válido en el 93,9 % y sancionado presente en el registro del OECE en el 96,4 %;
-  - en los informes, entidad identificada en el 90,5 %;
+- **Validación contra fuentes oficiales** (corrida del 3/11/2026). La validación marca, no filtra: lo que no calza queda
+  con su marca.
+  - en las resoluciones, sancionado presente en el registro del OECE en el 96,4 % y RUC válido en el 93,5 %;
+  - en los informes, el 55,8 % de las órdenes de 2018 a 2025 se halló en CONOSCE o en el catálogo, y la entidad se
+    identificó en el 90,5 %;
   - contra lo copiado a mano por el equipo, se hallaron 274 de 275 órdenes.
+- **De la fuente a la base,** contado en los archivos el 18/11/2026:
+
+| Documento | En la fuente | Con texto | Leídos por un modelo | En la base |
+|---|---|---|---|---|
+| Informes de control | 14 915 en el buscador | 14 889, de 14 895 con PDF | 2 871 de fondo, con DeepSeek (25 en la prueba previa) | 2 859 con al menos un hecho (4 894 hechos) |
+| Resoluciones del Tribunal | 11 676 sanciones desde 2018 en el registro del OECE; 11 065 con PDF en gob.pe (10 905 del índice por mes y 160 halladas una por una) | 10 997 distintas | Las 10 997, con Claude Haiku 5.5 | 10 967 con al menos un expediente (12 132 expedientes) |
 
 ## Preprocesamiento y limpieza
 
@@ -89,5 +98,6 @@ repositorio a partir de fuentes públicas del Estado peruano.
 - **Actualización:** las fuentes del OECE cambian cada mes; la lista se arma una vez al año, al cierre.
 - **Medición:** la lista de 2025 está congelada (huella `189af867041d1270`) y se medirá cuando se publiquen las señales de
   2025.
-- **Correcciones:** cualquier persona puede pedir que se corrija un dato. Lo mantiene el Equipo 05 mientras dure el
-  proyecto.
+- **Correcciones:** cualquier persona puede pedir que se corrija un dato desde la ficha del proveedor: el formulario deja
+  escrito un correo a `pedro.casaverde@utec.edu.pe`, el buzón del equipo, con el RUC, la entidad y el dato. Lo mantiene
+  el Equipo 05 mientras dure el proyecto.

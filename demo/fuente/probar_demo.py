@@ -2,10 +2,20 @@
 # tamaños y radios), área de toque en el celular, interacción, y capturas a 1440 y 375 px en claro y oscuro.
 #   python probar_demo.py [archivo.html] [carpeta_de_capturas]
 # Sin argumentos prueba ../llika_pe_demo.html y deja las capturas en la carpeta temporal del sistema.
+# También baja la carpeta de cada proveedor (un zip por ficha), la abre y revisa sus archivos, y comprueba que el
+# formulario de corrección deje escrito un correo al buzón del equipo, con el RUC.
+# Y que cada índice lleve su lugar entre las 2,647 entidades reales de la lista (el texto, el largo de la barra y el color),
+# igual al que se recalcula aquí con la distribución que trae la página.
+import bisect
+import html
+import io
 import json
+import math
 import re
 import sys
 import tempfile
+import urllib.parse
+import zipfile
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
@@ -44,6 +54,22 @@ REFS = """() => { const f = /""" + FECHA + """/, bien = r => !!r && /Norma/.test
   return { senales: ss.length, malas: ss.filter(s => !bien(s.querySelector('.ref'))).length, compras: !document.querySelector('#panel .t-ords') || bien(c) }; }"""
 
 
+BUZON = "pedro.casaverde@utec.edu.pe"
+ARCHIVOS_CARPETA = ["LÉEME.txt", "ficha.html", "compras_y_senales.xlsx"]
+
+
+def leer_carpeta(ruta):
+    """Abre el zip de la carpeta del proveedor: sus archivos, si alguno está dañado, los dos textos y el Excel de dentro."""
+    import openpyxl
+    with zipfile.ZipFile(ruta) as z:
+        nombres, danado = z.namelist(), z.testzip()
+        leeme, ficha = z.read("LÉEME.txt").decode("utf-8-sig"), z.read("ficha.html").decode("utf-8")
+        libro = openpyxl.load_workbook(io.BytesIO(z.read("compras_y_senales.xlsx")))
+    filas = {h: [r for r in libro[h].iter_rows(min_row=4, values_only=True) if r[0] is not None] for h in libro.sheetnames}
+    return {"nombres": nombres, "danado": danado, "leeme": leeme, "ficha": ficha, "hojas": libro.sheetnames, "compras": filas.get("Compras", []),
+            "senales": filas.get("Señales", []), "nota": libro.worksheets[0]["A2"].value or ""}
+
+
 def indices_python(D):
     """Los seis índices por entidad, recalculados aquí con la misma regla de la demo (compras partidas: dos o más en 30 días sobre el tope, o una de 90% del tope)."""
     from datetime import date
@@ -64,6 +90,29 @@ def indices_python(D):
                         "conc": 100 * sum(totales[:5]) / sum(totales),
                         "dep": 100 * sum(1 for c in cs if (c.get("clocal") or 0) >= 80) / n}
     return out
+
+
+def lugar_python(pais, k, v):
+    """El lugar de un valor entre las entidades del país, con la regla de la página: cuántas tienen menos, igual y más.
+    Los valores van en centésimas de punto porcentual, ordenados."""
+    a, x = pais["ind"][k], math.floor(100 * v + 0.5)
+    menos, hasta = bisect.bisect_left(a, x), bisect.bisect_right(a, x)
+    return {"menos": menos, "igual": hasta - menos, "mas": len(a) - hasta, "pct": 100 * menos / len(a)}
+
+
+def lugar_corto(l):
+    if l["menos"] == 0:
+        return "ninguna tiene menos"
+    if l["mas"] == 0:
+        return "ninguna tiene más"
+    return f"más que {l['menos']:,} {'entidad' if l['menos'] == 1 else 'entidades'}" if l["pct"] < 1 else f"más que el {math.floor(l['pct'])}%"
+
+
+def lugar_largo(l, n):
+    """La oración con que abre cada índice en la página de la entidad."""
+    if l["menos"] == 0 or l["mas"] == 0:
+        return f"Ninguna de las {n:,} entidades tiene {'menos' if l['menos'] == 0 else 'más'}."
+    return f"Más que {l['menos']:,} de las {n:,} entidades." if l["pct"] < 1 else f"Más que el {math.floor(l['pct'])}% de las {n:,} entidades."
 
 
 res, errores = {}, []
@@ -207,7 +256,36 @@ with sync_playwright() as pw:
                 ct["indices_se_ordenan"] = (primera == f"#entidad-{mayor}", f"al ordenar por compras partidas, primero {primera}")
                 p.goto(U + "#entidad-ccori-llacta")
                 p.wait_for_timeout(300)
-                ct["indices_en_cada_entidad"] = (p.locator(".compara > div").count() == 6 and p.locator(".compara circle.esta").count() == 6, f"{p.locator('.compara > div').count()} índices con su punto")
+                ct["indices_en_cada_entidad"] = (p.locator(".compara > div").count() == 6 and p.locator(".compara .via").count() == 6, f"{p.locator('.compara > div').count()} índices con su barra")
+                # Etapa B del cierre: cada índice va con su lugar entre las entidades reales del país (D.pais), calculado aquí con la misma regla
+                cb = {}
+                pais = D.get("pais") or {}
+                cb["distribucion_del_pais"] = (pais.get("n") == 2647 and list(pais.get("ind", {})) == list(next(iter(calc.values()))) and all(len(v) == pais["n"] and v == sorted(v) for v in pais["ind"].values()),
+                                               f"{pais.get('n')} entidades de la lista de {pais.get('anio')}, {len(pais.get('ind', {}))} índices, cada uno ordenado")
+                p.goto(U + "#inicio")
+                p.wait_for_timeout(300)
+                celdas = p.evaluate("""() => Object.fromEntries([...document.querySelectorAll('#t-indices tr')].map(tr => [tr.dataset.href.replace('#entidad-', ''),
+                  Object.fromEntries([...tr.querySelectorAll('.ind')].map(d => [d.dataset.k, { texto: d.querySelector('small').textContent.replace(/\\u00a0/g, ' '),
+                    barra: parseFloat(d.querySelector('.via span').style.getPropertyValue('--v')), alto: d.classList.contains('alto') }]))]))""")
+                esperado = {e: {k: lugar_python(pais, k, v) for k, v in vs.items()} for e, vs in calc.items()}
+                dif_l = [(e, k, celdas[e][k], lugar_corto(l)) for e, ls in esperado.items() for k, l in ls.items()
+                         if celdas[e][k]["texto"] != lugar_corto(l) or abs(celdas[e][k]["barra"] - l["pct"]) > 0.051 or celdas[e][k]["alto"] != (l["pct"] >= 90)]
+                cb["lugar_igual_a_python"] = (not dif_l and len(celdas) == 3, f"3 entidades x 6 índices: texto, largo de la barra y color; diferencias: {dif_l[:3]}; Wayrapampa: {[celdas['wayrapampa'][k]['texto'] for k in esperado['wayrapampa']]}")
+                nota = p.locator("#nota-ind").inner_text()
+                cb["nota_de_los_indices"] = ("inventadas" in nota and "2,647 entidades reales de la lista de 2025" in nota and "percentil" in nota and not re.search(r"se ajustarán|sin ajustar|encogimiento", p.content()),
+                                             f"la demo dice que sus entidades son inventadas y que se comparan con las reales: «{nota[:110]}…»")
+                clip = p.locator("section[data-vista='inicio'] .caja").bounding_box()
+                p.screenshot(path=str(CAP / "etapa_b_1_indices.png"), clip={"x": 0, "y": clip["y"] + p.evaluate("scrollY") - 72, "width": w, "height": clip["height"] + 420}, full_page=True)
+                p.goto(U + "#entidad-wayrapampa")
+                p.wait_for_timeout(300)
+                fichas_ind = p.evaluate("""() => Object.fromEntries([...document.querySelectorAll('.compara > div')].map(d => [d.dataset.k, d.querySelector('small').textContent.replace(/\\u00a0/g, ' ')]))""")
+                parrafo = p.locator("section[aria-labelledby='t-compara'] p").inner_text()
+                bien_e = all(t_.startswith(lugar_largo(esperado["wayrapampa"][k], pais["n"])) for k, t_ in fichas_ind.items())
+                cb["lugar_en_cada_entidad"] = (bien_e and len(fichas_ind) == 6 and "2,647 entidades del país" in p.locator("#t-compara").inner_text() and "Esta entidad es inventada" in parrafo and "entidades reales" in parrafo,
+                                               f"«{fichas_ind['fra']}» | «{parrafo[:95]}…»")
+                caja_c = p.locator("section[aria-labelledby='t-compara']").bounding_box()
+                p.screenshot(path=str(CAP / "etapa_b_2_entidad.png"), clip={"x": 0, "y": max(0, caja_c["y"] + p.evaluate("scrollY") - 230), "width": w, "height": caja_c["height"] + 250}, full_page=True)
+                res["etapa_b"] = {k_: {"ok": v[0], "detalle": v[1]} for k_, v in cb.items()}
                 # Confirmar o descartar con su motivo
                 p.goto(U + "#caso-wayrapampa-1")
                 p.wait_for_timeout(300)
@@ -282,7 +360,125 @@ with sync_playwright() as pw:
                 ct["logo_y_marca"] = (p.locator(".cabecera .logo-red .centro").count() == 1 and p.evaluate("getComputedStyle(document.querySelector('.cabecera')).backgroundColor") == "rgb(77, 75, 76)",
                                       "logo con la telaraña y cabecera en el carbón de UTEC (#4D4B4C)")
                 res["etapa_2"] = {k: {"ok": v[0], "detalle": v[1]} for k, v in ct.items()}
+
+                # Etapa A del cierre (17/11): la carpeta del proveedor (un zip por ficha) y el pedido de corrección por correo
+                ca, malas, n_carp, n_filas_sen = {}, [], 0, 0
+                for e in D["entidades"]:
+                    for c in e["casos"]:
+                        p.goto(U + f"#caso-{e['id']}-{c['rk']}")
+                        p.wait_for_timeout(20)
+                        en_pantalla = [t.rstrip(".") for t in p.locator("#panel .senal > span:first-of-type > b").all_inner_texts()]
+                        with p.expect_download() as baja:
+                            p.click("[data-carpeta]")
+                        z = CAP / "carpetas" / baja.value.suggested_filename
+                        z.parent.mkdir(exist_ok=True)
+                        baja.value.save_as(str(z))
+                        k, n_carp = leer_carpeta(z), n_carp + 1
+                        n_filas_sen += len(k["senales"])
+                        ficha = html.unescape(k["ficha"])
+                        etiquetas = {r[0] for r in k["senales"]}
+                        fallas = [nombre_f for nombre_f, bien in (
+                            ("archivos", k["nombres"] == ARCHIVOS_CARPETA and k["danado"] is None and z.name == f"llika_carpeta_{c['prov']['ruc']}_{e['id']}_{D['anio']}.zip"),
+                            ("hojas", k["hojas"] == ["Compras", "Señales"] and "no constituye sanción" in k["nota"]),
+                            ("compras", len(k["compras"]) == len(c["ord"]) and round(sum(r[6] for r in k["compras"]), 2) == round(sum(float(o[3] or 0) for o in c["ord"]), 2)),
+                            ("señales", (set(en_pantalla) <= etiquetas and len(k["senales"]) >= len(en_pantalla) and all(r[2] and re.search(FECHA, r[4] or "") for r in k["senales"]))
+                             if en_pantalla else [r[0] for r in k["senales"]] == ["Ninguna"]),
+                            ("ficha", all(x in ficha for x in ("No constituye sanción, falta ni delito", "Demo con datos inventados", c["prov"]["nombre"], c["prov"]["ruc"], c["por"], e["nombre"]))),
+                            ("léeme", all(x in k["leeme"] for x in (f"31 dic {D['anio']}", c["prov"]["ruc"], "no constituye sanción, falta ni delito", "inventados", BUZON))),
+                            ("palabra", "expediente" not in (k["leeme"] + " ".join(re.findall(r"<h[23]>(.*?)</h[23]>", k["ficha"])) + " ".join(k["nombres"])).lower()),
+                        ) if not bien]
+                        if fallas:
+                            malas.append(f"{e['id']}-{c['rk']}: {', '.join(fallas)}")
+                        elif e["id"] != "wayrapampa" or c["rk"] > 3:
+                            z.unlink()  # quedan de muestra las tres primeras de Wayrapampa, y las que fallen
+                ca["carpeta_baja_y_trae_sus_archivos"] = (not malas and n_carp == len(casos), f"{n_carp} carpetas: {', '.join(ARCHIVOS_CARPETA)}; el Excel de dentro abre, con {n_filas_sen} filas de señales en total. Con fallas: {malas[:5]}")
+                # La ficha de la carpeta lleva la decisión de quien revisó, si la hay
+                p.goto(U + "#caso-wayrapampa-3")
+                p.wait_for_timeout(300)
+                p.click('#panel-pie [data-dec="confirmar"]')
+                p.click("#form-dec .motivo >> nth=0")
+                motivo = p.locator('#form-dec .motivo[aria-checked="true"]').inner_text()
+                p.click('#form-dec button[type="submit"]')
+                p.wait_for_timeout(150)
+                p.locator("[data-carpeta]").scroll_into_view_if_needed()
+                p.locator("#panel").screenshot(path=str(CAP / "etapa_a_1_boton.png"))
+                with p.expect_download() as baja:
+                    p.click("[data-carpeta]")
+                z = CAP / "carpetas" / ("con_decision_" + baja.value.suggested_filename)
+                baja.value.save_as(str(z))
+                k = leer_carpeta(z)
+                ca["carpeta_trae_la_decision"] = ("Confirmado para revisar" in k["ficha"] and html.escape(motivo) in k["ficha"], f"«Confirmado para revisar», motivo «{motivo}»")
+                p.click("#panel-pie [data-dec-cambiar]")
+                p.click("#panel-pie [data-dec-quitar]")
+                p.evaluate("localStorage.removeItem('llika-decisiones')")
+                # La ficha de la carpeta se abre sola en el navegador: sin errores ni desborde
+                destino = CAP / "carpetas" / "abierta"
+                with zipfile.ZipFile(z) as zf:
+                    zf.extractall(destino)
+                pf = ctx.new_page()
+                err_f = []
+                pf.on("console", lambda m: err_f.append(m.text) if m.type == "error" else None)
+                pf.goto((destino / "ficha.html").resolve().as_uri())
+                des_f = pf.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth")
+                pf.screenshot(path=str(CAP / "etapa_a_2_ficha_de_la_carpeta.png"), full_page=True)
+                pf.set_viewport_size({"width": 375, "height": 812})
+                des_f375 = pf.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth")
+                pf.close()
+                ca["ficha_de_la_carpeta_abre_sola"] = (not err_f and des_f <= 0 and des_f375 <= 0, f"sin errores de consola; desborde {des_f} px a 1440 y {des_f375} px a 375")
+                # El pedido de corrección: el formulario valida y deja escrito un correo al buzón del equipo.
+                # La prueba captura el enlace en vez de abrir el programa de correo de esta computadora.
+                p.evaluate("""() => { window.__correo = []; const real = HTMLAnchorElement.prototype.click;
+                  HTMLAnchorElement.prototype.click = function () { if (this.href.startsWith('mailto:')) { window.__correo.push(this.href); return; } return real.call(this); }; }""")
+                c3 = next(c for c in D["entidades"][0]["casos"] if c["rk"] == 3)
+                p.click("#abrir-cor")
+                p.click('#cor button[type="submit"]')
+                vacio_err = [t for t in p.locator("#cor .error").all_inner_texts() if t]
+                sin_correo = p.evaluate("window.__correo.length") == 0 and p.locator("#c-ok").is_hidden()
+                escrito = "La compra O/C 0017 figura dos veces: es una sola, de S/ 11,900."
+                p.select_option("#c-tipo", "Compras o montos")
+                p.fill("#c-det", escrito)
+                p.fill("#c-mail", "ana@ejemplo.pe")
+                p.click('#cor button[type="submit"]')
+                p.wait_for_timeout(200)
+                correos = p.evaluate("window.__correo")
+                para, _, consulta = (correos[0] if correos else "").partition("?")
+                campos = urllib.parse.parse_qs(consulta)
+                asunto, cuerpo_c = campos.get("subject", [""])[0], campos.get("body", [""])[0]
+                aviso_c = p.locator("#c-ok").inner_text()
+                ca["formulario_valida_antes"] = (len(vacio_err) == 2 and sin_correo, f"vacío no abre el correo y avisa: {vacio_err}")
+                ca["correo_al_buzon_con_el_ruc"] = (len(correos) == 1 and para == f"mailto:{BUZON}" and c3["prov"]["ruc"] in asunto
+                                                    and all(x in cuerpo_c for x in (c3["prov"]["ruc"], c3["prov"]["nombre"], D["entidades"][0]["nombre"], D["entidades"][0]["ruc"], "Compras o montos", escrito, "ana@ejemplo.pe"))
+                                                    and p.locator("#c-abrir").get_attribute("href") == correos[0],
+                                                    f"para {para.replace('mailto:', '')}; asunto «{asunto}»; {len(correos[0]) if correos else 0} caracteres en el enlace")
+                p.click("#c-copiar")
+                p.wait_for_timeout(200)
+                copiado = p.locator("#c-copiar").inner_text() == "Copiado" or (p.locator("#c-texto").is_visible() and c3["prov"]["ruc"] in p.locator("#c-texto").input_value())
+                p.goto(U + "#datos")
+                p.wait_for_timeout(200)
+                textos_a = aviso_c + p.evaluate("document.body.innerText") + p.evaluate("document.querySelector('script:not([type])').textContent")
+                ca["la_pagina_ya_no_dice_que_no_envia"] = (BUZON in aviso_c and copiado and not re.search(r"no se envía|no envía", textos_a) and BUZON in p.locator('section[data-vista="datos"]').inner_text(),
+                                                           f"aviso: «{aviso_c.splitlines()[0][:110]}»; el pedido se puede copiar: {copiado}")
+                p.goto(U + "#caso-wayrapampa-3")
+                p.wait_for_timeout(300)
+                p.click("#abrir-cor")
+                p.select_option("#c-tipo", "Compras o montos")
+                p.fill("#c-det", escrito)
+                p.fill("#c-mail", "ana@ejemplo.pe")
+                p.click('#cor button[type="submit"]')
+                p.wait_for_timeout(200)
+                p.evaluate("() => { const c = document.getElementById('panel-cuerpo'); c.scrollTop = c.scrollHeight; }")
+                p.locator("#panel").screenshot(path=str(CAP / "etapa_a_3_correo.png"))
+                (CAP / "etapa_a_3_correo.txt").write_text(f"Para: {para.replace('mailto:', '')}\nAsunto: {asunto}\n\n{cuerpo_c}\n".replace("\r\n", "\n"), encoding="utf-8")
+                res["etapa_a"] = {k_: {"ok": v[0], "detalle": v[1]} for k_, v in ca.items()}
             if nombre == "cel" and tema == "light":
+                # en el celular, el botón de la carpeta cabe en la ficha
+                p.goto(U + "#caso-wayrapampa-3", wait_until="networkidle")
+                p.wait_for_timeout(300)
+                bc = p.locator("[data-carpeta]")
+                bc.scroll_into_view_if_needed()
+                caja = bc.bounding_box()
+                res["carpeta_cel"] = {"ancho": round(caja["width"]), "alto": round(caja["height"]), "cabe": caja["x"] >= 0 and caja["x"] + caja["width"] <= w and bc.evaluate("b => b.scrollWidth <= b.clientWidth")}
+                p.locator("#panel").screenshot(path=str(CAP / "etapa_a_1_boton_cel.png"))
                 # en el celular: tocar una tarjeta de entidad y una de proveedor abre lo que corresponde
                 p.goto(U + "#inicio", wait_until="networkidle")
                 p.locator("#t-indices tr").nth(1).tap(position={"x": 300, "y": 60})
@@ -296,12 +492,13 @@ with sync_playwright() as pw:
 
 (CAP / "medidas.json").write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
 for k, v in res.items():
-    if k in ("prueba_de_uso", "etapa_2"):
-        print("CAMBIOS DE LA PRUEBA DE USO" if k == "prueba_de_uso" else "ETAPA 2: CONTRATO DE ALCANCE Y MARCA")
+    if k in ("prueba_de_uso", "etapa_2", "etapa_a", "etapa_b"):
+        print({"prueba_de_uso": "CAMBIOS DE LA PRUEBA DE USO", "etapa_2": "ETAPA 2: CONTRATO DE ALCANCE Y MARCA", "etapa_a": "ETAPA A: CARPETA DEL PROVEEDOR Y CORREO DE CORRECCIÓN",
+               "etapa_b": "ETAPA B: CADA ÍNDICE FRENTE A LAS ENTIDADES DEL PAÍS"}[k])
         for c, r in v.items():
             print(f"  {'OK   ' if r['ok'] else 'FALLA'} {c}: {r['detalle']}")
         continue
-    if k in ("interaccion", "toque_cel"):
+    if k in ("interaccion", "toque_cel", "carpeta_cel"):
         print(k.upper(), json.dumps(v, ensure_ascii=False))
         continue
     print(k, "| pesos", v["pesos"], "| familias", v["familias"], "| tamaños", [x.replace("px", "") for x in v["tamanos"]], "| radios", [x.replace("px", "") for x in v["radios"]], "| desborde", v["desborde"])

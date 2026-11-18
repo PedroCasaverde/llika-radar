@@ -1,10 +1,10 @@
 """Lee en esta computadora los informes que ya están descargados en datos/crudos/acc8_informes_cgr/pdf_todos (HALLAZGOS
 65), con la misma salida que el notebook: un .txt por informe con una marca por página y un resumen.csv.
 
-Corre con el entorno .venv-docling de lector-tarifas (torch con CUDA y RapidOCR PP-OCRv6 ya instalados); para no
-tocar ese entorno, lee los PDF con pypdfium2, que ya trae, en vez de PyMuPDF.
+Corre en un entorno con torch (con CUDA) y RapidOCR PP-OCRv6 (requirements-fuentes.txt); lee los PDF con pypdfium2, que
+ese entorno ya trae, en vez de PyMuPDF.
 
-Uso:  E:/Python/pibot/ocr/lector-tarifas/.venv-docling/Scripts/python.exe -X utf8 ocr_local.py
+Uso:  python -X utf8 ocr_local.py
 Se puede cortar y volver a correr: salta los informes que ya están en el resumen.
 Para usar más la GPU (un solo proceso la deja a medias, porque dibuja cada página en el procesador): dos procesos con
 --parte 0 --de 2 y --parte 1 --de 2. Cada parte escribe su propio resumen (resumen.csv y resumen_p1.csv).

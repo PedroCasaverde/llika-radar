@@ -5,11 +5,13 @@
   python -X utf8 clasificar_hechos.py correr --modelo deepseek-flash   # el resto, con tope de gasto
   python -X utf8 clasificar_hechos.py informes     # tipos y prioridad por informe -> prioridad_informes.csv
 
-La clave se lee de D:/UTEC/Maestria/.env (DEEPSEEK_API_KEY); no se imprime ni se manda a otro lado. Al LLM solo va el
+La clave se lee del .env de la raíz del repositorio (DEEPSEEK_API_KEY=...), o del archivo que diga la variable LLIKA_ENV;
+no se imprime ni se manda a otro lado. Al LLM solo va el
 texto del hecho con el título, la modalidad y el año del informe (no la tabla de personas: no hace falta para clasificar).
 """
 import argparse
 import json
+import os
 import re
 import sys
 import threading
@@ -24,7 +26,7 @@ import requests
 AQUI = Path(__file__).parent
 F = AQUI / "fichas"
 C = F / "clasificacion"
-ENV = Path(r"D:/UTEC/Maestria/.env")
+ENV = Path(os.environ.get("LLIKA_ENV") or Path(__file__).resolve().parents[3] / ".env")   # git no sube el .env
 URL = "https://api.deepseek.com/chat/completions"
 # Precios por millón de tokens (api-docs.deepseek.com/quick_start/pricing, 31/10/2026): (acierto de caché, entrada, salida)
 PRECIOS = {"deepseek-flash": {"barato": (0.003, 0.15, 0.6), "caro": (0.006, 0.3, 1.2)},
@@ -107,6 +109,8 @@ NUM_ORDEN = re.compile(r"(?i)(?:orden(?:es)? de (?:compra|servicio)s?|o/[cs])\s*
 
 
 def clave_api():
+    if not ENV.exists():
+        sys.exit(f"Falta {ENV}: créalo con la línea DEEPSEEK_API_KEY=... o indica otro archivo con la variable LLIKA_ENV")
     for linea in ENV.read_text(encoding="utf-8").splitlines():
         if linea.startswith("DEEPSEEK_API_KEY"):
             return linea.split("=", 1)[1].strip().strip('"').strip("'")

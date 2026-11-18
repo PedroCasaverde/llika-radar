@@ -2,8 +2,8 @@
 de sus páginas sin texto. Agrega a textos.jsonl una línea nueva por resolución, con "ocr": true; quien lee el archivo se
 queda con la última línea de cada número.
 
-Corre con el entorno .venv-docling de lector-tarifas (torch con CUDA y RapidOCR), igual que ocr_informes/ocr_local.py:
-  E:/Python/pibot/ocr/lector-tarifas/.venv-docling/Scripts/python.exe -X utf8 ocr_resoluciones.py
+Corre en un entorno con torch (con CUDA) y RapidOCR, el mismo de ocr_informes/ocr_local.py (requirements-fuentes.txt):
+  python -X utf8 ocr_resoluciones.py
 """
 import json
 from pathlib import Path

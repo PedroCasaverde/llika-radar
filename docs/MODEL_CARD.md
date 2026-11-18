@@ -55,7 +55,7 @@ personas naturales.
 - **Incertidumbre:** intervalo al 90 % de la razón frente a cada comparador, con remuestreo de Poisson por proveedor
   (2 000 repeticiones, semilla 0).
 - **Contrapeso:** las observaciones de la Contraloría (los hallazgos del control) no deben empeorar; también se miden las
-  carpetas revisadas en vano por cada acierto.
+  revisiones en vano por cada acierto.
 
 ## Datos de evaluación
 
@@ -75,6 +75,10 @@ congelada y se armó sin mirar ninguna señal de 2025.
 
 **Por año:** frente al monto, 2,19 (1,88 a 2,57) en 2022 y 3,71 (3,05 a 4,67) en 2024.
 
+**Frente a la regla simple** (primero los proveedores con alguna alerta de vínculo y después el monto): 2,29 (2,06 a
+2,57). La ventaja está en las sanciones, 4,25 (3,21 a 6,00), y en las penalidades, 3,53 (2,97 a 4,31); en impedimentos
+la regla basta, 0,95 (0,91 a 1,00).
+
 **Por motivo** (de cada 100 filas, cuántas traen un proveedor con señal):
 
 | Motivo | Por cada 100 filas |
@@ -87,10 +91,12 @@ congelada y se armó sin mirar ninguna señal de 2025.
 | Peso en la entidad | 0,4 |
 | Compra más grande | 0,4 |
 
-**Contrapeso.** Con LLIKA se revisan 62,8 carpetas en vano por cada acierto, frente a 174,4 por monto. En las
-observaciones de la Contraloría, LLIKA empata con el monto, sin mejorarlo (0,90; 0,75 a 1,05).
+**Contrapeso.** Con LLIKA hay 62,8 revisiones en vano por cada acierto, frente a 174,4 por monto. En las observaciones
+de la Contraloría, LLIKA encuentra 61 frente a 68, y la diferencia no es significativa (0,90 [0,75 a 1,05]).
 
-**Alcance.** De los 1 254 proveedores con señal en esos dos años, la lista de cinco por entidad ve 412 (32,9 %).
+**Alcance.** De los 1 254 proveedores con señal en esos dos años, la lista de cinco por entidad ve 412 (32,9 %). Ni una
+lista perfecta los vería a todos: con cinco puestos por entidad, vería 1 153. De los 842 que no ve, 527 tienen una
+observación de control.
 
 **Qué pesa en el parecido** (al mezclar cada grupo de datos entre los proveedores de 2025): concursos y contratos,
 49,6 %; cuánto vende sin concurso, 20,7 %; antigüedad y crecimiento, 8,4 %; qué vende, 7,2 %; antecedentes, 6,8 %;

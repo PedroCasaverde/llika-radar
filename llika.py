@@ -3,10 +3,11 @@
     python llika.py revisar                     entorno, memoria, disco, datos y huellas: qué falta y qué paso lo arma
     python llika.py demo                        arma y prueba la pantalla con datos inventados (no necesita datos)
     python llika.py puntajes                    opcional: rehace el puntaje de todos los casos de 2025 y comprueba la lista congelada
-    python llika.py entidad RUC [RUC ...]       los datos reales de esas entidades para la pantalla (en privado/)
+    python llika.py indices                     los seis índices de las 2 647 entidades de la lista, para comparar cada entidad con todas
+    python llika.py entidad RUC [RUC ...]       los datos reales de esas entidades para la pantalla (en privado/); antes va «indices»
     python llika.py pantalla privado/datos_X.json         la pantalla con esos datos (en privado/)
     python llika.py probar privado/llika_X.html privado/datos_X.json [--sin-red]
-    python llika.py caso-real                   entidad, pantalla y prueba del caso del video: Ripán, con Pachas y Marías
+    python llika.py caso-real                   índices, entidad, pantalla y prueba del caso del video: Ripán, con Pachas y Marías
 
 Cada corrida deja una fila en resultados/corridas.jsonl (paso, segundos, memoria pico, código de salida), sin datos de
 personas; ese registro es local y no va a git. El detalle de cada paso está en el README.
@@ -19,6 +20,13 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+
+# La salida puede ir a un archivo o a una tubería: sin esto, en Windows los «✓» y «✗» rompen con cp1252
+for _flujo in (sys.stdout, sys.stderr):
+    try:
+        _flujo.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
 
 RAIZ = Path(__file__).resolve().parent
 V4, FUENTE, PRIVADO = RAIZ / "radar" / "v4", RAIZ / "demo" / "fuente", RAIZ / "privado"
@@ -74,14 +82,15 @@ def revisar():
     try:
         import psutil
         ram = psutil.virtual_memory().total / 1e9
-        print(f"  {'✓' if ram >= 7 else '!'} memoria: {ram:.0f} GB (una entidad real pide 4,4 GB; rehacer los puntajes, opcional, 21 GB)")
+        print(f"  {'✓' if ram >= 7 else '!'} memoria: {ram:.0f} GB (una entidad real pide 4,5 GB; rehacer los puntajes, opcional, 21 GB)")
     except ImportError:
         pass
     libre = shutil.disk_usage(RAIZ).free / 1e9
     print(f"  {'✓' if libre >= 30 else '!'} disco libre: {libre:.0f} GB (la cadena completa pide unos 30 GB)")
     print("\nDatos (no van a git; se arman con la cadena o los entrega el equipo):")
     for ruta, que in ((RAIZ / "datos/procesados/v4/base/ordenes.parquet", "base de órdenes"), (LISTA, "lista congelada de 2025"),
-                      (LISTA.with_name("puntajes_2025.parquet"), "puntajes de 2025 (python llika.py puntajes)")):
+                      (LISTA.with_name("puntajes_2025.parquet"), "puntajes de 2025 (python llika.py puntajes)"),
+                      (LISTA.with_name("indices_2025.parquet"), "índices de las entidades (python llika.py indices)")):
         print(f"  {'✓' if ruta.exists() else '·'} {que}: {ruta.relative_to(RAIZ)}")
     if LISTA.exists():
         h = hashlib.sha256(LISTA.read_bytes()).hexdigest()
@@ -103,6 +112,8 @@ def main():
         correr("demo: probar", FUENTE / "probar_demo.py", [RAIZ / "demo" / "llika_pe_demo.html", PRIVADO / "capturas_demo"])
     elif paso == "puntajes":
         correr("puntajes de 2025", V4 / "puntajes_2025.py")
+    elif paso == "indices":
+        correr("índices de las entidades", V4 / "indices_entidades.py")
     elif paso == "entidad":
         if not resto:
             sys.exit("ERROR: falta al menos un RUC de entidad. Ejemplo: python llika.py entidad 20144801459")
@@ -116,6 +127,7 @@ def main():
             sys.exit("ERROR: faltan la pantalla y su JSON. Ejemplo: python llika.py probar privado/llika_ripan_2025.html privado/datos_ripan_2025.json")
         correr("probar", FUENTE / "probar_real.py", [Path(resto[0]).resolve(), Path(resto[1]).resolve(), PRIVADO / "capturas", *resto[2:]])
     elif paso == "caso-real":
+        correr("índices de las entidades", V4 / "indices_entidades.py")
         correr("entidad", V4 / "exportar_entidad.py", ["--entidades", *CASO_REAL, "--salida", PRIVADO / "datos_caso_real_2025.json"])
         correr("pantalla", FUENTE / "armar_demo.py", ["--real", PRIVADO / "datos_caso_real_2025.json", PRIVADO / "llika_caso_real_2025.html"])
         correr("probar", FUENTE / "probar_real.py", [PRIVADO / "llika_caso_real_2025.html", PRIVADO / "datos_caso_real_2025.json", PRIVADO / "capturas", *resto])

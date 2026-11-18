@@ -5,7 +5,9 @@ Los datos procesados no van a git ni a ningún enlace: traen nombres, RUC y DNI.
 
 ## Para el caso real (`python llika.py caso-real`)
 
-39 archivos, 3,96 GB. Los lee `radar/v4/exportar_entidad.py`.
+39 archivos, 3,96 GB. Los lee `radar/v4/exportar_entidad.py`. El paso anterior, `radar/v4/indices_entidades.py`
+(los índices de las 2 647 entidades), lee siete de esos mismos archivos y no pide ninguno más: la lista, los puntajes,
+las órdenes, las sanciones, las dos versiones de penalidades y la de multas.
 
 | Archivo o carpeta | Archivos | MB |
 |---|---|---|
@@ -82,4 +84,12 @@ limpio de 2022 y 2024 y se detiene si la lista no es idéntica a la guardada o s
 | `datos/procesados/v4/resultados/lista_unica_limpia/evaluacion_2022.parquet` | `96d6e4936f1e8dc9` |
 | `datos/procesados/v4/resultados/lista_unica_limpia/evaluacion_2024.parquet` | `0c52002e1bf62336` |
 
-Con estos datos, `python llika.py caso-real` deja `privado/datos_caso_real_2025.json` con la huella `e9de3840bf7a252d`.
+Con estos datos, `python llika.py caso-real` deja dos archivos que se pueden comprobar (17/11/2026):
+
+| Archivo que deja | SHA-256 (primeros 16) |
+|---|---|
+| `datos/procesados/v4/resultados/lista_unica_limpia/distribucion_indices_2025.json`, igual a `demo/fuente/distribucion_indices_2025.json` | `73485208c9d6a88a` |
+| `privado/datos_caso_real_2025.json` | `3b9ed5208ec0f4aa` |
+
+Hasta el 14/11/2026 el JSON llevaba la fecha en que se armó, y su huella (`e9de3840bf7a252d`) solo se repetía ese día.
+Desde el 17/11 la fecha va en `datos_caso_real_2025.control.json` y la huella del JSON ya no cambia con el día.

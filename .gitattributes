@@ -1,2 +1,4 @@
 # La demo se guarda byte por byte, sin convertir saltos de línea: su README cita la huella SHA-256 del archivo
 demo/llika_pe_demo.html -text
+# Lo mismo los valores de los índices del país: la pantalla y el README citan su huella
+demo/fuente/distribucion_indices_2025.json -text

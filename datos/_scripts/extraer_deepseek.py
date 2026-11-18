@@ -9,15 +9,18 @@
                                                            # tienen texto; se puede volver a correr: salta los hechos
   --seco: solo arma la muestra y estima el costo, sin llamar a DeepSeek
 
-- La clave se lee de D:/UTEC/Maestria/.env (DEEPSEEK_API_KEY); no se imprime ni se manda a otro lado.
+- La clave se lee del .env de la raíz del repositorio (DEEPSEEK_API_KEY=...), o del archivo que diga la variable
+  LLIKA_ENV; no se imprime ni se manda a otro lado.
 - deepseek-flash sin razonamiento (thinking: disabled), temperatura 0 y respuesta en JSON. Cada dato importante trae una
   cita textual corta: sirve para revisarlo sin abrir el PDF y para comprobar que el texto existe.
 - Los 20 informes del piloto de Gian Carlo (22/10) traen sus órdenes copiadas a mano: son la verdad de campo para medir
-  cuántas órdenes encuentra el modelo.
+  cuántas órdenes encuentra el modelo. Su archivo va en datos/crudos/acc8_informes_cgr/piloto/ (fuera de git) o en la
+  ruta que diga la variable LLIKA_PILOTO_GC.
 - Salidas en datos/procesados/deepseek/ (fuera de git: traen nombres y DNI).
 """
 import argparse
 import json
+import os
 import re
 import sys
 import time
@@ -34,7 +37,7 @@ CRUDOS = DATOS / "crudos"
 TCE = CRUDOS / "tce_resoluciones"
 CGR = CRUDOS / "acc8_informes_cgr"
 SAL = DATOS / "procesados" / "deepseek"
-PAPELERA = Path(r"D:/UTEC/_papelera_capstone_2026-10-23/tareas_equipo/giancarlo")
+PILOTO_GC = Path(os.environ.get("LLIKA_PILOTO_GC") or CGR / "piloto" / "2026-10-22_ordenes_observadas_piloto.csv")
 sys.path.insert(0, str(CGR))
 sys.path.insert(0, str(Path(__file__).parent))
 from clasificar_hechos import PRECIOS, URL, clave_api, horario  # noqa: E402
@@ -288,7 +291,9 @@ def cres(enlace):
 
 
 def muestra_informes():
-    gc = pd.read_csv(PAPELERA / "2026-10-22_ordenes_observadas_piloto.csv", dtype=str)
+    if not PILOTO_GC.exists():
+        sys.exit(f"Falta {PILOTO_GC}, el piloto de órdenes copiadas a mano; indica otra ruta con la variable LLIKA_PILOTO_GC")
+    gc = pd.read_csv(PILOTO_GC, dtype=str)
     gc["CresCodigoFormato"] = gc["enlace_pdf"].map(cres)
     disp = textos_disponibles()
     filas = [(c, "piloto de Gian Carlo (órdenes copiadas a mano)") for c in gc["CresCodigoFormato"].unique()]

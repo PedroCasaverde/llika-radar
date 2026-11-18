@@ -8,8 +8,12 @@ dice de qué fuente sale.
 
     python -I -X utf8 exportar_entidad.py --entidades 20144801459 [otro RUC ...] [--anio 2025] [--max 100] [--salida ruta.json]
 
-Necesita la lista congelada de 2025 y puntajes_2025.py ya corrido. La salida trae nombres, RUC y DNI: va a privado/,
-fuera de git. No toca la lista ni sus huellas.
+Cada entidad lleva además sus seis índices, calculados con todos sus proveedores (no solo los que se muestran), para
+compararla con las 2 647 entidades de la lista: salen de indices_entidades.py, que se corre antes.
+
+Necesita la lista congelada de 2025 y puntajes_2025.py e indices_entidades.py ya corridos. La salida trae nombres, RUC
+y DNI: va a privado/, fuera de git. No toca la lista ni sus huellas. El JSON no lleva la fecha en que se armó (va en su
+archivo de control), para que su huella no cambie de un día a otro.
 """
 import argparse
 import hashlib
@@ -27,6 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 _a, sys.argv = sys.argv, ["x"]
 import expediente as X  # noqa: E402
+import indices_entidades as IE  # noqa: E402
 from etiquetas import BASE  # noqa: E402
 
 sys.argv = _a
@@ -38,9 +43,9 @@ PRIVADO = RAIZ / "privado"
 ANIO, CORTE, TOPE_2025, MOCHILA_ALTA = 2025, pd.Timestamp("2025-12-31"), 42800.0, 0.98
 HUELLA_LISTA = "189af867041d1270bf132ab6ca25041e9a3e782713171758dadf22a761a4aff2"
 NB = " "
-# Versiones de las fuentes publicadas justo después del corte del 31/12/2025 (lo conocido al cierre del año)
-PENALIDADES = ["oece_penalidades/_historia/penalidades_v260_2026-01-03.csv", "oece_penalidades/_historia/penalidades2018_v249_2026-01-03.csv"]
-MULTAS = "oece_multas/_historia/sancionados_multa_v265_2026-01-03.csv"
+# Versiones de las fuentes publicadas justo después del corte del 31/12/2025 (lo conocido al cierre del año): las mismas del índice de antecedentes
+PENALIDADES, MULTAS = IE.PENALIDADES, IE.MULTAS
+assert (IE.ANIO, IE.CORTE, IE.TOPE, IE.HUELLA_LISTA, IE.BASE, IE.SAL) == (ANIO, CORTE, TOPE_2025, HUELLA_LISTA, BASE, SAL), "indices_entidades.py no usa el mismo año, corte, tope, lista o carpetas"
 JNE = "jne_autoridades/Autoridades_Electas_20251113.xls"
 RUBROS = {"c_rub_obras": "Obras y materiales de construcción", "c_rub_consultoria": "Consultoría", "c_rub_alimentos": "Alimentos",
           "c_rub_combustible": "Combustible", "c_rub_salud": "Salud", "c_rub_limpieza_seguridad": "Limpieza y seguridad",
@@ -150,6 +155,8 @@ def requeridos():
     for ruta, paso_ in ((SAL / "lista_2025_unica.parquet", "la lista congelada de 2025 (lista_unica_limpia.py congelar)"),
                         (SAL / "puntajes_2025.parquet", "los puntajes de 2025 (puntajes_2025.py)"),
                         (SAL / "puntajes_2025_proveedor.parquet", "los puntajes de 2025 (puntajes_2025.py)"),
+                        (IE.TABLA, "los índices de las entidades (indices_entidades.py; python llika.py indices)"),
+                        (IE.DISTRIBUCION, "los índices de las entidades (indices_entidades.py; python llika.py indices)"),
                         (BASE / "ordenes.parquet", "la base de órdenes (capa1_base.py)"),
                         (BASE / "ordenes_texto.parquet", "la base de órdenes (capa1_base.py)"),
                         (PROC / "radar" / "tarjeta_territorial.parquet", "la tarjeta territorial (radar/25_tarjeta_territorial.py)"),
@@ -174,6 +181,18 @@ def validar_argumentos(rucs, anio, maximo):
             raise ErrorDeEntrada(f"«{r}» no es un RUC: tiene que tener 11 dígitos.")
         if not ruc_valido(r):
             raise ErrorDeEntrada(f"El RUC {r} no tiene un dígito verificador válido. Revisa si está bien escrito.")
+
+
+def indices_del_pais():
+    """Los índices de todas las entidades (indices_entidades.py) y la huella de su distribución. Se detiene si no
+    salieron de estos puntajes y de esta lista, o si la tabla y la distribución no son de la misma corrida."""
+    dist = json.loads(IE.DISTRIBUCION.read_text(encoding="utf-8"))
+    tabla = pd.read_parquet(IE.TABLA).astype({"ruc_entidad": str}).set_index("ruc_entidad")
+    if dist["puntajes"] != IE.huella(IE.PUNTAJES)[:16] or dist["lista"] != HUELLA_LISTA[:16]:
+        raise ErrorDeEntrada("Los índices de las entidades se calcularon con otros puntajes u otra lista. Vuelve a correr indices_entidades.py (python llika.py indices).")
+    if dist["entidades"] != len(tabla) or any(sorted(IE.centesimas(tabla[k]).tolist()) != dist["indices"][k] for k in IE.IND):
+        raise ErrorDeEntrada("La tabla de índices y su distribución no son de la misma corrida. Vuelve a correr indices_entidades.py (python llika.py indices).")
+    return tabla, IE.huella(IE.DISTRIBUCION)[:16]
 
 
 def validar_entidades(rucs, ents, puntajes):
@@ -430,6 +449,8 @@ def main():
     ents = pd.read_parquet(BASE / "entidades.parquet").astype({"ruc_entidad": str}).drop_duplicates("ruc_entidad").set_index("ruc_entidad")
     Q = pd.read_parquet(SAL / "puntajes_2025.parquet").astype({"ruc_entidad": str, "ruc": str, "anio": int})
     validar_entidades(a.entidades, ents, set(Q["ruc_entidad"]))
+    INDICES, huella_dist = indices_del_pais()
+    assert set(Q["ruc_entidad"]) == set(INDICES.index), "los índices no cubren las mismas entidades que los puntajes"
     Q = Q[Q["ruc_entidad"].isin(a.entidades) & (Q["puesto"] <= a.max)].copy()
     G = pd.read_parquet(lista, columns=["ruc_entidad", "ruc", "motivo"]).astype({"ruc_entidad": str, "ruc": str})
     paso(f"ETAPA casos: {len(Q):,} de {len(a.entidades)} entidades")
@@ -499,20 +520,33 @@ def main():
             })
         nombre = titulo(e["nombre"])
         corto = titulo(str(e["distrito"] if "municipalidad distrital" in str(e["tipo"]).lower() else e["nombre"]))
+        fi = INDICES.loc[re_]
         entidades.append({"id": slug(corto), "art": "la", "nombre": nombre, "corto": corto, "tipo": tipo, "sector": sector, "ruc": re_,
                           "departamento": titulo(e["departamento"]), "provincia": titulo(e["provincia"]),
-                          "proveedores": int(oe["ruc"].nunique()), "ordenes": int(len(oe)), "monto": round(float(oe["monto"].sum()), 2), "casos": casos})
+                          "proveedores": int(oe["ruc"].nunique()), "ordenes": int(len(oe)), "monto": round(float(oe["monto"].sum()), 2),
+                          # Los seis índices con todos los proveedores de la entidad en la lista (n_ind), no solo con los que se muestran
+                          "n_ind": int(fi["casos"]), "ind": {k: round(float(fi[k]), 2) for k in IE.IND}, "casos": casos})
         paso(f"ETAPA {nombre}: {len(casos)} casos; {int(oe['ruc'].nunique())} proveedores; {len(oe)} órdenes")
 
-    datos = {"modo": "real", "anio": str(ANIO), "tope": TOPE_2025, "azar": 0.3, "corte": "2025-12-31", "generado": time.strftime("%Y-%m-%d"),
-             "lista": HUELLA_LISTA[:16], "motivos": motivos, "entidades": entidades}
+    # «distribucion» es la huella del archivo con los valores de las 2 647 entidades: armar_demo.py lo pone en la pantalla y comprueba que sea ese
+    datos = {"modo": "real", "anio": str(ANIO), "tope": TOPE_2025, "azar": 0.3, "corte": "2025-12-31",
+             "lista": HUELLA_LISTA[:16], "distribucion": huella_dist, "motivos": motivos, "entidades": entidades}
+    # Comprobación: con los mismos casos, la regla de indices_entidades.py da lo que calcula la página con su regla,
+    # y el índice de antecedentes cuenta a los mismos proveedores que la ficha muestra con antecedentes
+    con_ant = IE.con_antecedentes()
+    de_tablas, de_pagina = IE.indices(Q, o.merge(Q[["ruc_entidad", "ruc"]], on=["ruc_entidad", "ruc"]), con_ant), IE.indices_de_la_pagina(datos)
+    control["indices_distintos_de_la_pagina"] = sum(1 for r in a.entidades for k in IE.IND if abs(float(de_tablas.loc[r, k]) - de_pagina[r][k]) > 1e-9)
+    control["antecedentes_distintos_del_indice"] = sum(1 for x in entidades for c in x["casos"] if bool(c["ant"]) != (c["prov"]["ruc"] in con_ant))
+    assert control["indices_distintos_de_la_pagina"] == 0 and control["antecedentes_distintos_del_indice"] == 0, f"los índices no siguen la regla de la página: {control}"
     sal = a.salida or PRIVADO / f"datos_{'_'.join(x['id'] for x in entidades)}_{ANIO}.json"
     sal.parent.mkdir(parents=True, exist_ok=True)
     sal.write_text(json.dumps(datos, ensure_ascii=False, indent=1), encoding="utf-8")
     control["huella_json"] = hashlib.sha256(sal.read_bytes()).hexdigest()
+    control["generado"] = time.strftime("%Y-%m-%d")
     control["minutos"] = round((time.time() - T0) / 60, 1)
     sal.with_suffix(".control.json").write_text(json.dumps(control, ensure_ascii=False, indent=1), encoding="utf-8")
-    paso(f"FIN: {sal} | enlaces {control['enlaces']} | montos distintos {control['monto_distinto']} | motivos distintos {control['motivos_distintos_de_la_lista']} | huella {control['huella_json'][:16]}")
+    paso(f"FIN: {sal} | enlaces {control['enlaces']} | montos distintos {control['monto_distinto']} | motivos distintos {control['motivos_distintos_de_la_lista']} | "
+         f"índices distintos de la página {control['indices_distintos_de_la_pagina']} | huella {control['huella_json'][:16]}")
 
 
 if __name__ == "__main__":

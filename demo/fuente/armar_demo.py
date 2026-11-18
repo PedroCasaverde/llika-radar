@@ -7,8 +7,13 @@
 # Antes de escribir se comprueba que ningún número de compra se repita en una entidad, que el texto no use palabras que
 # acusan, que el estilo no tenga colores fuera de los tokens y que cada par de colores de texto cumpla el contraste (4.5:1;
 # 3:1 en bordes y marcas). En la demo, ningún RUC puede tener dígito verificador válido; con datos reales, todos deben
-# tenerlo, y cada enlace a un documento debe ser de un sitio del Estado (gob.pe).
+# tenerlo, y cada enlace a un documento debe ser de un sitio del Estado (gob.pe). La página trae la carpeta del proveedor,
+# que nunca se llama «expediente», y el pedido de corrección sale por correo.
+# Los índices de cada entidad se comparan con los de las 2 647 entidades de la lista de 2025, que van en
+# distribucion_indices_2025.json (lo arma radar/v4/indices_entidades.py; son valores ordenados, sin el RUC de ninguna
+# entidad). Con datos reales, el JSON dice con qué distribución se calcularon sus índices y aquí se exige que sea esa.
 import base64
+import hashlib
 import json
 import re
 import sys
@@ -32,6 +37,24 @@ try:
 except json.JSONDecodeError as err:
     sys.exit(f"ERROR: {ORIGEN.name} no es un JSON válido ({err}).")
 assert (datos.get("modo") == "real") == REAL, "con --real van datos reales (modo «real»), y sin él, los de la demo"
+
+# La distribución de los índices en el país: la misma para la demo y para los datos reales
+INDICES = ["vin", "ant", "fra", "tope", "conc", "dep"]
+ruta_dist = AQUI / "distribucion_indices_2025.json"
+if not ruta_dist.exists():
+    sys.exit(f"ERROR: falta {ruta_dist.name} junto a la plantilla. Lo arma radar/v4/indices_entidades.py (python llika.py indices).")
+huella_dist = hashlib.sha256(ruta_dist.read_bytes()).hexdigest()[:16]
+dist = json.loads(ruta_dist.read_text(encoding="utf-8"))
+assert list(dist["indices"]) == INDICES and all(len(v) == dist["entidades"] and v == sorted(v) and 0 <= v[0] and v[-1] <= 10000 for v in dist["indices"].values()), "la distribución de los índices no tiene la forma esperada"
+if REAL:
+    if datos.get("distribucion") != huella_dist:
+        sys.exit(f"ERROR: los índices de {ORIGEN.name} se calcularon con otra distribución ({datos.get('distribucion')}) que la de {ruta_dist.name} ({huella_dist}). "
+                 "Corre indices_entidades.py y exportar_entidad.py de nuevo (python llika.py caso-real); si los datos cambiaron, copia aquí la distribución nueva.")
+    assert all(list(e.get("ind") or {}) == INDICES and e.get("n_ind", 0) >= len(e["casos"]) for e in datos["entidades"]), "falta algún índice de una entidad, calculado con todos sus proveedores"
+else:
+    assert "pais" not in datos and not any("ind" in e for e in datos["entidades"]), "en la demo, los índices se calculan en la página con los proveedores inventados"
+datos["pais"] = {"n": dist["entidades"], "anio": dist["anio"], "ind": dist["indices"]}
+
 t = (AQUI / "plantilla.html").read_text(encoding="utf-8")
 assert t.count("__DATOS__") == 1 and t.count("__IMAGENES__") == 1
 
@@ -44,7 +67,6 @@ if REAL:
         ("<b>Demo.</b> Las entidades, los proveedores, los RUC, los DNI y los montos son inventados. Las cifras del método, las normas y las fechas de las fuentes son las reales de LLIKA.",
          f"<b>Datos reales.</b> Registros públicos del Estado, con lo que se sabía al 31 dic {datos['anio']}, cruzados por LLIKA. Es un orden sugerido para revisar: aparecer aquí no constituye sanción, falta ni delito."),
         ("<noscript><p>Esta demo necesita JavaScript.</p></noscript>", "<noscript><p>Esta página necesita JavaScript.</p></noscript>"),
-        ("en la demo, con tres entidades inventadas, van sin ajustar.", f"aquí, con {n} {'entidad' if n == 1 else 'entidades'}, van sin ajustar."),
         ("<p class=\"chico\">En esta demo, las entidades, los proveedores, los RUC, los DNI y los montos son inventados; los RUC llevan un dígito verificador inválido para que no coincidan con ninguno real.</p>",
          "<p class=\"chico\">Esta página muestra datos reales: nombres, RUC, DNI y montos tal como los publica el Estado. El posible parentesco es una coincidencia de apellidos, no un hecho comprobado, y cualquier persona puede pedir que se corrija un dato.</p>"),
         ("El enlace puede estar incompleto, o esa entidad no está en la demo. En la demo hay tres entidades.", "El enlace puede estar incompleto, o esa entidad no está en esta página."),
@@ -105,6 +127,11 @@ assert "${NB}%" not in t and ".replace('.', ',')" not in t, "el JavaScript arma 
 assert not any("S/ " in x for x in de_datos) and "NB = '\u00a0'" in t, "entre S/ y el monto va un espacio que no corta la línea"
 # prueba de uso, punto 1: en la ficha, lo que mira el programa va en orden y sin porcentajes
 assert "del parecido</span>" not in t and "de más a menos importante" in t, "la ficha volvió a mostrar porcentajes del parecido"
+# etapa A del cierre: la carpeta del proveedor nunca se llama «expediente», y el pedido de corrección sale por correo
+assert "Descargar la carpeta de este proveedor" in t and "expediente" not in visible.lower(), "la carpeta del proveedor no está, o se la llama «expediente»"
+assert "mailto:${BUZON}" in t and "no se envía nada" not in t, "el formulario de corrección volvió a decir que no envía"
+# etapa B del cierre: cada índice va con su lugar entre las entidades del país, y la página ya no promete un ajuste que no hace
+assert 'id="nota-ind"' in t and "PAIS.ind[k]" in t and "se ajustarán" not in t and "sin ajustar" not in t, "los índices no se comparan con las entidades del país, o la página promete un ajuste"
 estilo = re.sub(r":root.*?\n}\n", "", visible.split("</style>")[0], flags=re.S).split("/* Base */")[1]
 assert not re.search(r"#[0-9A-Fa-f]{6}\b", estilo), "hay un color suelto fuera de los tokens"
 

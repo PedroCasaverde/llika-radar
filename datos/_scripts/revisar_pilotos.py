@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from extraer_deepseek import PAPELERA, SAL, TCE, DATOS, cres, leer_texto, sin_trib, textos_disponibles
+from extraer_deepseek import PILOTO_GC, SAL, TCE, DATOS, cres, leer_texto, sin_trib, textos_disponibles
 from tce_resoluciones import normalizar
 
 PESOS = np.array([5, 4, 3, 2, 7, 6, 5, 4, 3, 2])
@@ -151,7 +151,7 @@ def informes():
     mu = pd.read_csv(SAL / "piloto_informes_muestra.csv", dtype=str)
     estrato = dict(zip(mu["CresCodigoFormato"], mu["estrato"]))
     disp = textos_disponibles()
-    gc = pd.read_csv(PAPELERA / "2026-10-22_ordenes_observadas_piloto.csv", dtype=str)
+    gc = pd.read_csv(PILOTO_GC, dtype=str)
     gc["CresCodigoFormato"] = gc["enlace_pdf"].map(cres)
     gc = gc[gc["citada_en_informe"].str.lower().str.startswith("s", na=False)]
     hechos, prov, pers, ords, comp = [], [], [], [], []

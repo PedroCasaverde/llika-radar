@@ -445,6 +445,13 @@ details.ords[open] summary { margin-bottom: var(--s-2); }
   .lista-cab .descarga { width: 100%; }
 }
 .correccion { display: grid; gap: var(--s-4); padding: var(--s-4); border: 1px solid var(--border); border-radius: var(--r-md); color: var(--text); }
+/* Etapa A del cierre (17/11): la carpeta del proveedor y el pedido de corrección por correo */
+.carpeta .boton { justify-self: stretch; height: auto; min-height: var(--control-h); padding-block: var(--s-2); text-align: center; }
+.carpeta .boton span { text-wrap: balance; }
+.carpeta .boton .ico { margin-right: var(--s-2); vertical-align: -3px; color: var(--text-muted); }
+div.ok { display: grid; gap: var(--s-3); }
+.ok-botones { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.ok-botones .boton { height: auto; min-height: var(--control-h); padding-block: var(--s-2); text-align: center; }
 /* Contrato de alcance (HALLAZGOS 160, sección 93): norma y fecha de cada fuente, y la decisión sobre cada caso */
 .ref { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--s-1) var(--s-3); margin-top: var(--s-1); padding: var(--s-2) var(--s-3); background: var(--surface); border-radius: var(--r-sm); font-size: var(--t-xs); line-height: var(--l-xs); }
 .senal .ref { grid-column: 2; }
@@ -476,8 +483,8 @@ details.ords[open] summary { margin-bottom: var(--s-2); }
 .filtro-dec { display: inline-flex; align-items: center; gap: var(--s-2); font-size: var(--t-sm); color: var(--text-muted); }
 .filtro-dec select { height: var(--control-h); border: 1px solid var(--border-strong); border-radius: var(--r-sm); background: var(--bg); color: var(--text); padding: 0 var(--s-3); font-size: var(--t-sm); }
 /* Índices por entidad */
-.indices th { white-space: normal; vertical-align: bottom; min-width: 104px; }
-.indices th:first-child { min-width: 280px; }
+.indices th { white-space: normal; vertical-align: bottom; min-width: 116px; width: 116px; }
+.indices th:first-child { min-width: 280px; width: auto; }
 .ent-sub { display: block; font-size: var(--t-xs); line-height: var(--l-xs); color: var(--text-muted); }
 .indices th button { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 0; border: 0; background: none; padding: 0; color: inherit; font: inherit; cursor: pointer; text-align: left; min-height: 24px; }
 .indices th button[aria-pressed="true"] { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
@@ -492,20 +499,21 @@ details.ords[open] summary { margin-bottom: var(--s-2); }
 .ind-def dd { color: var(--text-muted); }
 .ind { display: grid; gap: var(--s-1); }
 .ind b { font-family: var(--font-display); font-weight: var(--w-medium); font-variant-numeric: tabular-nums; }
-.ind.max b { font-weight: var(--w-semibold); }
-.ind i { display: block; height: 6px; border-radius: var(--r-full); background: var(--surface-2); overflow: hidden; }
-.ind i span { display: block; height: 100%; width: var(--v); background: var(--neutral-mark); }
-.ind.max i span { background: var(--mark); }
+.ind.alto b { font-weight: var(--w-semibold); }
+.ind small { font-size: var(--t-xs); line-height: var(--l-xs); color: var(--text-muted); white-space: nowrap; }
+/* El lugar de la entidad entre las del país: la barra llega hasta la parte que tiene un valor más bajo; la raya marca la mitad */
+.via { position: relative; display: block; height: 6px; margin-block: 3px; border-radius: var(--r-full); background: var(--surface-2); }
+.via span { display: block; height: 100%; width: var(--v); border-radius: var(--r-full); background: var(--neutral-mark); }
+.via::after { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--border-strong); }
+.alto .via span { background: var(--mark); }
 .compara { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border: 1px solid var(--border); border-radius: var(--r-md); }
 .compara > div { padding: var(--s-3) var(--s-4); display: grid; gap: var(--s-1); align-content: start; min-width: 0; }
 .compara > div + div { border-left: 1px solid var(--border); }
 .compara dt { font-size: var(--t-xs); line-height: var(--l-xs); color: var(--text-muted); }
 .compara dd { font-family: var(--font-display); font-size: var(--t-lg); line-height: var(--l-lg); font-weight: var(--w-semibold); font-variant-numeric: tabular-nums; }
-.compara .puntos { display: block; width: 100%; height: 16px; overflow: visible; }
-.compara .puntos line { stroke: var(--border-strong); stroke-width: 1; }
-.compara .puntos circle { fill: var(--neutral-mark); }
-.compara .puntos circle.esta { fill: var(--mark); stroke: var(--bg); stroke-width: 2; }
+.compara dd .q { display: block; font-family: var(--font-sans); font-size: var(--t-xs); line-height: var(--l-xs); font-weight: var(--w-regular); color: var(--text-muted); }
 .compara small { font-size: var(--t-xs); line-height: var(--l-xs); color: var(--text-muted); }
+.compara small b { font-weight: var(--w-medium); color: var(--text); }
 @media (max-width: 1023px) {
   .compara { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .compara > div:nth-child(4) { border-left: 0; }
@@ -693,7 +701,8 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
     </table>
   </div>
   <dl class="ind-def" id="ind-def"></dl>
-  <p class="nota-pie">Los índices se calculan con los proveedores de la lista de cada entidad. Un índice alto no es una falta: dice en qué entidad conviene mirar primero. Con todas las entidades del país, los índices de las entidades chicas se ajustarán hacia el promedio (encogimiento bayesiano), para que no encabecen solo por azar; en la demo, con tres entidades inventadas, van sin ajustar.</p>
+  <p class="nota-pie" id="nota-ind"></p>
+  <p class="nota-pie">Un índice alto no es una falta: dice en qué entidad conviene mirar primero. En las entidades con 20 proveedores o menos, uno más o uno menos mueve mucho el porcentaje, y «Le compra a pocos» sale más alto mientras menos proveedores tiene la entidad.</p>
   <p class="nota-pie">LLIKA mira tres cosas: si el proveedor tiene un vínculo con una autoridad de la entidad, si vende de forma parecida a proveedores que después fueron sancionados, y cuánto depende de esa entidad. Aparecer en una lista no es una acusación. <a href="#como-funciona">Cómo funciona</a></p>
 </section>
 
@@ -751,7 +760,7 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
     <section aria-labelledby="t-c2">
       <h2 id="t-c2">¿Acierta?</h2>
       <figure class="grafico caja" aria-labelledby="g1">
-        <figcaption class="g-titulo" id="g1">Con el mismo trabajo, LLIKA encuentra 2.7 veces más que elegir a los que más vendieron</figcaption>
+        <figcaption class="g-titulo" id="g1">Con el mismo trabajo, LLIKA encuentra 2.75 veces más que elegir a los que más vendieron</figcaption>
         <p class="g-sub">Proveedores que después recibieron una sanción, una penalidad o una observación de la Contraloría, entre los cinco primeros de cada entidad. Listas de 2022 y 2024.</p>
         <div class="barras" role="img" aria-label="LLIKA 412; por monto 150; por tamaño 160; al azar 72">
           <div class="barra-fila acento"><span class="barra-etq">LLIKA</span><span class="barra-pista"><span class="barra" style="--v:100%"></span><span class="barra-num">412</span></span></div>
@@ -826,7 +835,7 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
           <li><b>R</b> es el parecido, de 0 a 1. Sale de dos modelos (una regresión logística y LightGBM, con 54 datos por proveedor): uno para sanciones y otro para penalidades. <b>M</b> es lo que le vendió a la entidad, y <b>C_local</b>, la parte de sus ventas que va a ella.</li>
           <li><b>Qué pesa más:</b> se mezcló cada grupo de datos entre los 751,237 proveedores de 2025, cinco veces, y se midió cuánto cambia R (importancia por permutación). Con el aporte de cada dato al puntaje (valores SHAP de los árboles y del margen por tamaño), los dos primeros grupos son los mismos, en otro orden: cuánto vende, 56% a 69%; concursos y contratos, 18% a 22%.</li>
           <li>Ventaja frente al monto en 2022 y 2024: 2.75 veces; intervalo de 90%, de 2.4 a 3.1. En observaciones de la Contraloría casi empata: 61 frente a 68.</li>
-          <li>Revisar en vano toma de 63 a 87 horas por acierto con LLIKA, y de 147 a 198 eligiendo por monto (tiempos estimados por un auditor).</li>
+          <li>Revisar en vano toma de 42 a 63 horas por acierto con LLIKA, y de 116 a 174 eligiendo por monto, a 40 o 60 minutos por revisión, según la prueba de uso.</li>
           <li>Publicar la regla es un juego de inspección en el que quien revisa anuncia primero. Lo que se muestra es una condición de disuasión, no un equilibrio calculado.</li>
         </ul>
         <p>¿Hace falta inteligencia artificial? Misma fórmula, cambiando solo de dónde sale R. Proveedores encontrados en 2020, 2021 y 2023, antes de retirar las compras por catálogo:</p>
@@ -862,9 +871,9 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
         <tbody>
           <tr><td>Órdenes de compra de las entidades (CONOSCE, del OECE)</td><td>Quién compró qué, a quién, cuándo y por cuánto</td><td>Las de 2025, publicadas el 10 set 2026 y bajadas el 3 oct 2026</td></tr>
           <tr><td>Concursos y contratos del Estado (datos abiertos del OECE)</td><td>Si el proveedor participa en concursos, si gana y si gana sin competidores</td><td>Bajados el 31 oct 2026</td></tr>
-          <tr><td>Tribunal de Contrataciones (10,972 resoluciones) y registro de sancionados</td><td>Sanciones y prohibiciones de venderle al Estado</td><td>Lo publicado hasta el 31 dic 2025, de sus versiones mensuales</td></tr>
+          <tr><td>Tribunal de Contrataciones (10,967 resoluciones leídas) y registro de sancionados</td><td>Sanciones y prohibiciones de venderle al Estado</td><td>Lo publicado hasta el 31 dic 2025, de sus versiones mensuales</td></tr>
           <tr><td>Penalidades y multas (17,298 penalidades)</td><td>Descuentos por incumplir un contrato y multas del Tribunal</td><td>Lo publicado hasta el 31 dic 2025, de sus versiones mensuales</td></tr>
-          <tr><td>Informes de la Contraloría (2,847)</td><td>Lo que la Contraloría observó en compras concretas</td><td>Buscador consultado el 31 oct 2026</td></tr>
+          <tr><td>Informes de la Contraloría (2,847 leídos a fondo, de 14,915)</td><td>Lo que la Contraloría observó en compras concretas</td><td>Buscador consultado el 31 oct 2026</td></tr>
           <tr><td>Autoridades electas (JNE)</td><td>Quién es autoridad de cada entidad</td><td>Archivo del 13 nov 2025</td></tr>
           <tr><td>Declaraciones juradas de intereses (Contraloría)</td><td>Cargos, empleos anteriores y familiares de los funcionarios</td><td>Actualizadas al 15 jul 2026; los familiares, al 28 oct 2026</td></tr>
           <tr><td>Socios y representantes de empresas (OECE)</td><td>De quién es cada empresa</td><td>Corte del 1 dic 2025</td></tr>
@@ -880,7 +889,7 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
         <tbody>
           <tr><td>Ley 32069, art. 30</td><td>Quiénes no pueden venderle al Estado: autoridades, sus parientes y sus empresas, y quienes están inhabilitados. Rige desde el 22 abr 2025; antes, el art. 11 del TUO de la Ley 30225</td><td>Vínculo, socio sancionado, vendió estando prohibido</td></tr>
           <tr><td>Ley 32069, arts. 34 y 50</td><td>Hasta 8 UIT (S/&nbsp;42,800 en 2025) se compra sin concurso, y está prohibido partir una contratación para no hacer el concurso. La obligación es de la entidad. Antes, arts. 5 y 20 del TUO de la Ley 30225</td><td>Compras partidas, mismo dueño</td></tr>
-          <tr><td>Ley 32069, arts. 87 a 90, y su reglamento (D.S. 009-2025-EF)</td><td>Infracciones, multas e inhabilitaciones que impone el Tribunal; las penalidades por incumplir un contrato. Antes, art. 50 del TUO de la Ley 30225</td><td>Antecedentes</td></tr>
+          <tr><td>Ley 32069, arts. 87 a 90, y su reglamento (D.S. 009-2025-EF)</td><td>Infracciones, multas e inhabilitaciones que impone el Tribunal; las penalidades por incumplir un contrato. Antes, art. 50 del TUO de la Ley 30225, y las penalidades, en su reglamento (D.S. 344-2018-EF)</td><td>Antecedentes</td></tr>
           <tr><td>Ley 31227</td><td>Los funcionarios declaran sus cargos, empleos y familiares en una declaración jurada de intereses</td><td>Vínculo declarado</td></tr>
           <tr><td>Ley 27785</td><td>La Contraloría y los órganos de control revisan el uso de los recursos públicos</td><td>En informes de la Contraloría</td></tr>
           <tr><td>Ley 28175, art. 3</td><td>Nadie puede recibir más de un ingreso del Estado, salvo por docencia o un directorio</td><td>Cobra en dos entidades</td></tr>
@@ -894,8 +903,9 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
       <ul>
         <li><b>Nada del futuro:</b> cada lista usa solo lo que se sabía al terminar su año. Lo que el Estado publica como foto, sin historia (las declaraciones juradas y el padrón de SUNAT), va con su última versión, y cada ficha dice su fecha.</li>
         <li><b>Solo compras sin concurso:</b> quedan fuera el agua, la luz, el teléfono, las compras a otras entidades públicas y las compras por el catálogo electrónico del Estado.</li>
-        <li><b>El parentesco es una coincidencia de apellidos,</b> con su probabilidad. Nunca se muestra como un hecho.</li>
-        <li><b>Cualquiera puede pedir una corrección</b> desde la ficha de un proveedor.</li>
+        <li><b>El parentesco es una coincidencia de apellidos,</b> con su probabilidad o con cuántas personas comparten esos apellidos. Nunca se muestra como un hecho.</li>
+        <li><b>Cualquiera puede pedir una corrección</b> desde la ficha de un proveedor: el pedido sale por correo a <a href="mailto:pedro.casaverde@utec.edu.pe">pedro.casaverde@utec.edu.pe</a>, el buzón del equipo.</li>
+        <li><b>Cada ficha se puede llevar</b> en una carpeta: la ficha, sus compras en Excel y sus señales con el enlace a cada documento oficial.</li>
         <li><b>Los documentos se leyeron con ayuda de programas:</b> Claude leyó las resoluciones del Tribunal de Contrataciones, y DeepSeek, los informes de la Contraloría. Lo que sacaron se verificó después.</li>
       </ul>
     </section>
@@ -991,7 +1001,7 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
     imp: 'Ley 32069, art. 30: quiénes no pueden venderle a la entidad (antes del 22 abr 2025, art. 11 del TUO de la Ley 30225).',
     par: 'Ley 32069, art. 30: el impedimento alcanza a los parientes de la autoridad (antes del 22 abr 2025, art. 11 del TUO de la Ley 30225).',
     decl: 'Ley 31227: los funcionarios declaran a sus familiares. Si quien lo declaró interviene en la compra, aplica la Ley 32069, art. 30.',
-    ant: 'Ley 32069, arts. 87 a 90: infracciones, multas e inhabilitaciones del Tribunal; las penalidades, en su reglamento (D.S. 009-2025-EF). Antes del 22 abr 2025, art. 50 del TUO de la Ley 30225.',
+    ant: 'Ley 32069, arts. 87 a 90: infracciones, multas e inhabilitaciones del Tribunal; las penalidades, en su reglamento (D.S. 009-2025-EF). Antes del 22 abr 2025, art. 50 del TUO de la Ley 30225, y las penalidades, en su reglamento (D.S. 344-2018-EF).',
     fra: `Ley 32069, art. 50: prohíbe partir una contratación para no hacer el concurso; art. 34: hasta 8 UIT (S/${NB}42,800 en 2025) se compra sin concurso. Antes del 22 abr 2025, arts. 20 y 5 del TUO de la Ley 30225. La obligación es de la entidad que compra.`,
     compra: `Ley 32069, art. 34: hasta 8 UIT (S/${NB}42,800 en 2025) se compra sin concurso (antes del 22 abr 2025, art. 5 del TUO de la Ley 30225).`,
     ninguna: 'Ninguna norma lo prohíbe por sí solo: es un dato para mirar junto con lo demás.',
@@ -1113,9 +1123,11 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
   const ENT = {};
   D.entidades.forEach(e => { e.casos = e.casos.map(c => preparar(e, c)); ENT[e.id] = e; e.conSenal = e.casos.filter(c => c.ev.length).length; });
   const tiene = (c, g) => c.ev.some(x => x.g === g);
-  // Índices por entidad (contrato de alcance, funcionalidad 4), con los proveedores de su lista
+  // Índices por entidad (contrato de alcance, funcionalidad 4). Con datos reales llegan calculados con todos los proveedores
+  // de la entidad (e.ind, de indices_entidades.py); en la demo se calculan aquí, con los de su lista. Cada índice se compara
+  // con las entidades de D.pais: los valores de las 2,647 entidades de la lista, ordenados y en centésimas.
   const IND = [
-    ['vin', 'Con vínculo', 'de los proveedores', 'Tienen un vínculo con una autoridad de la entidad o un familiar declarado.'],
+    ['vin', 'Con vínculo', 'de los proveedores', REAL ? 'Son una autoridad de la zona o su empresa, o tienen los dos apellidos de una.' : 'Tienen un vínculo con una autoridad de la entidad o un familiar declarado.'],
     ['ant', 'Con antecedentes', 'de los proveedores', 'Ya tuvieron penalidades, multas o prohibiciones de venderle al Estado.'],
     ['fra', 'Compras partidas', 'de los proveedores', 'Tienen compras que parecen partidas para no pasar el tope.'],
     ['tope', 'Cerca del tope', 'de las compras', 'Compras de 90% del tope o más.'],
@@ -1124,13 +1136,31 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
   ];
   const pct = (a, b) => (b ? 100 * a / b : 0);
   D.entidades.forEach(e => {
+    if (e.ind) return;
     const cs = e.casos, n = cs.length, os = cs.flatMap(c => c.os), tot = cs.reduce((a, c) => a + c.total, 0);
     const top5 = cs.map(c => c.total).sort((a, b) => b - a).slice(0, 5).reduce((a, b) => a + b, 0);
     e.ind = { vin: pct(cs.filter(c => c.vin).length, n), ant: pct(cs.filter(c => tiene(c, 'ant')).length, n), fra: pct(cs.filter(c => tiene(c, 'fra')).length, n),
       tope: pct(os.filter(o => o.cerca).length, os.length), conc: pct(top5, tot), dep: pct(cs.filter(c => Number(c.clocal) >= 80).length, n) };
   });
-  const MAX_IND = Object.fromEntries(IND.map(([k]) => [k, Math.max(...D.entidades.map(e => e.ind[k]))]));
   const indTxt = v => dec(v) + '%';
+  // El lugar de un valor entre las entidades del país: cuántas tienen menos, igual y más (es su percentil)
+  const PAIS = D.pais, N_PAIS = miles(PAIS.n);
+  const primero = (a, x, igual) => { let i = 0, j = a.length; while (i < j) { const m = (i + j) >> 1; if (a[m] < x || (igual && a[m] === x)) i = m + 1; else j = m; } return i; };
+  function lugar(k, v) {
+    const a = PAIS.ind[k], x = Math.round(100 * v), menos = primero(a, x, false), hasta = primero(a, x, true);
+    return { menos, igual: hasta - menos, mas: a.length - hasta, pct: 100 * menos / a.length };
+  }
+  const mitadPais = k => { const a = PAIS.ind[k], n = a.length; return (n % 2 ? a[(n - 1) / 2] : (a[n / 2 - 1] + a[n / 2]) / 2) / 100; };
+  D.entidades.forEach(e => { e.lug = Object.fromEntries(IND.map(([k]) => [k, lugar(k, e.ind[k])])); });
+  const ALTO = 90;
+  const lugarCorto = l => l.menos === 0 ? 'ninguna tiene menos' : l.mas === 0 ? 'ninguna tiene más' : l.pct < 1 ? `más que ${plural(l.menos, 'entidad', 'entidades')}` : `más que el ${Math.floor(l.pct)}%`;
+  const lugarLargo = (k, e) => {
+    const l = e.lug[k];
+    if (l.menos === 0) return `<b>Ninguna de las ${N_PAIS} entidades tiene menos.</b>${l.igual > 1 ? ` ${miles(l.igual)} tienen ${indTxt(e.ind[k])}.` : ''}`;
+    if (l.mas === 0) return `<b>Ninguna de las ${N_PAIS} entidades tiene más.</b>`;
+    return `<b>${l.pct < 1 ? `Más que ${miles(l.menos)}` : `Más que el ${Math.floor(l.pct)}%`} de las ${N_PAIS} entidades.</b> La mitad tiene ${indTxt(mitadPais(k))} o menos.`;
+  };
+  const via = l => `<i class="via" aria-hidden="true"><span style="--v:${l.pct.toFixed(1)}%"></span></i>`;
   const nombre = c => esc(c.prov.nombre || 'Sin nombre');
   const tipoProv = c => c.prov.tipo === 'natural' ? 'Persona natural' : 'Empresa';
   const idsTxt = c => `RUC ${c.prov.ruc}${c.prov.dni ? ` · DNI ${c.prov.dni}` : ''}`;
@@ -1189,11 +1219,15 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
     document.getElementById('ind-cab').innerHTML = `<th scope="col">Entidad</th>` + IND.map(([k, n, q]) => `<th scope="col"><button type="button" data-ind="${k}" aria-pressed="${ordenInd === k}">${n}<span class="q">${q}</span></button></th>`).join('');
     const ents = ordenInd ? [...D.entidades].sort((a, b) => b.ind[ordenInd] - a.ind[ordenInd]) : D.entidades;
     document.getElementById('t-indices').innerHTML = ents.map(e => `<tr data-href="#entidad-${e.id}"><td><span class="ent-nom"><img class="ent-ico" data-img="${imgEntidad(e)}" alt="" width="40" height="40"><span><a href="#entidad-${e.id}">${esc(e.nombre)}</a>${TAG_DEMO}<span class="ent-sub">${esc(e.tipo)} · ${plural(e.proveedores, 'proveedor', 'proveedores')} · ${millones(e.monto)} en ${D.anio} · ${miles(e.conSenal)} de ${miles(e.casos.length)} con alguna señal</span></span></span></td>`
-      + IND.map(([k, n]) => { const v = e.ind[k], m = MAX_IND[k]; return `<td data-et="${n}"><div class="ind${v === m && m > 0 ? ' max' : ''}" data-k="${k}"><b>${indTxt(v)}</b><i aria-hidden="true"><span style="--v:${m ? (100 * v / m).toFixed(1) : 0}%"></span></i></div></td>`; }).join('') + '</tr>').join('');
+      + IND.map(([k, n]) => { const l = e.lug[k]; return `<td data-et="${n}"><div class="ind${l.pct >= ALTO ? ' alto' : ''}" data-k="${k}"><b>${indTxt(e.ind[k])}</b>${via(l)}<small>${lugarCorto(l)}</small></div></td>`; }).join('') + '</tr>').join('');
     ponerImagenes(document.getElementById('t-indices'));
   }
   pintarIndices();
   document.getElementById('ind-def').innerHTML = IND.map(([, n, , d]) => `<div><dt>${n}</dt><dd>${d}</dd></div>`).join('');
+  document.getElementById('nota-ind').textContent = (REAL
+    ? `Los índices se calculan con todos los proveedores de cada entidad en ${PAIS.anio}, no solo con los que se muestran aquí. Junto a cada uno va su lugar entre las ${N_PAIS} entidades de la lista de ${PAIS.anio}`
+    : `Las tres entidades de la demo son inventadas, y sus índices se calculan con los proveedores de su lista. Junto a cada uno va su lugar entre las ${N_PAIS} entidades reales de la lista de ${PAIS.anio}`)
+    + ': «más que el 33%» quiere decir que 33 de cada 100 entidades tienen un valor más bajo (es su percentil). La barra llega hasta ese lugar, la raya marca la mitad y el color avisa que está en el 10% más alto.';
   document.getElementById('ind-cab').addEventListener('click', ev => { const b = ev.target.closest('[data-ind]'); if (!b) return; ordenInd = ordenInd === b.dataset.ind ? null : b.dataset.ind; pintarIndices(); document.querySelector(`[data-ind="${b.dataset.ind}"]`).focus(); anunciar(ordenInd ? `Entidades ordenadas por ${IND.find(x => x[0] === ordenInd)[1]}` : 'Entidades en su orden original'); });
   document.getElementById('t-indices').addEventListener('click', ev => { const tr = ev.target.closest('tr[data-href]'); if (tr && !ev.target.closest('a')) location.hash = tr.dataset.href.slice(1); });
 
@@ -1223,8 +1257,6 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
   function renderEntidad(e) {
     ES.e = e; ES.q = ''; ES.f = new Set(); ES.orden = 'rk'; ES.dec = 'todas';
     const nEnt = D.entidades.length;
-    const puntos = k => { const m = MAX_IND[k] || 1; return `<svg class="puntos" viewBox="0 0 140 16" preserveAspectRatio="xMinYMid meet" aria-hidden="true" focusable="false"><line x1="6" x2="134" y1="8" y2="8"/>${D.entidades.filter(x => x !== e).map(x => `<circle cx="${(6 + 128 * x.ind[k] / m).toFixed(1)}" cy="8" r="4"/>`).join('')}<circle class="esta" cx="${(6 + 128 * e.ind[k] / m).toFixed(1)}" cy="8" r="5"/></svg>`; };
-    const puesto = k => 1 + D.entidades.filter(x => x.ind[k] > e.ind[k]).length;
     const cuenta = g => e.casos.filter(c => tiene(c, g)).length;
     document.getElementById('entidad').innerHTML = `
       <nav class="migas" aria-label="Ruta"><a href="#inicio">Entidades</a><span aria-hidden="true">/</span><span>${esc(e.corto)}</span></nav>
@@ -1242,9 +1274,9 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
         <div><dt>de los ${e.casos.length} primeros tienen alguna señal</dt><dd>${miles(e.conSenal)}</dd></div>
       </dl>
       <section class="bloque-p" aria-labelledby="t-compara">
-        <div class="seccion-cab"><h2 id="t-compara">Cómo se compara con las otras entidades</h2><a class="conteo ver-todas" href="#inicio">Ver las ${nEnt} entidades</a></div>
-        <dl class="compara">${IND.map(([k, n, q]) => `<div data-k="${k}"><dt>${n}</dt><dd>${indTxt(e.ind[k])}</dd>${puntos(k)}<small>${q} · ${puesto(k) === 1 ? `la más alta de las ${nEnt}` : `${puesto(k)}.ª de ${nEnt}`}</small></div>`).join('')}</dl>
-        <p class="chico suave">Un índice alto no es una falta: dice dónde conviene mirar primero. El punto azul es esta entidad; los grises, las otras de ${REAL ? 'esta página' : 'la demo'}.</p>
+        <div class="seccion-cab"><h2 id="t-compara">Cómo se compara con las ${N_PAIS} entidades del país</h2><a class="conteo ver-todas" href="#inicio">Ver ${nEnt === 1 ? 'la entidad' : `las ${nEnt} entidades`} de ${REAL ? 'esta página' : 'la demo'}</a></div>
+        <dl class="compara">${IND.map(([k, n, q]) => `<div data-k="${k}"${e.lug[k].pct >= ALTO ? ' class="alto"' : ''}><dt>${n}</dt><dd>${indTxt(e.ind[k])}<span class="q">${q}</span></dd>${via(e.lug[k])}<small>${lugarLargo(k, e)}</small></div>`).join('')}</dl>
+        <p class="chico suave">${REAL ? `Los índices usan los ${miles(e.n_ind || e.casos.length)} proveedores de la entidad en la lista de ${PAIS.anio}, y se comparan con las ${N_PAIS} entidades de esa lista` : `Esta entidad es inventada: sus índices usan los ${miles(e.casos.length)} proveedores de su lista, y se comparan con las ${N_PAIS} entidades reales de la lista de ${PAIS.anio}`}. La barra llega hasta la parte de ellas que tiene un valor más bajo; la raya marca la mitad. Un índice alto no es una falta: dice dónde conviene mirar primero.</p>
       </section>
       <div class="herramientas" role="search">
         <div class="busca">${ICO.busca}<label class="sr" for="fq">Buscar en esta lista</label><input id="fq" type="search" placeholder="Buscar proveedor, RUC o DNI" autocomplete="off"></div>
@@ -1317,11 +1349,12 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
   // Un .xlsx es un zip de archivos XML; se guarda sin comprimir, que Excel abre igual.
   const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
   const crc32 = b => { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
-  function zipSinComprimir(archivos) {
+  // Cada archivo llega como texto o como bytes: así un .xlsx puede ir dentro de otro zip (la carpeta del proveedor)
+  function zipBytes(archivos) {
     const enc = new TextEncoder(), locales = [], centrales = [], FECHA = ((D.anio - 1980) << 9) | (12 << 5) | 31;
     let pos = 0;
-    archivos.forEach(([ruta, texto]) => {
-      const n = enc.encode(ruta), d = enc.encode(texto), crc = crc32(d);
+    archivos.forEach(([ruta, contenido]) => {
+      const n = enc.encode(ruta), d = typeof contenido === 'string' ? enc.encode(contenido) : contenido, crc = crc32(d);
       const l = new DataView(new ArrayBuffer(30 + n.length));
       [[0, 0x04034b50, 4], [4, 20, 2], [6, 0x0800, 2], [8, 0, 2], [10, 0, 2], [12, FECHA, 2], [14, crc, 4], [18, d.length, 4], [22, d.length, 4], [26, n.length, 2], [28, 0, 2]]
         .forEach(([o, v, t]) => (t === 4 ? l.setUint32(o, v, true) : l.setUint16(o, v, true)));
@@ -1335,16 +1368,29 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
     const tam = centrales.reduce((a, c) => a + c.byteLength, 0), fin = new DataView(new ArrayBuffer(22));
     [[0, 0x06054b50, 4], [4, 0, 2], [6, 0, 2], [8, archivos.length, 2], [10, archivos.length, 2], [12, tam, 4], [16, pos, 4], [20, 0, 2]]
       .forEach(([o, v, t]) => (t === 4 ? fin.setUint32(o, v, true) : fin.setUint16(o, v, true)));
-    return new Blob([...locales, ...centrales, fin], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const partes = [...locales, ...centrales, fin].map(x => (x instanceof DataView ? new Uint8Array(x.buffer) : x));
+    const todo = new Uint8Array(partes.reduce((a, b) => a + b.length, 0));
+    let o = 0;
+    partes.forEach(b => { todo.set(b, o); o += b.length; });
+    return todo;
+  }
+  const zipSinComprimir = (archivos, tipo) => new Blob([zipBytes(archivos)], { type: tipo || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  function bajar(blob, archivo) {
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = archivo; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
   }
   const xml = s => String(s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const COL = i => String.fromCharCode(65 + i);
-  // Estilos: 0 normal, 1 negrita, 2 soles, 3 fecha, 4 nota en cursiva, 5 texto que se ajusta
-  const S = { b: 1, sol: 2, fecha: 3, nota: 4, txt: 5 };
+  // Estilos: 0 normal, 1 negrita, 2 soles, 3 fecha, 4 nota en cursiva, 5 texto que se ajusta, 6 enlace
+  const S = { b: 1, sol: 2, fecha: 3, nota: 4, txt: 5, enlace: 6 };
+  const comillas = s => String(s).replace(/"/g, '""');
+  // Una celda puede ser un número, un texto o un enlace ({ url, txt }), que Excel abre con un clic
   function hoja(titulo, nota, cab, filas, anchos, estilos) {
     const fila = (r, vals, est) => `<row r="${r}">${vals.map((v, i) => {
       if (v === '' || v == null) return '';
       const s = est[i] || 0, ref = COL(i) + r;
+      if (typeof v === 'object') return `<c r="${ref}" s="${S.enlace}" t="str"><f>HYPERLINK("${xml(comillas(v.url))}","${xml(comillas(v.txt))}")</f><v>${xml(v.txt)}</v></c>`;
       return typeof v === 'number' ? `<c r="${ref}" s="${s}"><v>${v}</v></c>` : `<c r="${ref}" s="${s}" t="inlineStr"><is><t xml:space="preserve">${xml(v)}</t></is></c>`;
     }).join('')}</row>`;
     const ult = COL(cab.length - 1) + (3 + filas.length);
@@ -1355,38 +1401,40 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
       + filas.map((f, k) => fila(4 + k, f, estilos)).join('') + `</sheetData><autoFilter ref="A3:${ult}"/></worksheet>`;
   }
   const serialFecha = iso => (tiempo(iso) - Date.UTC(1899, 11, 30)) / DIA;
+  const NOTA_EXCEL = `Orden sugerido para revisar: aparecer en esta lista no constituye sanción, falta ni delito. ${REAL ? `Registros públicos del Estado, con lo que se sabía al 31 dic ${D.anio}.` : 'Demo con datos inventados.'}`;
+  // El vínculo, en una sola línea: lo que dice, si es una coincidencia de apellidos y quién lo declaró
+  const vinTxt = x => [x.x, x.prob != null ? `Coincidencia de apellidos, sin confirmar con RENIEC: ${x.prob}% de probabilidad de ser pariente.` : x.pariente ? 'Coincidencia de apellidos, sin confirmar con RENIEC.' : '', x.quien ? `Lo declaró: ${x.quien}` : ''].filter(Boolean).join(' ');
+  // Las compras de un proveedor, una fila por compra: las usan el Excel de la lista y la carpeta del proveedor
+  const CAB_COMPRAS = ['Puesto', 'Proveedor', 'RUC', 'Fecha', 'Compra', 'Descripción', 'Monto (S/)', 'Nota'], ANCHO_COMPRAS = [7, 34, 13, 11, 11, 60, 13, 30], EST_COMPRAS = [0, S.txt, 0, S.fecha, 0, S.txt, S.sol, S.txt];
+  const filasCompras = c => c.os.map(o => [c.rk, c.prov.nombre || '', c.prov.ruc, serialFecha(o.f), o.num, o.desc, o.m,
+    [o.enVentana ? 'Con otras compras en 30 días que pasan el tope' : '', o.cerca ? 'Cerca del tope' : ''].filter(Boolean).join('; ')]);
   function descargarExcel() {
-    const e = ES.e, filas = filasVisibles();
-    const nota = `Orden sugerido para revisar: aparecer en esta lista no constituye sanción, falta ni delito. ${REAL ? `Registros públicos del Estado, con lo que se sabía al 31 dic ${D.anio}.` : 'Demo con datos inventados.'}`;
+    const e = ES.e, filas = filasVisibles(), nota = NOTA_EXCEL;
     const titulo = `${e.nombre}. Lista de ${D.anio}, con lo que se sabía al 31 dic ${D.anio}.`;
-    const senal = (c, g) => c.ev.filter(x => x.g === g).map(x => g === 'otra' ? `${x.etq}: ${x.x}${x.url ? ` (${x.url})` : ''}` : g === 'vin'
-      ? [x.x, x.prob != null ? `Coincidencia de apellidos, sin confirmar con RENIEC: ${x.prob}% de probabilidad de ser pariente.` : x.pariente ? 'Coincidencia de apellidos, sin confirmar con RENIEC.' : '', x.quien ? `Lo declaró: ${x.quien}` : ''].filter(Boolean).join(' ')
+    const senal = (c, g) => c.ev.filter(x => x.g === g).map(x => g === 'otra' ? `${x.etq}: ${x.x}${x.url ? ` (${x.url})` : ''}` : g === 'vin' ? vinTxt(x)
       : g === 'ant' ? (x.det || [x.x]).map(detTxt).join('; ') : x.x).join(' | ');
     const prov = filas.map(c => [c.rk, c.prov.nombre || '', tipoProv(c), c.prov.ruc, c.prov.dni || '', c.rubro || '', c.total, c.n, c.clocal == null ? '' : Math.min(Number(c.clocal), 100),
       c.por, senal(c, 'vin'), senal(c, 'ant'), senal(c, 'fra'), senal(c, 'otra'), [...new Set(c.ev.map(x => x.f))].join('; '), [...new Set(c.ev.map(x => x.norma))].join(' | '),
       ...(d => d ? [DEC_TXT[d.d], d.m, d.n || '', serialFecha(d.f)] : ['', '', '', ''])(decDe(c))]);
-    const compras = [];
-    filas.forEach(c => c.os.forEach(o => compras.push([c.rk, c.prov.nombre || '', c.prov.ruc, serialFecha(o.f), o.num, o.desc, o.m,
-      [o.enVentana ? 'Con otras compras en 30 días que pasan el tope' : '', o.cerca ? 'Cerca del tope' : ''].filter(Boolean).join('; ')])));
+    const compras = filas.flatMap(filasCompras);
     const h1 = hoja(titulo, nota, ['Puesto', 'Proveedor', 'Tipo', 'RUC', 'DNI', 'Rubro', `Le vendió en ${D.anio} (S/)`, 'Compras', 'De lo que le vende al Estado (%)',
       'Por qué está en este puesto', 'Vínculo', 'Antecedentes', 'Compras que parecen partidas', 'Otras señales', 'Fuentes y fecha de sus datos', 'Normas', 'Tu decisión', 'Motivo', 'Nota', 'Fecha de la decisión'],
       prov, [7, 34, 14, 13, 10, 24, 14, 9, 14, 48, 48, 40, 40, 48, 56, 56, 22, 30, 30, 12], [0, S.txt, 0, 0, 0, S.txt, S.sol, 0, 0, S.txt, S.txt, S.txt, S.txt, S.txt, S.txt, S.txt, 0, S.txt, S.txt, S.fecha]);
-    const h2 = hoja(titulo, nota, ['Puesto', 'Proveedor', 'RUC', 'Fecha', 'Compra', 'Descripción', 'Monto (S/)', 'Nota'],
-      compras, [7, 34, 13, 11, 11, 60, 13, 30], [0, S.txt, 0, S.fecha, 0, S.txt, S.sol, S.txt]);
-    const X = 'http://schemas.openxmlformats.org/', T = 'application/vnd.openxmlformats-officedocument.spreadsheetml.';
-    const archivos = [
-      ['[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="${X}package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="${T}sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="${T}styles+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="${T}worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="${T}worksheet+xml"/></Types>`],
-      ['_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="${X}package/2006/relationships"><Relationship Id="rId1" Type="${X}officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`],
-      ['xl/workbook.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="${X}spreadsheetml/2006/main" xmlns:r="${X}officeDocument/2006/relationships"><sheets><sheet name="Proveedores" sheetId="1" r:id="rId1"/><sheet name="Compras" sheetId="2" r:id="rId2"/></sheets><definedNames><definedName name="_xlnm._FilterDatabase" localSheetId="0" hidden="1">Proveedores!$A$3:$T$${3 + prov.length}</definedName><definedName name="_xlnm._FilterDatabase" localSheetId="1" hidden="1">Compras!$A$3:$H$${3 + compras.length}</definedName></definedNames></workbook>`],
-      ['xl/_rels/workbook.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="${X}package/2006/relationships"><Relationship Id="rId1" Type="${X}officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="${X}officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/><Relationship Id="rId3" Type="${X}officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`],
-      ['xl/styles.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<styleSheet xmlns="${X}spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="#,##0.00"/></numFmts><fonts count="3"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><name val="Calibri"/><family val="2"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="6"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="14" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`],
-      ['xl/worksheets/sheet1.xml', h1],
-      ['xl/worksheets/sheet2.xml', h2]
-    ];
-    const url = URL.createObjectURL(zipSinComprimir(archivos)), a = document.createElement('a');
-    a.href = url; a.download = `llika_${e.id}_${D.anio}.xlsx`; document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    const h2 = hoja(titulo, nota, CAB_COMPRAS, compras, ANCHO_COMPRAS, EST_COMPRAS);
+    bajar(zipSinComprimir(libro([['Proveedores', h1, 20, prov.length], ['Compras', h2, CAB_COMPRAS.length, compras.length]])), `llika_${e.id}_${D.anio}.xlsx`);
     anunciar(`Descargando ${plural(filas.length, 'proveedor', 'proveedores')} y ${plural(compras.length, 'compra', 'compras')} en Excel`);
+  }
+  // Los archivos de un libro de Excel. Cada hoja llega como [nombre, su XML, cuántas columnas, cuántas filas de datos]
+  function libro(hojas) {
+    const X = 'http://schemas.openxmlformats.org/', T = 'application/vnd.openxmlformats-officedocument.spreadsheetml.';
+    return [
+      ['[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="${X}package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="${T}sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="${T}styles+xml"/>${hojas.map((h, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="${T}worksheet+xml"/>`).join('')}</Types>`],
+      ['_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="${X}package/2006/relationships"><Relationship Id="rId1" Type="${X}officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`],
+      ['xl/workbook.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="${X}spreadsheetml/2006/main" xmlns:r="${X}officeDocument/2006/relationships"><sheets>${hojas.map((h, i) => `<sheet name="${xml(h[0])}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join('')}</sheets><definedNames>${hojas.map((h, i) => `<definedName name="_xlnm._FilterDatabase" localSheetId="${i}" hidden="1">'${xml(h[0])}'!$A$3:$${COL(h[2] - 1)}$${3 + h[3]}</definedName>`).join('')}</definedNames></workbook>`],
+      ['xl/_rels/workbook.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="${X}package/2006/relationships">${hojas.map((h, i) => `<Relationship Id="rId${i + 1}" Type="${X}officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join('')}<Relationship Id="rId${hojas.length + 1}" Type="${X}officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`],
+      ['xl/styles.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<styleSheet xmlns="${X}spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="#,##0.00"/></numFmts><fonts count="4"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><name val="Calibri"/><family val="2"/></font><font><u/><sz val="11"/><name val="Calibri"/><family val="2"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="7"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="14" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf><xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`],
+      ...hojas.map((h, i) => [`xl/worksheets/sheet${i + 1}.xml`, h[1]])
+    ];
   }
 
   // ---------- Panel del proveedor ----------
@@ -1436,25 +1484,176 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
       <p class="d">El orden es el mismo para todos los proveedores del país. <a href="#como-funciona">Cuánto pesa cada cosa</a></p></details>`;
   }
   // Cómo se calculó el puesto: las cuatro cosas que LLIKA mira, con el valor de este proveedor y cuál decidió
-  function calculo(c) {
+  function pasosCalculo(c) {
     const vinSube = c.vin && (c.vin.tipo === 'autoridad' || c.vin.tipo === 'pariente');
     const alto = c.motivo === 'antecedentes' || c.motivo === 'perfil';
     const fra = c.ev.find(x => x.g === 'fra');
-    const pasos = [
+    return [
       { t: '¿Tiene un vínculo con una autoridad de esta entidad?', v: !c.vin ? 'No' : c.vin.tipo === 'autoridad' ? 'Sí: es una autoridad o su empresa' : c.vin.tipo === 'pariente' ? (c.vin.prob != null ? `Coincidencia de apellidos, sin confirmar: ${c.vin.prob}% de probabilidad de ser pariente` : 'Coincidencia de apellidos con una autoridad, sin confirmar con RENIEC') : 'Declarado: se muestra, pero no lo sube en la lista', d: vinSube },
       { t: '¿Se parece a proveedores que después fueron sancionados?', v: vinSube ? 'No hizo falta mirarlo: el vínculo va primero' : alto ? 'Mucho: está entre los 2 de cada 100 que más se parecen en todo el país' : 'No está entre los que más se parecen', d: !vinSube && alto, extra: enQueSeFija(c, !vinSube && alto) },
       { t: '¿Cuánto depende de esta entidad?', v: `Le vendió ${soles(c.total)}: el ${parteVentas(c)} de todo lo que le vende al Estado`, d: c.motivo === 'peso' },
       { t: '¿Tiene compras que parecen partidas?', v: fra ? `Sí: ${fra.corto}` : c.motivo === 'mayor' ? 'No. Ninguna otra lo parecía, y entra la compra más grande' : 'No', d: c.motivo === 'bandera' || c.motivo === 'mayor' }
     ];
-    return `<ol class="calculo">${pasos.map(p => `<li${p.d ? ' class="decide"' : ''}><span class="c-t">${p.t}</span><span class="c-v">${esc(p.v)}${p.d ? '<span class="decide-tag">Por esto está aquí</span>' : ''}</span>${p.extra ? `<div class="c-extra">${p.extra}</div>` : ''}</li>`).join('')}</ol>`;
+  }
+  function calculo(c) {
+    return `<ol class="calculo">${pasosCalculo(c).map(p =>`<li${p.d ? ' class="decide"' : ''}><span class="c-t">${p.t}</span><span class="c-v">${esc(p.v)}${p.d ? '<span class="decide-tag">Por esto está aquí</span>' : ''}</span>${p.extra ? `<div class="c-extra">${p.extra}</div>` : ''}</li>`).join('')}</ol>`;
   }
   // Documento oficial de cada señal (con datos reales): la resolución del Tribunal o el informe de control; si no hay, de dónde sale
-  const enlace = (url, txt) => /^https:\/\/[a-z0-9.-]+\.gob\.pe\//i.test(url || '') ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(txt)}</a>` : '';
+  const oficial = url => /^https:\/\/[a-z0-9.-]+\.gob\.pe\//i.test(url || '');
+  const enlace = (url, txt) => oficial(url) ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(txt)}</a>` : '';
   const detHTML = d => typeof d === 'string' ? esc(d) : `${esc(d.x)}${d.url ? ` ${enlace(d.url, d.doc || 'Ver documento')}` : d.nota ? ` <span class="suave">${esc(d.nota)}</span>` : ''}`;
   const docHTML = x => x.url ? `<span class="doc">${enlace(x.url, x.doc || 'Ver documento')}${(x.otros || []).map(o => enlace(o.url, `Informe ${o.n}`)).join('')}</span>` : x.nota ? `<small>${esc(x.nota)}</small>` : '';
   const detTxt = d => typeof d === 'string' ? d : d.x + (d.url ? ` (${d.url})` : '');
   const refHTML = (norma, fs) => `<dl class="ref"><dt>Norma</dt><dd>${esc(norma)}</dd><dt>${fs.length > 1 ? 'Fuentes' : 'Fuente'}</dt><dd>${fs.map(k => `<span class="f1">${esc(FUENTE[k][0])}, <span class="fecha">${esc(FUENTE[k][1])}</span></span>`).join('')}</dd></dl>`;
-  let casoAbierto = null, focoPrevio = null, formDec = null;
+  // Textos y datos que comparten la ficha en pantalla y la ficha de la carpeta
+  const TXT_HOMONIMO = 'No es un parentesco comprobado: puede ser un homónimo. De 29 coincidencias muy probables, 14 eran parientes de verdad.';
+  const tasaTxt = c => TASA[c.motivo] != null ? `De cada 100 proveedores que aparecen por este motivo, ${dec(TASA[c.motivo])} tuvieron después una sanción, una penalidad o una observación de la Contraloría. Elegidos al azar, ${dec(D.azar)}.` : '';
+  const ausentesDe = c => { const hay = new Set(c.ev.map(x => x.g === 'otra' ? x.etq : { vin: 'Vínculo', ant: 'Antecedentes', fra: 'Compras partidas' }[x.g])); return CATALOGO.filter(x => !hay.has(x)); };
+  const otrosDatos = c => [
+    ['A quiénes se parece más', c.riesgo === 'sancion' ? 'A proveedores sancionados por el Tribunal de Contrataciones' : c.riesgo === 'penalidad' ? 'A proveedores con penalidades' : 'Sin dato'],
+    ['Desde cuándo le vende', c.previa === undefined ? 'Sin dato' : c.previa === null ? `${D.anio} es su primer año vendiéndole a esta entidad` : `Desde ${c.previa.desde}. Antes de ${D.anio} le había vendido ${soles(c.previa.monto)}`],
+    ['Su compra más grande', c.visible ? `${soles(c.visible.m)}, el ${fecha(c.visible.f)}` : 'Sin dato']
+  ];
+
+  // ---------- Carpeta del proveedor: un zip con su ficha, sus compras y sus señales en Excel, y un LÉEME ----------
+  // Las resoluciones y los informes no se copian: van como enlace a la página del Estado que los publica.
+  const BUZON = 'pedro.casaverde@utec.edu.pe';
+  const CORTE = D.corte ? fecha(D.corte) : `31 dic ${D.anio}`;
+  const rotuloDoc = t => { const s = (t || 'Documento oficial').replace(/^Ver\s+/i, ''); return s[0].toUpperCase() + s.slice(1); };
+  // Los documentos que acompañan a una señal, fuera de los de su detalle: [rótulo, enlace]
+  const docsDe = x => [...(oficial(x.url) ? [[rotuloDoc(x.doc), x.url]] : []), ...(x.otros || []).filter(o => oficial(o.url)).map(o => [`Informe ${o.n}`, o.url])];
+  const CAB_SENALES = ['Señal', 'Qué dice', 'Norma', 'Fuente', 'Fecha de los datos de la fuente', 'Enlace al documento oficial'];
+  // Una fila por señal y, si la señal trae varios documentos, una por documento. Con dos fuentes, cada una va en su
+  // renglón de la celda, y su fecha, en el mismo renglón de la celda de al lado
+  function filasSenales(c) {
+    const filas = [];
+    c.ev.forEach(x => {
+      const fila = (que, url, nota) => filas.push([x.etq, que, x.norma, x.fs.map(k => FUENTE[k][0]).join('\n'), x.fs.map(k => FUENTE[k][1]).join('\n'), oficial(url) ? { url, txt: url } : nota || '']);
+      if (x.g === 'ant') { x.det.forEach(q => (typeof q === 'string' ? fila(q) : fila(q.x, q.url, q.nota))); return; }
+      fila(x.g === 'vin' ? vinTxt(x) : x.x, x.url, x.nota);
+      (x.otros || []).forEach(o => fila(`Informe ${o.n}`, o.url));
+    });
+    return filas.length ? filas : [['Ninguna', `No tiene ninguna de las ${CATALOGO.length} señales que LLIKA busca.`]];
+  }
+  // La ficha, en una página que se abre sola en cualquier navegador y se puede imprimir
+  function fichaHTML(c) {
+    const e = c.ent, d = decDe(c), aus = ausentesDe(c), quien = c.prov.nombre || 'Sin nombre';
+    const a = u => `<a href="${esc(u)}">${esc(u)}</a>`;
+    const senal = x => `<h3>${esc(x.etq)}</h3><p>${esc(x.x)}</p>`
+      + (x.prob != null || x.pariente ? `<p><b>Coincidencia de apellidos, sin confirmar con RENIEC${x.prob != null ? `: ${x.prob}% de probabilidad de ser pariente` : ''}.</b> ${TXT_HOMONIMO}</p>` : '')
+      + (x.dj ? `<p>Lo declaró: ${esc(x.dj.nombre)}, ${esc(x.dj.cargo)} (${esc(x.dj.area)}), en su declaración jurada de intereses de ${esc(x.dj.anio)}.</p>` : '')
+      + (x.det && x.det.length ? `<ul>${x.det.map(q => (typeof q === 'string' ? `<li>${esc(q)}</li>` : `<li>${esc(q.x)}${oficial(q.url) ? `<br>${esc(rotuloDoc(q.doc))}: ${a(q.url)}` : q.nota ? ` <i>${esc(q.nota)}</i>` : ''}</li>`)).join('')}</ul>` : '')
+      + docsDe(x).map(([t, u]) => `<p>${esc(t)}: ${a(u)}</p>`).join('')
+      + (!x.url && x.nota ? `<p><i>${esc(x.nota)}</i></p>` : '')
+      + (x.extra ? `<p class="chico">${esc(x.extra)}</p>` : '')
+      + `<dl><dt>Norma</dt><dd>${esc(x.norma)}</dd><dt>${x.fs.length > 1 ? 'Fuentes' : 'Fuente'}</dt><dd>${x.fs.map(k => esc(`${FUENTE[k][0]}, ${FUENTE[k][1]}`)).join('<br>')}</dd></dl>`;
+    return `<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Carpeta del proveedor: ${esc(quien)}</title>
+<style>
+body { font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; max-width: 46rem; margin: 2rem auto; padding: 0 1rem; }
+h1 { font-size: 1.5rem; line-height: 1.25; margin: 1.5rem 0 .25rem; }
+h2 { font-size: 1.125rem; margin: 2rem 0 .5rem; padding-top: .75rem; border-top: 1px solid; }
+h3 { font-size: 1rem; margin: 1.25rem 0 .25rem; }
+p, ul, ol, dl, table { margin: .5rem 0; }
+.aviso { border: 1px solid; border-radius: 6px; padding: .5rem .75rem; }
+.chico, table, dl { font-size: .875rem; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; vertical-align: top; padding: .3rem .75rem .3rem 0; border-bottom: 1px solid; }
+.der, .fijo { white-space: nowrap; }
+.der { text-align: right; padding-right: 0; }
+dl { display: grid; grid-template-columns: max-content 1fr; gap: .25rem .75rem; }
+dt { font-weight: 600; }
+dd { margin: 0; }
+a { word-break: break-all; }
+@media print { body { margin: 0; max-width: none; } a { color: inherit; } h2 { break-after: avoid; } }
+</style>
+</head>
+<body>
+<p class="aviso"><b>Ficha para orientar una revisión.</b> No constituye sanción, falta ni delito. ${REAL ? `Registros públicos del Estado, con lo que se sabía al ${CORTE}.` : 'Demo con datos inventados.'}</p>
+<h1>${esc(quien)}</h1>
+<p>RUC ${esc(c.prov.ruc)}${c.prov.dni ? `, DNI ${esc(c.prov.dni)}` : ''}. ${tipoProv(c)}${c.rubro ? `. ${esc(c.rubro)}` : ''}.</p>
+<p>${esc(e.nombre)} (RUC ${esc(e.ruc)}). Lista de ${D.anio}, con lo que se sabía al ${CORTE}. <b>Puesto ${c.rk} de ${e.casos.length}.</b></p>
+<dl>
+<dt>Le vendió a esta entidad en ${D.anio}</dt><dd>${soles(c.total)}, en ${plural(c.n, 'compra', 'compras')}</dd>
+<dt>De todo lo que le vende al Estado</dt><dd>${parteVentas(c)}</dd>
+</dl>
+<h2>Por qué está en el puesto ${c.rk}</h2>
+<p><b>${esc(c.por)}</b></p>
+${tasaTxt(c) ? `<p>${tasaTxt(c)}</p>` : ''}
+<h2>Cómo llegó a este puesto</h2>
+<ol>${pasosCalculo(c).map(p => `<li>${p.t}<br>${p.d ? '<b>' : ''}${esc(p.v)}${p.d ? '. Por esto está aquí.</b>' : ''}</li>`).join('')}</ol>
+<p class="chico">Primero van los vínculos. Después, quienes más se parecen a proveedores sancionados y más dependen de esta entidad.</p>
+<h2>Señales: ${c.ev.length ? `${c.ev.length} de ${CATALOGO.length}` : `ninguna de ${CATALOGO.length}`}</h2>
+${c.ev.length ? c.ev.map(senal).join('') : '<p>No tiene ninguna de las señales que LLIKA busca.</p>'}
+${aus.length && c.ev.length ? `<p class="chico">Lo que no tiene: ${esc(aus.join(', '))}.</p>` : ''}
+<h2>Sus compras de ${D.anio}: ${plural(c.n, 'compra', 'compras')}</h2>
+${c.n ? `<table><thead><tr><th>Fecha</th><th>Compra</th><th>Descripción</th><th class="der">Monto</th></tr></thead>
+<tbody>${c.os.map(o => `<tr><td class="fijo">${fecha(o.f)}</td><td class="fijo">${esc(o.num)}</td><td>${esc(o.desc)}${o.enVentana ? ' <i>(con otras compras en 30 días que pasan el tope)</i>' : ''}${o.cerca ? ' <i>(cerca del tope)</i>' : ''}</td><td class="der">${soles(o.m)}</td></tr>`).join('')}</tbody>
+${c.n > 1 ? `<tfoot><tr><td></td><td></td><td><b>Total</b></td><td class="der"><b>${soles(c.total)}</b></td></tr></tfoot>` : ''}</table>
+<dl><dt>Norma</dt><dd>${esc(LEY.compra)}</dd><dt>Fuente</dt><dd>${esc(`${FUENTE.ordenes[0]}, ${FUENTE.ordenes[1]}`)}</dd></dl>` : '<p>No encontramos sus compras en la fuente.</p>'}
+<h2>Otros datos</h2>
+<dl>${otrosDatos(c).map(([t, v]) => `<dt>${t}</dt><dd>${v}</dd>`).join('')}</dl>
+${d ? `<h2>La decisión de quien revisó</h2>
+<p><b>${DEC_TXT[d.d]}.</b> Motivo: ${esc(d.m)}.${d.n ? ` Nota: ${esc(d.n)}.` : ''} Fecha: ${fecha(d.f)}. La decisión es de quien revisa: LLIKA solo sugiere el orden.</p>` : ''}
+<h2>Sobre esta carpeta</h2>
+<p class="chico">Se descargó el ${fecha(hoyISO())}. LLIKA no revisó los documentos de cada compra. Las resoluciones y los informes van como enlace a la página del Estado que los publica. Si un dato está mal, cualquier persona puede pedir que se corrija por correo a ${BUZON}.</p>
+</body>
+</html>
+`;
+  }
+  function leemeTXT(c, nDocs) {
+    const e = c.ent, fs = [...new Set(['ordenes', ...c.ev.flatMap(x => x.fs)])];
+    return '﻿' + [
+      'LLIKA. Carpeta del proveedor',
+      '',
+      `Proveedor: ${c.prov.nombre || 'Sin nombre'}`,
+      `RUC: ${c.prov.ruc}${c.prov.dni ? `. DNI: ${c.prov.dni}` : ''}`,
+      `Entidad: ${e.nombre} (RUC ${e.ruc})`,
+      `Puesto ${c.rk} de ${e.casos.length} en la lista de ${D.anio}`,
+      '',
+      'FECHA DE CORTE',
+      `La lista de ${D.anio} se armó con lo que se sabía al ${CORTE}. Lo que el Estado publicó después no está aquí.`,
+      `Esta carpeta se descargó el ${fecha(hoyISO())}.${D.lista ? ` Huella de la lista: ${D.lista}.` : ''}`,
+      '',
+      'QUÉ ES',
+      'Un orden sugerido para revisar. Estar en la lista no constituye sanción, falta ni delito.',
+      'LLIKA no revisó los documentos de cada compra.',
+      REAL ? 'Los datos son registros públicos del Estado, cruzados por LLIKA.' : 'Esta carpeta sale de la demo: la entidad, el proveedor, el RUC y los montos son inventados.',
+      '',
+      'QUÉ TRAE',
+      '1. ficha.html: por qué está en ese puesto, sus señales y sus compras. Se abre con cualquier navegador y se puede imprimir.',
+      `2. compras_y_senales.xlsx: la hoja «Compras», con ${plural(c.n, 'compra', 'compras')} de ${D.anio}, y la hoja «Señales», con cada señal, su norma, su fuente, la fecha de esos datos y el enlace al documento oficial.`,
+      '3. LÉEME.txt: este archivo.',
+      '',
+      'LOS DOCUMENTOS OFICIALES',
+      nDocs ? `Las resoluciones y los informes no vienen dentro de la carpeta: van como enlace a la página del Estado que los publica. Este proveedor tiene ${plural(nDocs, 'enlace', 'enlaces')}, en la ficha y en la hoja «Señales».`
+        : REAL ? 'Este proveedor no tiene resoluciones ni informes enlazados.' : 'La demo no enlaza documentos. Con datos reales, las resoluciones y los informes van como enlace a la página del Estado que los publica.',
+      '',
+      'FUENTES Y FECHA DE SUS DATOS',
+      ...fs.map(k => `- ${FUENTE[k][0]}: ${FUENTE[k][1]}`),
+      '',
+      'SI UN DATO ESTÁ MAL',
+      `Cualquier persona puede pedir que se corrija: desde la ficha, con «Reportar un error», o por correo a ${BUZON}.`
+    ].join('\r\n').replace(/ /g, ' ') + '\r\n';
+  }
+  function descargarCarpeta(c) {
+    const e = c.ent, titulo = `${c.prov.nombre || 'Sin nombre'} (RUC ${c.prov.ruc}). ${e.nombre}: lista de ${D.anio}, puesto ${c.rk}, con lo que se sabía al ${CORTE}.`;
+    const compras = filasCompras(c), senales = filasSenales(c);
+    const nDocs = senales.filter(f => typeof f[5] === 'object').length;
+    const xlsx = zipBytes(libro([
+      ['Compras', hoja(titulo, NOTA_EXCEL, CAB_COMPRAS, compras, ANCHO_COMPRAS, EST_COMPRAS), CAB_COMPRAS.length, compras.length],
+      ['Señales', hoja(titulo, NOTA_EXCEL, CAB_SENALES, senales, [28, 60, 60, 44, 36, 60], CAB_SENALES.map(() => S.txt)), CAB_SENALES.length, senales.length]
+    ]));
+    bajar(zipSinComprimir([['LÉEME.txt', leemeTXT(c, nDocs)], ['ficha.html', fichaHTML(c)], ['compras_y_senales.xlsx', xlsx]], 'application/zip'), `llika_carpeta_${c.prov.ruc}_${e.id}_${D.anio}.zip`);
+    anunciar(`Descargando la carpeta de ${c.prov.nombre || 'este proveedor'}: su ficha, sus compras y sus señales`);
+  }
+
+  let casoAbierto = null, focoPrevio = null, formDec = null, pedidoCorreo = '';
   // Barra de decisión: preguntar, elegir el motivo o mostrar lo decidido
   function pintarDecision(c) {
     const pie = document.getElementById('panel-pie'), d = decDe(c);
@@ -1487,8 +1686,7 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
     pa.href = ant ? `#caso-${e.id}-${ant.rk}` : '#'; pa.setAttribute('aria-disabled', String(!ant));
     ps.href = sig ? `#caso-${e.id}-${sig.rk}` : '#'; ps.setAttribute('aria-disabled', String(!sig));
     document.getElementById('p-cerrar').href = `#entidad-${e.id}`;
-    const presentes = new Set(c.ev.map(x => x.g === 'otra' ? x.etq : { vin: 'Vínculo', ant: 'Antecedentes', fra: 'Compras partidas' }[x.g]));
-    const ausentes = CATALOGO.filter(x => !presentes.has(x));
+    const ausentes = ausentesDe(c);
     const v = c.visible;
     cuerpo.innerHTML = `
       <p class="p-aviso" role="note">${ICO.info}<span><b>Ficha para orientar una revisión.</b> No constituye sanción, falta ni delito.</span></p>
@@ -1504,7 +1702,7 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
       <section class="por" aria-labelledby="p-por">
         <h3 id="p-por">Por qué está en el puesto ${c.rk}</h3>
         <p class="frase">${esc(c.por)}</p>
-        ${TASA[c.motivo] != null ? `<p class="tasa">De cada 100 proveedores que aparecen por este motivo, ${dec(TASA[c.motivo])} tuvieron después una sanción, una penalidad o una observación de la Contraloría. Elegidos al azar, ${dec(D.azar)}.</p>` : ''}
+        ${tasaTxt(c) ? `<p class="tasa">${tasaTxt(c)}</p>` : ''}
       </section>
       <section class="bloque-p" aria-labelledby="p-calc">
         <h3 id="p-calc">Cómo llegó a este puesto</h3>
@@ -1514,7 +1712,7 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
       <section class="bloque-p" aria-labelledby="p-sen">
         <h3 id="p-sen">Señales <span class="n">${c.ev.length ? `${c.ev.length} de ${CATALOGO.length}` : `ninguna de ${CATALOGO.length}`}</span></h3>
         ${c.ev.length ? `<ul class="senales">${c.ev.map(x => `<li class="senal">${ICO[x.g]}<span><b>${esc(x.etq)}.</b> ${esc(x.x)}</span>
-            ${x.prob != null || x.pariente ? `<span class="coincide">Coincidencia de apellidos, sin confirmar con RENIEC</span>${x.prob != null ? `<span class="prob"><b>${x.prob}%</b><i aria-hidden="true"><span style="--p:${Number(x.prob)}%"></span></i>de probabilidad de ser pariente</span>` : ''}<small>No es un parentesco comprobado: puede ser un homónimo. De 29 coincidencias muy probables, 14 eran parientes de verdad.</small>` : ''}
+            ${x.prob != null || x.pariente ? `<span class="coincide">Coincidencia de apellidos, sin confirmar con RENIEC</span>${x.prob != null ? `<span class="prob"><b>${x.prob}%</b><i aria-hidden="true"><span style="--p:${Number(x.prob)}%"></span></i>de probabilidad de ser pariente</span>` : ''}<small>${TXT_HOMONIMO}</small>` : ''}
             ${x.dj ? `<span class="quien">Lo declaró: <b>${esc(x.dj.nombre)}</b>, ${esc(x.dj.cargo)} (${esc(x.dj.area)}), en su declaración jurada de intereses de ${esc(x.dj.anio)}.</span>` : ''}
             ${x.det && x.det.length ? `<ul>${x.det.map(d => `<li>${detHTML(d)}</li>`).join('')}</ul>` : ''}
             ${docHTML(x)}
@@ -1533,21 +1731,23 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
       </section>
       <section class="bloque-p" aria-labelledby="p-mas">
         <h3 id="p-mas">Otros datos</h3>
-        <dl class="datos">
-          <dt>A quiénes se parece más</dt><dd>${c.riesgo === 'sancion' ? 'A proveedores sancionados por el Tribunal de Contrataciones' : c.riesgo === 'penalidad' ? 'A proveedores con penalidades' : 'Sin dato'}</dd>
-          <dt>Desde cuándo le vende</dt><dd>${c.previa === undefined ? 'Sin dato' : c.previa === null ? `${D.anio} es su primer año vendiéndole a esta entidad` : `Desde ${c.previa.desde}. Antes de ${D.anio} le había vendido ${soles(c.previa.monto)}`}</dd>
-          <dt>Su compra más grande</dt><dd>${v ? `${soles(v.m)}, el ${fecha(v.f)}` : 'Sin dato'}</dd>
-        </dl>
+        <dl class="datos">${otrosDatos(c).map(([t, d]) => `<dt>${t}</dt><dd>${d}</dd>`).join('')}</dl>
+      </section>
+      <section class="bloque-p carpeta" aria-labelledby="p-carp">
+        <h3 id="p-carp">Carpeta del proveedor</h3>
+        <p class="chico suave">Un zip con esta ficha, sus compras en Excel y cada señal con su norma, su fuente y el enlace al documento oficial.</p>
+        <button type="button" class="boton boton-sec" data-carpeta><span>${ICO.baja}Descargar la carpeta de este proveedor</span></button>
       </section>
       <footer class="p-pie">
-        <p>LLIKA no revisó los documentos de cada compra. Si un dato de esta ficha está mal, cualquiera puede pedir que se corrija.</p>
+        <p>LLIKA no revisó los documentos de cada compra. Si un dato de esta ficha está mal, cualquiera puede pedir que se corrija: el pedido sale por correo al equipo de LLIKA.</p>
         <button type="button" class="boton boton-sec" id="abrir-cor" aria-expanded="false" aria-controls="cor">Reportar un error</button>
         <form class="correccion" id="cor" hidden novalidate>
           <div class="campo"><label for="c-tipo">¿Qué dato está mal?</label><select id="c-tipo" name="tipo" aria-describedby="e-tipo"><option value="">Elige una opción</option><option>Nombre, RUC o DNI</option><option>Compras o montos</option><option>Antecedentes</option><option>Vínculo o parentesco</option><option>Otra señal</option></select><span class="error" id="e-tipo"></span></div>
-          <div class="campo"><label for="c-det">¿Qué hay que corregir?</label><textarea id="c-det" name="det" aria-describedby="e-det"></textarea><span class="error" id="e-det"></span></div>
+          <div class="campo"><label for="c-det">¿Qué hay que corregir?</label><textarea id="c-det" name="det" maxlength="1000" aria-describedby="e-det"></textarea><span class="error" id="e-det"></span></div>
           <div class="campo"><label for="c-mail">Correo para responderte (opcional)</label><input id="c-mail" name="mail" type="email" autocomplete="email" aria-describedby="e-mail"><span class="error" id="e-mail"></span></div>
-          <button class="boton" type="submit">Enviar corrección</button>
-          <p class="ok" id="c-ok" role="status" hidden></p>
+          <button class="boton" type="submit">Abrir el correo con el pedido</button>
+          <p class="chico suave">Se abre tu programa de correo con el mensaje ya escrito para ${BUZON}. El pedido llega cuando envías ese correo.</p>
+          <div class="ok" id="c-ok" role="status" hidden></div>
         </form>
       </footer>`;
     casoAbierto = c;
@@ -1603,6 +1803,15 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
       if (ev.target.closest('[data-dec-cambiar]')) { const d = decDe(c); formDec = { tipo: d.d, sel: d.m, nota: d.n || '' }; pintarDecision(c); enfoca('.motivo[aria-checked="true"]'); return; }
       if (ev.target.closest('[data-dec-quitar]')) { delete DEC[claveDec(c)]; guardarDec(); formDec = null; pintarDecision(c); if (ES.e === c.ent) pintarFilas(); anunciar('Decisión quitada'); enfoca('[data-dec]'); return; }
     }
+    if (ev.target.closest('[data-carpeta]') && casoAbierto) { descargarCarpeta(casoAbierto); return; }
+    const cpd = ev.target.closest('#c-copiar');
+    if (cpd) {
+      // Si el navegador no deja copiar, el pedido queda a la vista y seleccionado
+      const ok = () => { cpd.textContent = 'Copiado'; anunciar('Pedido copiado'); setTimeout(() => { cpd.textContent = 'Copiar el pedido'; }, 1500); };
+      const ver = () => { const caja = document.getElementById('c-caja'), ta = document.getElementById('c-texto'); ta.value = pedidoCorreo; caja.hidden = false; ta.focus(); ta.select(); anunciar('No se pudo copiar. El pedido quedó seleccionado: cópialo con el teclado.'); };
+      try { navigator.clipboard.writeText(pedidoCorreo).then(ok, ver); } catch (err) { ver(); }
+      return;
+    }
     const b = ev.target.closest('#abrir-cor');
     if (b) { const f = document.getElementById('cor'); f.hidden = !f.hidden; b.setAttribute('aria-expanded', String(!f.hidden)); if (!f.hidden) document.getElementById('c-tipo').focus(); }
   });
@@ -1627,7 +1836,8 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
       const cb = document.querySelector('#panel-pie [data-dec-cambiar]'); if (cb) cb.focus();
       return;
     }
-    const f = ev.target.closest('#cor'); if (!f) return;
+    // Pedido de corrección: la página no tiene servidor, así que deja escrito un correo al buzón del equipo y lo abre
+    const f = ev.target.closest('#cor'); if (!f || !casoAbierto) return;
     ev.preventDefault();
     let ok = true;
     const marcar = (id, msg) => { const el = document.getElementById('c-' + id), er = document.getElementById('e-' + id); el.setAttribute('aria-invalid', msg ? 'true' : 'false'); er.textContent = msg || ''; if (msg && ok) { ok = false; el.focus(); } };
@@ -1637,7 +1847,20 @@ details.tecnico > summary { font-size: var(--t-sm); line-height: var(--l-sm); fo
     marcar('mail', !mail || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail) ? '' : 'Al correo le falta la @ o el dominio. Revísalo.');
     const m = document.getElementById('c-ok');
     if (!ok) { m.hidden = true; return; }
-    m.textContent = `Recibido. En la versión pública llegaría al equipo de LLIKA; en ${REAL ? 'este prototipo' : 'esta demo'} no se envía nada.`; m.hidden = false; f.reset();
+    const c = casoAbierto, asunto = `LLIKA: corrección de datos, RUC ${c.prov.ruc}`;
+    const texto = ['Pido que se corrija un dato de esta ficha de LLIKA.', '',
+      `Proveedor: ${c.prov.nombre || 'Sin nombre'}`, `RUC: ${c.prov.ruc}`, `Entidad: ${c.ent.nombre} (RUC ${c.ent.ruc})`, `Lista de ${D.anio}, puesto ${c.rk}`,
+      `Dato que pido corregir: ${f.tipo.value}`, '', 'Qué hay que corregir:', det, '',
+      ...(mail ? [`Correo para responder: ${mail}`] : []), ...(REAL ? [] : ['Pedido hecho desde la demo, con datos inventados.'])].join('\n').trim();
+    const href = `mailto:${BUZON}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(texto.replace(/\n/g, '\r\n'))}`;
+    pedidoCorreo = `Para: ${BUZON}\nAsunto: ${asunto}\n\n${texto}`;
+    m.innerHTML = `<p><b>El correo quedó escrito.</b> Debe haberse abierto tu programa de correo con el pedido para ${BUZON}: revísalo y envíalo. Si no se abrió, copia el pedido y envíalo desde tu correo.</p>
+      <div class="ok-botones"><a class="boton boton-sec" id="c-abrir" href="${esc(href)}">Abrir el correo otra vez</a><button type="button" class="boton boton-sec" id="c-copiar">Copiar el pedido</button></div>
+      <div class="campo" id="c-caja" hidden><label for="c-texto">El pedido, para copiarlo</label><textarea id="c-texto" readonly></textarea></div>`;
+    m.hidden = false;
+    const a = document.createElement('a');
+    a.href = href; document.body.appendChild(a); a.click(); a.remove();
+    anunciar(`El correo quedó escrito para ${BUZON}. Revísalo y envíalo.`);
   });
 
   // ---------- Rutas ----------

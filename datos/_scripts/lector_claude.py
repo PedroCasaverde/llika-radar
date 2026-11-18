@@ -13,11 +13,12 @@ Cuidados para no gastar de más ni correr dos veces:
 - El texto se corta para que la entrada quede bajo 100 mil tokens: arriba de eso Haiku 5.5 cobra cinco veces más.
 - Sin razonamiento (thinking disabled) y con salida en JSON según el esquema: no se paga por pensar ni por reintentar
   JSON roto.
-La clave se lee de D:/UTEC/Maestria/.env (ANTHROPIC_API_KEY_LLIKA); no se imprime ni se manda a otro lado. Salidas en
-datos/procesados/claude/ (fuera de git: traen nombres y DNI).
+La clave se lee del .env de la raíz del repositorio (ANTHROPIC_API_KEY_LLIKA=...), o del archivo que diga la variable
+LLIKA_ENV; no se imprime ni se manda a otro lado. Salidas en datos/procesados/claude/ (fuera de git: traen nombres y DNI).
 """
 import argparse
 import json
+import os
 import re
 import sys
 import time
@@ -31,7 +32,7 @@ from extraer_deepseek import SAL as SAL_DS, TCE, leer_texto, muestra_informes, t
 DATOS = Path(__file__).resolve().parents[1]
 SAL = DATOS / "procesados" / "claude"
 REGISTRO = SAL / "registro_lotes.jsonl"
-ENV = Path(r"D:/UTEC/Maestria/.env")
+ENV = Path(os.environ.get("LLIKA_ENV") or DATOS.parent / ".env")   # el .env de la raíz del repositorio; git no lo sube
 MODELO = "claude-haiku-5-5"
 # dólares por millón de tokens, con el lote a mitad de precio; prompt de hasta 100 mil tokens (documentación de Anthropic)
 PRECIO_ENTRADA, PRECIO_SALIDA = 0.10 * 0.5, 0.50 * 0.5
@@ -147,6 +148,8 @@ para un proyecto académico de la UTEC que prioriza las compras públicas menore
 
 
 def clave():
+    if not ENV.exists():
+        sys.exit(f"Falta {ENV}: créalo con la línea ANTHROPIC_API_KEY_LLIKA=... o indica otro archivo con la variable LLIKA_ENV")
     for linea in ENV.read_text(encoding="utf-8").splitlines():
         if linea.startswith("ANTHROPIC_API_KEY_LLIKA"):
             return linea.split("=", 1)[1].strip().strip('"').strip("'")
