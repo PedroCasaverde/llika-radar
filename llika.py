@@ -1,13 +1,13 @@
 """Punto de entrada de LLIKA: corre cada paso, revisa lo que necesita y registra su tiempo y su memoria.
 
     python llika.py revisar                     entorno, memoria, disco, datos y huellas: qué falta y qué paso lo arma
-    python llika.py demo                        arma y prueba la pantalla con datos inventados (no necesita datos)
+    python llika.py demo                        abre la demo: la pantalla real de Ripán, Pachas y Marías (no necesita datos)
     python llika.py puntajes                    opcional: rehace el puntaje de todos los casos de 2025 y comprueba la lista congelada
     python llika.py indices                     los seis índices de las 2 647 entidades de la lista, para comparar cada entidad con todas
     python llika.py entidad RUC [RUC ...]       los datos reales de esas entidades para la pantalla (en privado/); antes va «indices»
     python llika.py pantalla privado/datos_X.json         la pantalla con esos datos (en privado/)
     python llika.py probar privado/llika_X.html privado/datos_X.json [--sin-red]
-    python llika.py caso-real                   índices, entidad, pantalla y prueba del caso del video: Ripán, con Pachas y Marías
+    python llika.py caso-real                   rehace la demo desde las tablas: índices, entidad, pantalla (demo/) y prueba
 
 Cada corrida deja una fila en resultados/corridas.jsonl (paso, segundos, memoria pico, código de salida), sin datos de
 personas; ese registro es local y no va a git. El detalle de cada paso está en el README.
@@ -33,6 +33,7 @@ V4, FUENTE, PRIVADO = RAIZ / "radar" / "v4", RAIZ / "demo" / "fuente", RAIZ / "p
 LISTA = RAIZ / "datos/procesados/v4/resultados/lista_unica_limpia/lista_2025_unica.parquet"
 HUELLA_LISTA = "189af867041d1270bf132ab6ca25041e9a3e782713171758dadf22a761a4aff2"
 CASO_REAL = ["20144801459", "20194119403", "20168795093"]          # Ripán, Pachas y Marías (Dos de Mayo, Huánuco)
+DEMO = RAIZ / "demo" / "llika_caso_real_2025.html"                  # la demo: la pantalla real de esas tres entidades
 REGISTRO = RAIZ / "resultados" / "corridas.jsonl"
 
 
@@ -96,7 +97,7 @@ def revisar():
         h = hashlib.sha256(LISTA.read_bytes()).hexdigest()
         print(f"  {'✓' if h == HUELLA_LISTA else '✗'} huella de la lista: {h[:16]} (debe ser {HUELLA_LISTA[:16]})")
         ok &= h == HUELLA_LISTA
-    print("\nSin datos se puede correr: python llika.py demo")
+    print("\nSin datos se puede abrir la demo: python llika.py demo")
     return ok
 
 
@@ -108,8 +109,9 @@ def main():
     if paso == "revisar":
         sys.exit(0 if revisar() else 1)
     elif paso == "demo":
-        correr("demo: armar", FUENTE / "armar_demo.py")
-        correr("demo: probar", FUENTE / "probar_demo.py", [RAIZ / "demo" / "llika_pe_demo.html", PRIVADO / "capturas_demo"])
+        import webbrowser
+        print(f"La demo es {DEMO}: se abre en el navegador, sin servidor.")
+        webbrowser.open(DEMO.as_uri())
     elif paso == "puntajes":
         correr("puntajes de 2025", V4 / "puntajes_2025.py")
     elif paso == "indices":
@@ -129,8 +131,8 @@ def main():
     elif paso == "caso-real":
         correr("índices de las entidades", V4 / "indices_entidades.py")
         correr("entidad", V4 / "exportar_entidad.py", ["--entidades", *CASO_REAL, "--salida", PRIVADO / "datos_caso_real_2025.json"])
-        correr("pantalla", FUENTE / "armar_demo.py", ["--real", PRIVADO / "datos_caso_real_2025.json", PRIVADO / "llika_caso_real_2025.html"])
-        correr("probar", FUENTE / "probar_real.py", [PRIVADO / "llika_caso_real_2025.html", PRIVADO / "datos_caso_real_2025.json", PRIVADO / "capturas", *resto])
+        correr("pantalla", FUENTE / "armar_demo.py", ["--real", PRIVADO / "datos_caso_real_2025.json", DEMO])
+        correr("probar", FUENTE / "probar_real.py", [DEMO, PRIVADO / "datos_caso_real_2025.json", PRIVADO / "capturas", *resto])
     else:
         sys.exit(f"ERROR: no conozco el paso «{paso}». Corre python llika.py ayuda para ver los pasos.")
 

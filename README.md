@@ -19,15 +19,15 @@ acusación.
 | Carpeta o archivo | Qué es |
 |---|---|
 | `llika.py` | La entrada: revisa el entorno y corre cada paso, con su tiempo y su memoria |
-| `demo/` | La pantalla (`fuente/plantilla.html`), cómo se arma y se prueba, y la demo con datos inventados |
+| `demo/` | La demo, con datos reales (`llika_caso_real_2025.html`), y la pantalla (`fuente/plantilla.html`), cómo se arma y se prueba |
 | `radar/v4/` | La cadena vigente: de las tablas a la lista, los puntajes de 2025, los índices de las 2 647 entidades y los datos de una entidad para la pantalla |
 | `radar/` | Las alertas de vínculo e impedimento y las tablas que usa la cadena |
 | `datos/_scripts/`, `datos/crudos/acc8_informes_cgr/`, `ocr_informes/` | Descarga de las fuentes, lectura de documentos (OCR y modelos de lenguaje) y su validación |
 | `docs/` | Model Card v0, datasheet de los datos y la lista de archivos del paquete de datos |
 | `notebooks/` | La evaluación del modelo v0 en 2022 y 2024, ejecutada y sin RUC: línea de base, intervalos y error por segmento |
 
-Los datos no están en el repositorio: pesan varios GB y traen nombres, RUC y DNI. La pantalla con datos reales se arma en
-`privado/`, que tampoco va a git.
+La demo es la pantalla real: `demo/llika_caso_real_2025.html`, con Ripán, Pachas y Marías, la misma del video y del
+pitch. Las tablas con que se arma no están en el repositorio porque pesan unos 4 GB: se las pasamos a quien las pida.
 
 ## Entorno
 
@@ -53,19 +53,22 @@ detiene y lo dice.
 
 ## Tres formas de correrlo
 
-### 1. La demo, sin datos (unos dos minutos)
+### 1. La demo, sin instalar nada
+
+Se abre `demo/llika_caso_real_2025.html` con doble clic, o con
 
 ```
 python llika.py demo
 ```
 
-Arma `demo/llika_pe_demo.html` con tres entidades inventadas (ningún RUC tiene un dígito verificador válido) y la prueba en
-Chromium. Se abre con cualquier navegador, sin servidor. El detalle está en `demo/README.md`.
+Es la pantalla con datos reales de tres municipalidades de Dos de Mayo (Huánuco): Ripán, Pachas y Marías, con lo que se
+sabía al 31 de diciembre de 2025. Un solo archivo, sin servidor. Los enlaces a las resoluciones y los informes abren con
+internet. El detalle está en `demo/README.md`.
 
 ### 2. El caso real, con las tablas procesadas (unos 2 minutos y 8 GB de RAM)
 
-Las tablas procesadas no se publican en ningún enlace porque traen nombres y DNI: el equipo las entrega en persona a quien
-las pida. Son 39 archivos, unos 4 GB, y van en `datos/` con la misma estructura de carpetas; la lista está en
+Para rehacer la demo desde los datos hacen falta las tablas procesadas: no caben en GitHub, así que nos las piden y se
+las pasamos. Son 39 archivos, unos 4 GB, y van en `datos/` con la misma estructura de carpetas; la lista está en
 `docs/paquete_de_datos.md`. Luego:
 
 ```
@@ -83,7 +86,7 @@ Para comprobar además que la lista de 2025 se reproduce, `python llika.py punta
 se detiene si no sale idéntica byte por byte. Ese paso es opcional: pide unos 7 minutos, 24 GB de RAM y los archivos de
 ajuste que también lista `docs/paquete_de_datos.md`.
 
-La pantalla queda en `privado/llika_caso_real_2025.html`. Para otra entidad:
+`caso-real` vuelve a escribir `demo/llika_caso_real_2025.html`; el JSON de las entidades queda en `privado/`. Para otra entidad:
 
 ```
 python llika.py indices          una sola vez, si no se corrió caso-real

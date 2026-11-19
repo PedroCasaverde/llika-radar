@@ -1,16 +1,19 @@
 # Demo de llika.pe
 
-La pantalla de LLIKA en un solo archivo HTML, sin servidor ni instalación: basta con abrir `llika_pe_demo.html` en
-cualquier navegador. Abre en la lista de entidades; de ahí se entra a la lista de proveedores de una entidad y a la
-ficha de cada uno. Desde la ficha se baja la carpeta del proveedor (un zip) y se pide por correo que se corrija un dato.
+La demo es la pantalla real de LLIKA en un solo archivo HTML, sin servidor ni instalación: basta con abrir
+`llika_caso_real_2025.html` en cualquier navegador. Trae tres municipalidades de Dos de Mayo (Huánuco), Ripán, Pachas y
+Marías, con sus proveedores de 2025 y lo que se sabía al 31 de diciembre de 2025: registros públicos del Estado. Abre en
+la lista de entidades; de ahí se entra a la lista de proveedores de una entidad y a la ficha de cada uno, con el enlace a
+la resolución o al informe de cada señal. Desde la ficha se baja la carpeta del proveedor (un zip) y se pide por correo
+que se corrija un dato. Es la misma pantalla del video y del pitch.
 
-Las tres entidades, sus proveedores, nombres, RUC y montos son **inventados** (ningún RUC tiene dígito verificador
-válido). Son reales las cifras del método (cuántos aciertos tiene la lista en 2022 y 2024, las tasas por motivo y qué
-pesa más en el parecido, calculadas con la lista de 2025 congelada), las normas que aplica cada señal y la fecha de los
-datos de cada fuente. También son reales los valores con que se compara cada índice: los de las 2 647 entidades de la
-lista de 2025, que van ordenados y sin el RUC de ninguna entidad.
+Se rehace con `python llika.py caso-real`, que necesita las tablas procesadas (unos 4 GB, fuera del repositorio: se las
+pasamos a quien las pida). `datos_demo.json` es un juego de datos de prueba de la plantilla: de él salen las cifras del
+método que lleva cada pantalla.
 
 ## Versiones
+
+Hasta el 19/11/2026 el repositorio publicaba una demo con datos inventados (`llika_pe_demo.html`), armada con `fuente/datos_demo.json`. Desde entonces la demo es la pantalla real. Lo que sigue es el historial de la plantilla.
 
 | Versión | SHA-256 de `llika_pe_demo.html` | Qué es |
 |---|---|---|
@@ -39,8 +42,7 @@ Con `--real`, `armar_demo.py` exige lo contrario que en la demo: que todo RUC te
 exige que cada enlace a un documento sea de un sitio del Estado (gob.pe), y cambia los avisos de «datos inventados» por
 los de datos reales. También exige que los índices de cada entidad se hayan calculado con la distribución de
 `fuente/distribucion_indices_2025.json`, que es la que lleva la pantalla. Las demás reglas (palabras que no pasan,
-números es-PE, colores y contraste) son las mismas. La pantalla y su JSON traen nombres, RUC y DNI: se escriben en
-`privado/`, que no va a git.
+números es-PE, colores y contraste) son las mismas. El JSON se escribe en `privado/`, que no va a git; con `caso-real`, la pantalla va a `demo/`.
 
 `probar_real.py` abre la pantalla en Chromium a 1440 y 375 px, en claro y oscuro, y comprueba lo siguiente:
 
