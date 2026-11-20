@@ -55,11 +55,8 @@ detiene y lo dice.
 
 ### 1. La demo, sin instalar nada
 
-Se abre `demo/llika_caso_real_2025.html` con doble clic, o con
-
-```
-python llika.py demo
-```
+Se descarga `demo/llika_caso_real_2025.html` (en GitHub: abrir el archivo y «Download raw file») y se abre con doble
+clic en cualquier navegador. Con el repositorio clonado, también abre con `python llika.py demo`.
 
 Es la pantalla con datos reales de tres municipalidades de Dos de Mayo (Huánuco): Ripán, Pachas y Marías, con lo que se
 sabía al 31 de diciembre de 2025. Un solo archivo, sin servidor. Los enlaces a las resoluciones y los informes abren con
